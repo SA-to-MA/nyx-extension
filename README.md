@@ -64,6 +64,16 @@ use flag ```-h``` for usage and planner option information.
 ## Custom heuristics and semantic attachments
 To use custom heuristics, fill in the body of the heuristic_function method inside [heuristic_functions.py](heuristic_functions.py), assigning it an index, and running the planner with the '-custom_h:...' flag with the corresponding heuristic index. For example: 
 
+```
+def heuristic_function(state):
+    if constants.CUSTOM_HEURISTIC_ID == 1:
+      h_val = math.sqrt(math.pow(state.state_vars["['x']"], 2) + math.pow(state.state_vars["['theta']"], 2) + \
+                        math.pow(state.state_vars["['theta_dot']"], 2) + math.pow(state.state_vars["['x_dot']"], 2) + \
+                        math.pow(state.state_vars["['theta_ddot']"], 2) + math.pow(state.state_vars["['x_ddot']"], 2)) * \
+                        (state.state_vars["['time_limit']"] - state.state_vars["['elapsed_time']"])
+      return h_val
+```
+
 ```Shell
 python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -t:1 -custom_h:1
 ```
