@@ -53,7 +53,25 @@ This work was initially based on the classical parser and planner written by PUC
 python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -t:1
 ```
 
-use flag ```-h``` for a usage and planner option information.
+Planner options can also be stored in a config file.
+```Shell
+python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -config:"ex/car/car.config"
+```
+
+use flag ```-h``` for usage and planner option information.
+
+
+## Custom heuristics and semantic attachments
+To use custom heuristics, fill in the body of the heuristic_function method inside [heuristic_functions.py](heuristic_functions.py), assigning it an index, and running the planner with the '-custom_h:...' flag with the corresponding heuristic index. For example: 
+
+```Shell
+python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -t:1 -custom_h:1
+```
+
+Semantic attachments can be used in the same manner as custom heuristics. Fill in the body of the external_function method in[semantic_attachment.py](semantic_attachments/semantic_attachment.py). When running the planner use flag '-sa:...' to specify which semantic attachment to activate. 
+
+## Dependencies
+- numba
 
 ## Current limitations of our planner
 - No support for object subtypes
