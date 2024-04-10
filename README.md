@@ -76,7 +76,7 @@ def heuristic_function(state):
 ```
 
 ```Shell
-python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -t:1 -custom_h:1
+python -B nyx.py ex/cartpole/cartpole.pddl ex/cartpole/pb01.pddl -t:0.02 -dblevent -search:gbfs -custom_h:1
 ```
 
 Semantic attachments can be used in the same manner as custom heuristics. Fill in the body of the external_function method in[semantic_attachment.py](semantic_attachments/semantic_attachment.py). When running the planner use flag '-sa:...' to specify which semantic attachment to activate. 
