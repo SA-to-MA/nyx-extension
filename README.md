@@ -62,7 +62,8 @@ use flag ```-h``` for usage and planner option information.
 
 
 ## Custom heuristics and semantic attachments
-To use custom heuristics, fill in the body of the heuristic_function method inside [heuristic_functions.py](heuristic_functions.py), assigning it an index, and running the planner with the '-custom_h:...' flag with the corresponding heuristic index. For example: 
+To use custom heuristics, fill in the body of the heuristic_function method inside [heuristic_functions.py](heuristic_functions.py), assigning it an index, and running the planner with the '-custom_h:...' flag with the corresponding heuristic index. 
+An example heuristic implementation and usage from the [cartpole](ex/cartpole/) domain: 
 
 ```
 def heuristic_function(state):
