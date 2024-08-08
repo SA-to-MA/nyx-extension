@@ -134,9 +134,9 @@ def translate_statement(tokens):
     elif first_token == 'when':
         ret_string = ""
         if tokens[2][0] == 'and':
-            ret_string = f"{translate_statement(tokens[2][1])}"
+            ret_string = f"\n        {translate_statement(tokens[2][1])}"
             for tok in tokens[2][2:]:
-                ret_string += f"\n    {translate_statement(tok)}"
+                ret_string += f"\n        {translate_statement(tok)}"
         return "if {}: {}".format(translate_expression(tokens[1]), ret_string)
         # return "if {}: {}".format(translate_expression(tokens[1]), translate_statement(tokens[2]))
     elif first_token == 'not':

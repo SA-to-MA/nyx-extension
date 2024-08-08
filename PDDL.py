@@ -61,6 +61,20 @@ class GroundedPDDLInstance:
             else:
                 self.actions.insert(0, constants.TIME_PASSING_ACTION)
 
+    def print_domain_info(self):
+        print(f"\t* model information:")
+        if constants.PRECONDITION_TREE:
+            print(f"\t\t* grounded actions: {len(list(self.actions.iter()))}")
+            print(f"\t\t* grounded processes: {len(list(self.processes.iter()))}")
+            print(f"\t\t* grounded events: {len(list(self.events.iter()))}")
+        else:
+            print(f"\t\t* grounded actions: {len(self.actions)}")
+            print(f"\t\t* grounded processes: {len(self.processes)}")
+            print(f"\t\t* grounded events: {len(self.events)}")
+        print(f"\t\t* grounded state variables: {len(self.init_state.state_vars)}")
+        print(f"\t\t* grounded state size: {sys.getsizeof(self.init_state)}")
+        print(f"\t\t* grounded state size (state vars): {round(sys.getsizeof(self.init_state.state_vars)/1024)}kB")
+
     def _translate_duration_constraints(self):
 
         duration_constraints = []

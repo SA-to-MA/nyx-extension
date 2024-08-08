@@ -87,6 +87,9 @@ def process_arguments(cl_arguments):
             constants.PLOT_TRACKED_VARIABLES = True
             constants.VERY_VERBOSE_OUTPUT = True
             continue
+        elif arg == 'di' or arg == 'domain_info':
+            constants.DOMAIN_INFO = True
+            continue
 
         arg_list = arg.split(':')
         if len(arg_list)==1:
@@ -167,16 +170,16 @@ def process_arguments(cl_arguments):
 
 def print_config(dom, prob):
     config_string = '\n\n===== NYX Planning Configuration ================\n' \
-        '\n\t* domain: ' + str(dom) + \
-        '\n\t* problem: ' + str(prob) + \
-        '\n\t* config file: ' + str(constants.CONFIG_FILE) + \
-        '\n\t* search algorithm: ' + str(constants.SEARCH_ALGO_TXT) + \
-        '\n\t* time discretisation: ' + str(constants.DELTA_T) + \
-        '\n\t* time horizon: ' + str(constants.TIME_HORIZON) + \
-        '\n\t* depth limit: ' + str(constants.DEPTH_LIMIT) + \
-        '\n\t* timeout: ' + str(constants.TIMEOUT) + 's' \
-        '\n'
-    print(config_string)
+                    '\n\t* domain: ' + str(dom) + \
+                    '\n\t* problem: ' + str(prob) + \
+                    '\n\t* config file: ' + str(constants.CONFIG_FILE) + \
+                    '\n\t* search algorithm: ' + str(constants.SEARCH_ALGO_TXT) + \
+                    '\n\t* depth limit: ' + str(constants.DEPTH_LIMIT) + \
+                    '\n\t* timeout: ' + str(constants.TIMEOUT) + 's'
+    if constants.TEMPORAL_DOMAIN:
+        config_string += '\n\t* time discretisation: ' + str(constants.DELTA_T) + \
+                         '\n\t* time horizon: ' + str(constants.TIME_HORIZON)
+    print(config_string + "\n")
 
 def print_solution_info(goal_st, plnr, sg_time, ttime):
 

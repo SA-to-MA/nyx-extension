@@ -38,7 +38,7 @@ class Planner:
 
     def solve(self, domain, problem):
 
-        start_solve_time = time.time()
+        start_parse_time = time.time()
         # Parser
         parser = PDDL_Parser(domain, problem)
         grounded_instance = parser.grounded_instance
@@ -46,8 +46,13 @@ class Planner:
         state = grounded_instance.init_state
         self.initial_state = grounded_instance.init_state
 
-        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_solve_time)) + "s")
+        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_parse_time)) + "s\n")
+        if (constants.DOMAIN_INFO):
+            grounded_instance.print_domain_info()
         print('\n=================================================\n\n\n\n\n\n\n')
+
+        start_solve_time = time.time()
+
         # Do nothing
         if grounded_instance.goals(state, constants):
             return []
@@ -198,7 +203,7 @@ class Planner:
 
     def solve_pt(self, domain, problem):
 
-        start_solve_time = time.time()
+        start_parse_time = time.time()
         # Parser
         parser = PDDL_Parser(domain, problem)
         grounded_instance = parser.grounded_instance
@@ -206,8 +211,13 @@ class Planner:
         state = grounded_instance.init_state
         self.initial_state = grounded_instance.init_state
 
-        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_solve_time)) + "s")
-        print('\n=================================================\n\n\n\n\n\n')
+        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_parse_time)) + "s\n")
+        if (constants.DOMAIN_INFO):
+            grounded_instance.print_domain_info()
+        print('\n=================================================\n\n\n\n\n\n\n')
+
+        start_solve_time = time.time()
+
         # Do nothing
         if grounded_instance.goals(state, constants):
             return []
