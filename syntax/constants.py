@@ -10,6 +10,8 @@ from numba import njit, float64
 
 TIME_PASSING_ACTION = Action('advance-time', [], [], [], happening_type="advance-time")
 
+state_constants = {}
+
 # -----------------------------------------------
 # NYX CommandLine Arguments
 # -----------------------------------------------
