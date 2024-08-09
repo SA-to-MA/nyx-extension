@@ -44,18 +44,9 @@ class GroundedPDDLInstance:
     def __init__(self, domain: PDDLDomain, problem: PDDLProblem):
         self.domain = domain
         self.problem = problem
-
-
-        compiled_effects = []
-        # identify constant predicates and functions
-        for happ in self.domain.actions + self.domain.events + self.domain.processes:
-            for eff in happ.effects:
-                # print(eff)
-                compiled_effects.append(eff)
-        self.modifiable_vars = self.find_non_constants_in_effects(compiled_effects)
-
         self.enact_requirements()
         self._objects = None
+        self.modifiable_vars = self.find_non_constants_in_effects()
         self._initialize_state()
         self._goals_code, self.goals = JIT.compile_expression(self.problem.goals, name='goals')
         if self.problem.metric != ['total-time'] and self.problem.metric != ['total-actions'] and self.problem.metric is not None:
@@ -84,11 +75,19 @@ class GroundedPDDLInstance:
         print(f"\t\t* grounded state size: {sys.getsizeof(self.init_state)}")
         print(f"\t\t* grounded state size (state vars): {round(sys.getsizeof(self.init_state.state_vars)/1024)}kB")
 
-    def find_non_constants_in_effects(self, effect_list: list):
+    def find_non_constants_in_effects(self):
         # if a state variable features in effects of processes, events, or actions.
+
+        compiled_effects = []
+        # identify constant predicates and functions
+        for happ in self.domain.actions + self.domain.events + self.domain.processes:
+            for eff in happ.effects:
+                # print(eff)
+                compiled_effects.append(eff)
+
         actual_vars = set()
 
-        for eff in effect_list:
+        for eff in compiled_effects:
             if eff[0] in ['not', 'assign', 'increase', 'decrease', 'scale-up', 'scale-down']:
                 actual_vars.add(eff[1][0])
             elif eff[0] == 'when':
