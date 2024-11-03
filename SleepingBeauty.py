@@ -1,7 +1,8 @@
 import math
 
 class SleepingBeauty:
-    def __init__(self, window_closed=True,magnet_operational=True,circuit=False,alarm_enabled=False,alarm_disabled=True,ringing=False,deeply_asleep=True,almost_awake=False,awake=False,charge=0.0,resistance=1.0,ring_time=0.0,voltage=False):
+    def __init__(self, window_closed=True, magnet_operational=True, circuit=False, alarm_enabled=False, alarm_disabled=True, ringing=False, deeply_asleep=True, almost_awake=False,
+                 awake=False, charge=0.0, resistance=1.0, ring_time=0.0, voltage=False):
         # Initial conditions based on provided initial state
         self.window_closed = window_closed
         self.magnet_operational = magnet_operational
@@ -38,16 +39,21 @@ class SleepingBeauty:
             print("Action: Kiss. Sleeping Beauty is now fully awake.")
 
     '''Events'''
+    ''' If event occured - returns true. otherwise, returns false'''
     def make_circuit(self):
         if not self.magnet_operational and not self.circuit:
             self.circuit = True
             print("Event: Circuit completed.")
+            return True
+        return False
 
     def break_circuit(self):
         if self.magnet_operational and self.circuit:
             self.circuit = False
             self.charge = 0
             print("Event: Circuit broken, charge reset.")
+            return True
+        return False
 
     def trigger_alarm(self):
         if self.circuit and self.alarm_disabled and self.voltage:
@@ -55,17 +61,23 @@ class SleepingBeauty:
             self.alarm_disabled = False
             self.ringing = True
             print("Event: Alarm triggered, ringing begins.")
+            return True
+        return False
 
     def voltage_available(self):
         if self.charge >= 5 and not self.voltage:
             self.voltage = True
             print("Event: Voltage available.")
+            return True
+        return False
 
     def rouse_princess(self):
         if self.ringing and self.ring_time >= 0.001 and self.deeply_asleep:
             self.deeply_asleep = False
             self.almost_awake = True
             print("Event: Rouse Princess. Sleeping Beauty is almost awake.")
+            return True
+        return False
 
     def disable_alarm(self):
         if not self.circuit and self.alarm_enabled and self.ringing:
@@ -74,65 +86,23 @@ class SleepingBeauty:
             self.alarm_disabled = True
             self.ring_time = 0
             print("Event: Alarm disabled.")
+            return True
+        return False
 
     '''Process'''
+    ''' If process occured - returns true. otherwise, returns false'''
     def ring(self, time_step=1):
         if self.ringing:
             self.ring_time += time_step
             print(f"Process: Ringing... Ring time: {self.ring_time:.3f}")
             self.rouse_princess()
+            return True
+        return False
 
     def charge_capacitor(self, time_step=1):
         if self.circuit and not self.voltage:
             self.charge += time_step * (1 / self.resistance)
             print(f"Process: Charging... Charge level: {self.charge:.2f}")
             self.voltage_available()
-
-    def simulate(self, actions, time_step=1, max_time=math.inf):
-        """
-        Runs the simulation over a series of actions and checks events and processes at each time step.
-
-        :param actions: List of actions to perform along with their timestamps.
-        :param time_step: Small increment for time, to allow processes to evolve.
-        :param max_time: The maximum simulation time.
-        """
-        print("Starting the simulation...")
-        action_index = 0
-        action_count = len(actions)
-
-        while self.total_time < max_time and self.awake == False:
-            # Check if it's time to execute the next action
-            if action_index < action_count:
-                action_time, current_action = actions[action_index]
-                if self.total_time >= action_time:
-                    if current_action == "openwindow":
-                        self.open_window()
-                    elif current_action == "closewindow":
-                        self.close_window()
-                    elif current_action == "kiss":
-                        self.kiss()
-                    action_index += 1
-
-            if self.awake == False:
-                # Process continuous actions
-                self.check_processes(time_step)
-                # Trigger events based on conditions
-                self.check_events()
-                # Increment time
-                self.total_time += time_step
-
-        print(
-            f"Simulation complete. Sleeping Beauty is {'awake' if self.awake else 'still asleep'} after {self.total_time} time units.")
-
-    def check_processes(self, time_step):
-        # Process continuous actions
-        self.charge_capacitor(time_step)
-        self.ring(time_step)
-    def check_events(self):
-        """Checks all events and triggers them if their conditions are met."""
-        self.make_circuit()
-        self.break_circuit()
-        self.trigger_alarm()
-        self.disable_alarm()
-        self.rouse_princess()
-        self.voltage_available()
+            return True
+        return False
