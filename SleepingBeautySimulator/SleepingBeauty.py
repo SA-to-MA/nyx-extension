@@ -44,16 +44,12 @@ class SleepingBeauty:
         if not self.magnet_operational and not self.circuit:
             self.circuit = True
             print("Event: Circuit completed.")
-            return True
-        return False
 
     def break_circuit(self):
         if self.magnet_operational and self.circuit:
             self.circuit = False
             self.charge = 0
             print("Event: Circuit broken, charge reset.")
-            return True
-        return False
 
     def trigger_alarm(self):
         if self.circuit and self.alarm_disabled and self.voltage:
@@ -61,23 +57,17 @@ class SleepingBeauty:
             self.alarm_disabled = False
             self.ringing = True
             print("Event: Alarm triggered, ringing begins.")
-            return True
-        return False
 
     def voltage_available(self):
         if self.charge >= 5 and not self.voltage:
             self.voltage = True
             print("Event: Voltage available.")
-            return True
-        return False
 
     def rouse_princess(self):
         if self.ringing and self.ring_time >= 0.001 and self.deeply_asleep:
             self.deeply_asleep = False
             self.almost_awake = True
             print("Event: Rouse Princess. Sleeping Beauty is almost awake.")
-            return True
-        return False
 
     def disable_alarm(self):
         if not self.circuit and self.alarm_enabled and self.ringing:
@@ -86,8 +76,6 @@ class SleepingBeauty:
             self.alarm_disabled = True
             self.ring_time = 0
             print("Event: Alarm disabled.")
-            return True
-        return False
 
     '''Process'''
     ''' If process occured - returns true. otherwise, returns false'''
@@ -96,13 +84,9 @@ class SleepingBeauty:
             self.ring_time += time_step
             print(f"Process: Ringing... Ring time: {self.ring_time:.3f}")
             self.rouse_princess()
-            return True
-        return False
 
     def charge_capacitor(self, time_step=1):
         if self.circuit and not self.voltage:
             self.charge += time_step * (1 / self.resistance)
             print(f"Process: Charging... Charge level: {self.charge:.2f}")
             self.voltage_available()
-            return True
-        return False
