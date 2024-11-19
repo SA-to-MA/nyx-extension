@@ -41,24 +41,8 @@ window_width = 1000
 window_height = 1000
 screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Sleeping Beauty Simulator")
-# load images and store them in a dictionary
-images = {
-    "window_closed": pygame.image.load("resources/window-closed.png"),
-    "window_open": pygame.image.load("resources/window-open.png"),
-    "asleep": pygame.image.load("resources/asleep.png"),
-    "awake": pygame.image.load("resources/awake.png"),
-    "almost_awake": pygame.image.load("resources/almost-awake.png"),
-    "alarm_enabled": pygame.image.load("resources/alarm-enabled.png"),
-    "alarm_disabled": pygame.image.load("resources/alarm-disabled.png"),
-    "alarm_ringing": pygame.image.load("resources/alarm-ringing.png"),
-}
-positions = {
-    "window": (300, 100),         # Position for the window
-    "alarm": (750, 550),          # Position for the alarm clock
-    "figure": (200, 400),         # Position for the main figure (Sleeping Beauty)
-}
 # send screen to sleeping beauty window object
-window = SleepingBeautyWindow(screen, sleeping_beauty, images, positions)
+window = SleepingBeautyWindow(screen, sleeping_beauty)
 # Load actions of solution from a file
 actions = parser.read_solution_from_file()
 # create simulator object

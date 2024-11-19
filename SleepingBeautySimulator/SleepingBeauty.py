@@ -17,6 +17,7 @@ class SleepingBeauty:
         self.resistance = resistance
         self.ring_time = ring_time
         self.voltage = voltage
+        self.kissed = False # initial state of kissed is false because no action was taken yet
         self.total_time = 0
 
     '''Actions'''
@@ -36,6 +37,7 @@ class SleepingBeauty:
         if self.almost_awake:
             self.awake = True
             self.almost_awake = False
+            self.kissed = True
             print("Action: Kiss. Sleeping Beauty is now fully awake.")
 
     '''Events'''
