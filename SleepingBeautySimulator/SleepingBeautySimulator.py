@@ -25,7 +25,7 @@ class SleepingBeautySimulator:
         print("Starting the simulation...")
         # draw window in initial state
         self.window.draw()
-        time.sleep(2)
+        time.sleep(3)
         action_index = 0
         action_count = len(self.actions)
         while self.total_time < self.max_time and not self.sleeping_beauty.awake:
@@ -37,18 +37,17 @@ class SleepingBeautySimulator:
                     action_index += 1
 
             if not self.sleeping_beauty.awake:
-                # Process continuous actions
-                self.check_processes()
-                # Trigger events based on conditions
-                self.check_events()
+                # Process continuous actions and trigger events based on conditions
+                self.check_processesAndEvents()
                 # Increment time
                 self.total_time += self.time_step
 
             # draw changes in window
             self.window.draw()
             # allow time to pass so changes are visible
-            time.sleep(2)
-
+            time.sleep(1)
+        # wait a few seconds before closing simulation
+        time.sleep(5)
         print(f"Simulation complete. Sleeping Beauty is {'awake' if self.sleeping_beauty.awake else 'still asleep'} after {self.total_time} time units.")
 
     def execute_action(self, action):
@@ -59,15 +58,16 @@ class SleepingBeautySimulator:
         elif action == "kiss":
             self.sleeping_beauty.kiss()
 
-    def check_processes(self):
-        self.sleeping_beauty.charge_capacitor(self.time_step)
-        self.sleeping_beauty.ring(self.time_step)
-
-    def check_events(self):
-        """Checks all events and triggers them if their conditions are met."""
+    def check_processesAndEvents(self):
+        """Checks all events and processes, and triggers them if their conditions are met."""
+        # circuit, charge and voltage
         self.sleeping_beauty.make_circuit()
-        self.sleeping_beauty.break_circuit()
-        self.sleeping_beauty.trigger_alarm()
-        self.sleeping_beauty.disable_alarm()
         self.sleeping_beauty.rouse_princess()
+        self.sleeping_beauty.charge_capacitor(self.time_step)
         self.sleeping_beauty.voltage_available()
+        # alarm enable or disable or ring
+        self.sleeping_beauty.trigger_alarm()
+        self.sleeping_beauty.ring(self.time_step)
+        # breaking circuit or alarm if necessary
+        self.sleeping_beauty.break_circuit()
+        self.sleeping_beauty.disable_alarm()
