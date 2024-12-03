@@ -24,7 +24,6 @@ class CarSimulator:
         """
         print("Starting the simulation...")
         self.window.draw()  # Draw initial state
-        time.sleep(3)
         action_index = 0
         action_count = len(self.actions)
 
@@ -43,8 +42,8 @@ class CarSimulator:
 
             # Draw changes in the window
             self.window.draw()
-            # Allow time for changes to be visible
-            time.sleep(1)
+            # allow time to pass so changes are visible
+            time.sleep(0.5)
 
         # Wait a few seconds before closing the simulation
         time.sleep(5)
