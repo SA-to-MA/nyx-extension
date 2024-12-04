@@ -5,8 +5,8 @@ from CarWindow import CarWindow
 import pygame
 
 # Set paths to the problem and solution files
-problem = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\pb01.pddl"
-solution = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\plans\\plan1_pb01.pddl"
+problem = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\pb02.pddl"
+solution = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\plans\\plan1_pb02.pddl"
 parser = ActionsParser(problem, solution)
 
 # Retrieve the initial state and map it to the Car class attributes

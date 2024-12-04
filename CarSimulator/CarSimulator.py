@@ -33,7 +33,8 @@ class CarSimulator:
                 action_time, action = self.actions[action_index]
                 if self.total_time >= action_time:
                     self.execute_action(action)
-                    action_index += 1
+                    if action != 'stop':
+                        action_index += 1
 
             if not self.car.goal_reached:
                 # Process continuous actions and trigger events
