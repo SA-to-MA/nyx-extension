@@ -1,0 +1,30 @@
+(define (problem complex-car-problem)
+  (:domain car)
+  (:objects)
+  (:init
+    (= (d) 0)
+    (= (v) 0)
+    (= (a) 0)
+    (= (up_limit) 10)
+    (= (down_limit) -5)
+    (= (running_time) 0)
+    (running)
+    (not (engineBlown))
+    (transmission_fine)
+    (not (goal_reached))
+  )
+  (:goal
+    (and
+      (goal_reached)
+      (> (running_time) 5)
+      (not (engineBlown))
+    )
+  )
+  (:constraints
+    (and
+      (forall (?t) (<= (v) 80))
+      (>= (d) 50)
+      (not (exists (?t) (engineBlown)))
+    )
+  )
+)

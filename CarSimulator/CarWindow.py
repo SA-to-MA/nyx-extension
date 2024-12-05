@@ -21,11 +21,12 @@ class CarWindow:
         }
 
         # Store positions for various elements
+        window_width, window_height = self.window.get_size()
         self.positions = {
-            "car": [50, 500],  # [x, y] for car position
-            "goal": None,  # Will be calculated dynamically
-            "wind_resistance": (100, 450),  # Position of wind resistance effect
-            "engine_blow": (150, 500),  # Position of engine blow effect
+            "car": [window_width * 0.01, window_height * 0.6],  # 5% from the left, 85% from the top
+            "goal": [window_width * 0.4, window_height * 0.4],
+            "wind_resistance": (window_width * 0.8, window_height * 0.6),  # 10% from left, 75% from top
+            "engine_blow": (window_width * 0.15, window_height * 0.85),  # 15% from left, 85% from top
         }
 
     def draw_background(self):
@@ -50,11 +51,6 @@ class CarWindow:
         Displays a "goal reached" image if the car has reached its goal.
         """
         if self.car.goal_reached:
-            if self.positions["goal"] is None:
-                # Calculate goal position dynamically
-                goal_x = (self.window.get_width() - self.images["goal_reached"].get_width()) // 2
-                goal_y = (self.window.get_height() - self.images["goal_reached"].get_height()) // 2
-                self.positions["goal"] = (goal_x, goal_y)
             self.window.blit(self.images["goal_reached"], self.positions["goal"])
 
     def draw_wind_resistance(self):

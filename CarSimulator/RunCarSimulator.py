@@ -5,8 +5,8 @@ from CarWindow import CarWindow
 import pygame
 
 # Set paths to the problem and solution files
-problem = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\pb02.pddl"
-solution = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\plans\\plan1_pb02.pddl"
+problem = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\pb01.pddl"
+solution = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\car\\plans\\plan1_pb01.pddl"
 parser = ActionsParser(problem, solution)
 
 # Retrieve the initial state and map it to the Car class attributes
@@ -27,8 +27,10 @@ car = Car(**mapped_initial_state)
 
 # Initialize Pygame and create the main window
 pygame.init()
-window_width = 1000
-window_height = 800
+# Get the screen's height
+info = pygame.display.Info()
+window_height = info.current_h
+window_width = (5 / 4) * window_height
 screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Car Simulator")
 

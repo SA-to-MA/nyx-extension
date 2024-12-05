@@ -1,0 +1,22 @@
+(define (problem car_prob)
+  (:domain car)
+  (:init
+    (running)
+    (transmission_fine)
+    (= (running_time) 0)
+    (= (up_limit) 5)
+    (= (down_limit) -5)
+    (= (d) 5)
+    (= (a) 1)
+    (= (v) 2)
+  )
+  (:goal
+    (and
+      (goal_reached)
+      (not (engineBlown))
+      (<= (running_time) 25)
+      (transmission_fine)
+    )
+  )
+  (:metric minimize (total-time))
+)

@@ -33,8 +33,7 @@ class CarSimulator:
                 action_time, action = self.actions[action_index]
                 if self.total_time >= action_time:
                     self.execute_action(action)
-                    if action != 'stop':
-                        action_index += 1
+                    action_index += 1
 
             if not self.car.goal_reached:
                 # Process continuous actions and trigger events
@@ -44,7 +43,7 @@ class CarSimulator:
             # Draw changes in the window
             self.window.draw()
             # allow time to pass so changes are visible
-            time.sleep(0.5)
+            time.sleep(1)
 
         # Wait a few seconds before closing the simulation
         time.sleep(5)

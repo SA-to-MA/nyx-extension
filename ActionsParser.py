@@ -48,7 +48,7 @@ class ActionsParser:
                     # Parse numeric values
                     if line.startswith("(="):
                         parts = line.strip("()").split()
-                        variable = parts[1]
+                        variable = parts[1].strip("()")
                         value = float(parts[2])
                         initial_state[variable] = value
 
