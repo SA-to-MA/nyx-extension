@@ -4,19 +4,22 @@ class ActionsParser:
         self.problem = problem_path
         self.sol = sol_path
 
-    # Read actions from solution file and return array of tuples, each tuple is timestamp and action
+    # Read actions from solution file and return dictionary, each entry is timestamp and actions
     def read_solution_from_file(self):
         '''
-        :return: list of tuples that contain actions to perform and their timestamp
+        :return: dictionary that contain timestamps as keys, and actions in the timestamp as values
         '''
-        actions = []
+        actions = {}
         with open(self.sol, 'r') as file:
             for line in file:
                 if line.strip():
                     parts = line.split(':')
                     timestamp = float(parts[0].strip())
                     action = parts[1].strip().split()[0]
-                    actions.append((timestamp, action))
+                    if timestamp in actions:
+                        actions[timestamp].append(action)
+                    else:
+                        actions[timestamp] = [action]
         return actions
 
     # make initial state and return it

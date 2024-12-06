@@ -1,0 +1,7 @@
+     0.000:	entercoin	[0.0]
+     4.000:	entercoin	[0.0]
+     8.000:	entercoin	[0.0]
+    12.000:	entercoin	[0.0]
+    16.000:	entercoin	[0.0]
+    20.000:	stop	[0.0]
+    20.000:	entercoin	[0.0]

@@ -3,18 +3,6 @@
 (:predicates (running) (engineBlown) (transmission_fine) (goal_reached) )
 (:functions (d) (v) (a) (up_limit) (down_limit) (running_time) )
 
-(:action accelerate
-  :parameters()
-  :precondition (and (running) (< (a) (up_limit)))
-  :effect (and (increase (a) 1))
-)
-
-(:action decelerate
-  :parameters()
-  :precondition (and (running) (> (a) (down_limit)))
-  :effect (and (decrease (a) 1))
-)
-
 (:process moving
 :parameters ()
 :precondition (and (running))
@@ -28,6 +16,19 @@
 :parameters ()
 :precondition (and (running) (>= (v) 50))
 :effect (decrease (v) (* #t (* 0.1 (* (- (v) 50) (- (v) 50)))))
+)
+
+
+(:action accelerate
+  :parameters()
+  :precondition (and (running) (< (a) (up_limit)))
+  :effect (and (increase (a) 1))
+)
+
+(:action decelerate
+  :parameters()
+  :precondition (and (running) (> (a) (down_limit)))
+  :effect (and (decrease (a) 1))
 )
 
 (:event engineExplode

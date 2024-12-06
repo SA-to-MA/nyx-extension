@@ -20,34 +20,35 @@ class CarSimulator:
 
     def run(self):
         """
-        Runs the simulation over a series of actions and checks events and processes at each time step.
+        Runs the simulation over a series of actions and checks events and processes at each time step,
+        executing actions based on a dictionary of timestamp:[actions].
         """
         print("Starting the simulation...")
         self.window.draw()  # Draw initial state
-        action_index = 0
-        action_count = len(self.actions)
 
         while self.total_time < self.max_time and not self.car.goal_reached:
-            # Check if it's time to execute the next action
-            if action_index < action_count:
-                action_time, action = self.actions[action_index]
-                if self.total_time >= action_time:
+            # Check if there are actions for the current timestamp
+            if self.total_time in self.actions:
+                for action in self.actions[self.total_time]:
                     self.execute_action(action)
-                    action_index += 1
 
             if not self.car.goal_reached:
                 # Process continuous actions and trigger events
                 self.check_processes_and_events()
-                self.total_time += self.time_step
+
+            # Advance time step
+            self.total_time += self.time_step
 
             # Draw changes in the window
             self.window.draw()
-            # allow time to pass so changes are visible
+
+            # Allow time to pass so changes are visible
             time.sleep(1)
 
         # Wait a few seconds before closing the simulation
         time.sleep(5)
-        print(f"Simulation complete. Car {'reached the goal' if self.car.goal_reached else 'did not reach the goal'} after {self.total_time} time units.")
+        print(
+            f"Simulation complete. Car {'reached the goal' if self.car.goal_reached else 'did not reach the goal'} after {self.total_time} time units.")
 
     def execute_action(self, action):
         """

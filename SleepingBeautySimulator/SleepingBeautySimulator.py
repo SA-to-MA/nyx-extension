@@ -20,35 +20,37 @@ class SleepingBeautySimulator:
 
     def run(self):
         """
-        Runs the simulation over a series of actions and checks events and processes at each time step.
+        Runs the simulation over a series of actions and checks events and processes at each time step,
+        executing actions based on a dictionary of timestamp:[actions].
         """
         print("Starting the simulation...")
-        # draw window in initial state
+        # Draw the initial state of the window
         self.window.draw()
         time.sleep(3)
-        action_index = 0
-        action_count = len(self.actions)
+
         while self.total_time < self.max_time and not self.sleeping_beauty.awake:
-            # Check if it's time to execute the next action
-            if action_index < action_count:
-                action_time, current_action = self.actions[action_index]
-                if self.total_time >= action_time:
-                    self.execute_action(current_action)
-                    action_index += 1
+            # Check if there are actions for the current timestamp
+            if self.total_time in self.actions:
+                for action in self.actions[self.total_time]:
+                    self.execute_action(action)
 
             if not self.sleeping_beauty.awake:
                 # Process continuous actions and trigger events based on conditions
-                self.check_processesAndEvents()
+                self.check_processes_and_events()
+
                 # Increment time
                 self.total_time += self.time_step
 
-            # draw changes in window
+            # Draw changes in the window
             self.window.draw()
-            # allow time to pass so changes are visible
+
+            # Allow time to pass so changes are visible
             time.sleep(1)
-        # wait a few seconds before closing simulation
+
+        # Wait a few seconds before closing the simulation
         time.sleep(5)
-        print(f"Simulation complete. Sleeping Beauty is {'awake' if self.sleeping_beauty.awake else 'still asleep'} after {self.total_time} time units.")
+        print(
+            f"Simulation complete. Sleeping Beauty is {'awake' if self.sleeping_beauty.awake else 'still asleep'} after {self.total_time} time units.")
 
     def execute_action(self, action):
         if action == "openwindow":
@@ -58,7 +60,7 @@ class SleepingBeautySimulator:
         elif action == "kiss":
             self.sleeping_beauty.kiss()
 
-    def check_processesAndEvents(self):
+    def check_processes_and_events(self):
         """Checks all events and processes, and triggers them if their conditions are met."""
         # circuit, charge and voltage
         self.sleeping_beauty.make_circuit()
