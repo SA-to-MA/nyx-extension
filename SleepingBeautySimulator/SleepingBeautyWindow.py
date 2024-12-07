@@ -6,8 +6,28 @@ class SleepingBeautyWindow:
         Images is dictionary containing image name and image path
         Positions is dictionary containing image name and position in window '''
         self.sleeping_beauty = sleeping_beauty
-        # load images and store them in a dictionary
-        self.images = {
+        # set window
+        self.window = window
+        # Get current window size
+        window_width, window_height = self.window.get_size()
+
+        # Calculate scaling factor based on 1000x1000 base
+        scale_x = window_width / 1000
+        scale_y = window_height / 1000
+
+        # Scale positions proportionally
+        self.positions = {
+            "window": (int(300 * scale_x), int(10 * scale_y)),
+            "alarm": (int(740 * scale_x), int(280 * scale_y)),
+            "figure": (int(170 * scale_x), int(310 * scale_y)),
+            "kiss": (int(50 * scale_x), int(380 * scale_y)),
+            "magnet": (int(700 * scale_x), int(750 * scale_y)),
+            "circuit": (int(785 * scale_x), int(680 * scale_y)),
+            "dresser": (int(700 * scale_x), int(400 * scale_y)),
+            "chest": (int(590 * scale_x), int(675 * scale_y)),
+        }
+        # load raw images and store them in a dictionary
+        images = {
             "window_closed": pygame.image.load("resources/window-closed.png"),
             "window_open": pygame.image.load("resources/window-open.png"),
             "asleep": pygame.image.load("resources/asleep.png"),
@@ -24,17 +44,14 @@ class SleepingBeautyWindow:
             "bedroom": pygame.image.load("resources/bedroom-cropped.jpg"),
             "chest": pygame.image.load("resources/chest.png"),
         }
-        self.positions = {
-            "window": (300, 10),  # Position for the window
-            "alarm": (740, 280),  # Position for the alarm clock
-            "figure": (170, 310),  # Position for the main figure (Sleeping Beauty),
-            "kiss": (50, 380), # position for kissing mark
-            "magnet": (700, 750),  # position for magnet
-            "circuit": (785, 680), # position for circuit
-            "dresser": (700, 400), # position for night dresser
-            "chest": (590, 675), # position for chest
+
+        # Scale images proportionally
+        self.images = {
+            name: pygame.transform.scale(image,
+                                         (int(image.get_width() * scale_x),
+                                          int(image.get_height() * scale_y)))
+            for name, image in images.items()
         }
-        self.window = window
         self.font = pygame.font.Font(None, 30)
 
     def draw_window(self):
@@ -91,7 +108,7 @@ class SleepingBeautyWindow:
 
     def draw_constants(self):
         # draw bedroom
-        background_image = pygame.transform.scale(self.images["bedroom"], (1000, 1000))  # Adjust size as needed
+        background_image = pygame.transform.scale(self.images["bedroom"], self.window.get_size())  # Adjust size as needed
         self.window.blit(background_image, (0, 0))
         # draw chest
         self.window.blit(self.images["chest"], self.positions["chest"])

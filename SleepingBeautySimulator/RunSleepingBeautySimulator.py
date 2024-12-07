@@ -37,8 +37,12 @@ sleeping_beauty = SleepingBeauty(**mapped_initial_state)
 # initialize pygame window and create sleeping beauty window
 pygame.init()
 # Create the main Pygame window
-window_width = 1000
-window_height = 1000
+# Get the height of the screen
+screen_info = pygame.display.Info()
+screen_height = screen_info.current_h  # Current screen height
+# Set the window dimensions to the screen's height
+window_width = screen_height
+window_height = screen_height
 screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Sleeping Beauty Simulator")
 # send screen to sleeping beauty window object
