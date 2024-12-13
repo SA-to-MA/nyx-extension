@@ -1,17 +1,41 @@
-import copy
 import re
 import sys
+import copy
+
 from syntax.action import Action
 from syntax.event import Event
 from syntax.process import Process
 import syntax.constants as constants
 from PDDL import PDDLDomain
-class PDDL_Parser:
 
-    SUPPORTED_REQUIREMENTS = [':strips', ':adl', ':negative-preconditions', ':typing', ':time', ':fluents', ':timed-initial-literals', ':durative-actions', ':duration-inequalities', ':continuous-effects', ':disjunctive-preconditions', ':semantic-attachment', ':conditional-effects']
+class MAPDDLDomain(PDDLDomain):
+    def __init__(self, **kwargs):
+        # call the parent class initializer
+        super().__init__(**kwargs)
+        # MA-specific properties
+        self.agents = kwargs.get('agents', dict())
+
+    def add_agent(self, agent_name, agent_type):
+        """Add a new agent to the domain."""
+        if agent_type not in self.agents.keys():
+            self.agents[agent_type] = []
+        self.agents[agent_type].append(agent_name)
+
+
+    def __repr__(self):
+        return (
+            f"MAPDDLDomain(name={self.name}, requirements={self.requirements}, "
+            f"types={self.types}, predicates={self.predicates}, functions={self.functions}, "
+            f"constants={self.constants}, processes={self.processes}, actions={self.actions}, "
+            f"events={self.events}, agents={self.agents}, "
+        )
+
+class MAPDDLParser:
+
+    SUPPORTED_REQUIREMENTS = [':multi-agent', ':strips', ':adl', ':negative-preconditions', ':typing', ':time', ':fluents', ':timed-initial-literals', ':durative-actions', ':duration-inequalities', ':continuous-effects', ':disjunctive-preconditions', ':semantic-attachment', ':conditional-effects']
 
     def __init__(self, domain_file):
-        self.domain = PDDLDomain()
+        self.domain = MAPDDLDomain()
         self.parse_domain(domain_file)
 
     #-----------------------------------------------
@@ -544,3 +568,15 @@ class PDDL_Parser:
                 relevant_preds.append(predicate)
             else:
                 relevant_preds.append(predicate)
+
+#-----------------------------------------------
+# Main
+#-----------------------------------------------
+if __name__ == '__main__':
+    domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\exMA\\Car_MAPDDL_Domain"
+    parser = MAPDDLParser(domain)
+    print('----------------------------')
+    print('Domain: ' + parser.domain.__repr__())
+    print('Actions: ')
+    for action in parser.domain.actions:
+        print(action)
