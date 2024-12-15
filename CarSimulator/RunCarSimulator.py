@@ -29,7 +29,7 @@ car = Car(**mapped_initial_state)
 pygame.init()
 # Get the screen's height
 info = pygame.display.Info()
-window_height = info.current_h
+window_height = (3/4) * info.current_h
 window_width = (5 / 4) * window_height
 screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Car Simulator")

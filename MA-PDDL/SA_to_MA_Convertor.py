@@ -1,85 +1,138 @@
 import itertools
 from MA_PDDL import MAPDDLParser, MAPDDLDomain
 
+
 class MAtoSA_Domain:
     def __init__(self, ma_file):
         parser = MAPDDLParser(ma_file)
         self.domain = parser.domain
 
-    def generate(self, agents):
-        """
-        :param agents: dictionary of agents to be generated in file, where key is agent type and value is list of names of instances of that type
-        :return:
-        """
-        # set agents in domain
+    def set_agents(self, agents):
         self.domain.agents = agents
-        # iterate all actions and create dictionary of {agent type: [possible actions]}
+
+    def generate(self):
+        """
+        Generate all combinations and write the corresponding SA format file.
+        """
+        combined_actions = self.generate_actions()
+        self.write_to_sa_file(combined_actions)
+
+    def generate_actions(self):
+        """
+        Generate all combinations of actions for the agents and include their predicates and effects.
+        """
+        # Build the actions_by_agent dictionary
         actions_by_agent = {}
         for action in self.domain.actions:
-            # get parameters
-            params = action.parameters
-            # iterate parameters and add action to each agent type
-            for p in params:
-                if p[1] in actions_by_agent.keys():
-                    actions_by_agent[p[1]].append(action.name)
-                else:
-                    actions_by_agent[p[1]] = [action.name]
-        print(self.generate_actions(actions_by_agent))
-        print(self.generate_processes_and_events(actions_by_agent))
+            for param in action.parameters:
+                actions_by_agent.setdefault(param[1], []).append(action)
 
-    def generate_processes_and_events(self, actions_by_process):
+        # Prepare agent-specific action combinations
+        agent_actions = [
+            [f"{agent}_{action.name}" for action in actions_by_agent.get(agent_type, [])]
+            for agent_type, agents in self.domain.agents.items() for agent in agents
+        ]
+
+        # Generate combinations of actions for all agents
+        all_combinations = itertools.product(*agent_actions)
+
+        # Process each combination and gather predicates/effects
+        all_combined_info = []
+        for combination in all_combinations:
+            # Collect predicates and effects for each action in the combination
+            predicates = []
+            effects = []
+            for agent_action in combination:
+                agent, action_name = agent_action.split('_')
+                action = next(act for act in self.domain.actions if act.name == action_name)
+                # Process predicates (preconditions)
+                predicates.extend(self.get_predicates(action, agent))
+                # Process effects
+                effects.extend(self.get_effects(action, agent))
+
+            # Collect all info for this combination
+            formatted_combination = '-'.join(combination)
+            all_combined_info.append({
+                'combination': formatted_combination,
+                'predicates': predicates,
+                'effects': effects
+            })
+
+        return all_combined_info
+
+    def get_predicates(self, action, agent):
         """
-        :param actions_by_process: a dict where each agent type has a list of possible events/processes it can perform
-        :return: a list of all possible agent-process combinations
+        Extract predicates (preconditions) for a given action and agent.
+        Modify to use the agent's name in predicates (e.g., car1_running).
         """
-        agent_proc_pairs = []
-        # Generate combinations of agent-process pairs
-        for agent_type, agent_list in self.domain.agents.items():
-            for agent in agent_list:
-                # Get processes specific to the agent's type
-                available_proc = actions_by_process(agent_type, [])
+        predicates = []
+        for condition in action.preconditions:
+            if isinstance(condition[0], str) and condition[0] in ['<', '<=', '>', '>=', '=']:
+                # Comparison condition
+                predicates.append(f'({condition[0]} ({agent}_{condition[1][0]}) {agent}_{condition[2][0]})')
+            elif condition[0] == 'not': # not predicate
+                predicates.append(f'(not ({agent}_{condition[1][0]}))')
+            else:# Simple condition
+                predicates.append(f'({agent}_{condition[0]})')
+        return predicates
 
-                # Generate all combinations of processes for this agent
-                for proc in available_proc:
-                    agent_proc_pairs.append(f'{agent}_{proc}')
-        return agent_proc_pairs
-
-    def generate_actions(self, actions_by_agent):
+    def get_effects(self, action, agent):
         """
-        Generate all possible combinations of actions for each agent type.
-
-        :param actions_by_agent: dictionary of agents, where key is the agent type and value is a list of possible actions.
-        :return: list of formatted action pairs for multiple agents
+        Extract effects for a given action and agent.
         """
-        action_lists = []
+        effects = []
+        for effect in action.effects:
+            if effect[0] == 'increase' or effect[0] == 'decrease' or effect[0] == 'assign':
+                effects.append(f'({effect[0]} ({agent}_{effect[1][0]}) {effect[2]})')
+            elif effect[0] == 'not':  # If negating the predicate
+                effects.append(f'(not ({agent}_{effect[1][0]}))')
+            else:
+                effects.append(f'({agent}_{effect[0]})')
+        return effects
 
-        # Generate list of actions for each agent type
-        for agent_type, agent_list in self.domain.agents.items():
-            actions_for_agents = []
+    def write_to_sa_file(self, combined_actions):
+        """
+        Write the combined actions, predicates, and effects to a file in the SA format.
+        """
+        with open("output_file.pddl", "w") as file:
+            # Write the header (domain name, requirements, types, predicates, functions, etc.)
+            file.write(f"(define (domain {self.domain.name})\n")
+            file.write("  (:requirements :typing :fluents :time :negative-preconditions :multi-agent)\n")
+            file.write("  (:types agent)\n")
 
-            # For each agent of a given type, generate possible actions
-            for agent in agent_list:
-                available_actions = actions_by_agent.get(agent_type, [])
-                actions_for_agents.append([f'{agent}_{action}' for action in available_actions])
+            # Write predicates and functions
+            file.write("  (:predicates\n")
+            for predicate, params in self.domain.predicates.items():
+                param_str = " ".join(f"?{param}" for param in params)
+                file.write(f"    ({predicate} {param_str})\n")
+            file.write("  )\n")
 
-            # Add the action list for the agent type to the action_lists
-            action_lists.append(actions_for_agents)
+            file.write("  (:functions\n")
+            for func, params in self.domain.functions.items():
+                param_str = " ".join(f"?{param}" for param in params)
+                file.write(f"    ({func} {param_str})\n")
+            file.write("  )\n")
 
-        # Use itertools.product to generate all combinations of actions for all agents
-        all_combinations = list(itertools.product(*action_lists))
+            # Write actions
+            for action_info in combined_actions:
+                file.write(f"  (:action {action_info['combination']}\n")
+                file.write("    :precondition (and\n")
+                for pred in action_info['predicates']:
+                    file.write(f"      {pred}\n")
+                file.write("    )\n")
+                file.write("    :effect (and\n")
+                for eff in action_info['effects']:
+                    file.write(f"      {eff}\n")
+                file.write("    )\n")
+                file.write("  )\n")
 
-        # Format the combinations into a list of strings
-        formatted_combinations = ['-'.join(combination) for combination in all_combinations]
-
-        return formatted_combinations
+            file.write(")\n")
 
 
-#-----------------------------------------------
+# -----------------------------------------------
 # Main
-#-----------------------------------------------
+# -----------------------------------------------
 if __name__ == '__main__':
-    import numpy
-    print(numpy.__version__)
     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\exMA\\Car_MAPDDL_Domain"
     satoma = MAtoSA_Domain(domain)
     print('----------------------------')
@@ -87,8 +140,7 @@ if __name__ == '__main__':
     print('Actions: ')
     for action in satoma.domain.actions:
         print(action)
-    agents = {'agent': ["car1", "car2"]}
-    satoma.generate(agents)
 
-
-
+    agents = {'agent': ["car1", "car2", "car3"]}
+    satoma.set_agents(agents)
+    satoma.generate()
