@@ -1,19 +1,38 @@
 (define (domain car-ma)
-  (:requirements :typing :fluents :time :negative-preconditions :multi-agent)
-  (:types agent)
+  (:requirements :typing :fluents :time :negative-preconditions)
   (:predicates
-    (running ??agent)
-    (engineblown ??agent)
-    (transmission_fine ??agent)
-    (goal_reached ??agent)
+    (car1_running)
+    (car2_running)
+    (car3_running)
+    (car1_engineblown)
+    (car2_engineblown)
+    (car3_engineblown)
+    (car1_transmission_fine)
+    (car2_transmission_fine)
+    (car3_transmission_fine)
+    (car1_goal_reached)
+    (car2_goal_reached)
+    (car3_goal_reached)
   )
   (:functions
-    (d ??agent)
-    (v ??agent)
-    (a ??agent)
-    (up_limit ??agent)
-    (down_limit ??agent)
-    (running_time ??agent)
+    (car1_d)
+    (car2_d)
+    (car3_d)
+    (car1_v)
+    (car2_v)
+    (car3_v)
+    (car1_a)
+    (car2_a)
+    (car3_a)
+    (car1_up_limit)
+    (car2_up_limit)
+    (car3_up_limit)
+    (car1_down_limit)
+    (car2_down_limit)
+    (car3_down_limit)
+    (car1_running_time)
+    (car2_running_time)
+    (car3_running_time)
   )
   (:action car1_accelerate-car2_accelerate-car3_accelerate
     :precondition (and
@@ -445,6 +464,99 @@
       (car1_goal_reached)
       (car2_goal_reached)
       (car3_goal_reached)
+    )
+  )
+  (:process car1_moving
+    :precondition (and
+      (car1_running)
+    )
+    :effect (and
+      (increase (car1_v) (* #t car1_a))
+      (increase (car1_d) (* #t car1_v))
+      (increase (car1_running_time) (* #t 1))
+    )
+  )
+  (:process car1_windresistance
+    :precondition (and
+      (car1_running)
+      (>= (car1_v) car1_5)
+    )
+    :effect (and
+      (decrease (car1_v) (* #t (* 0.1 (* (- car1_v 50) (- car1_v 50)))))
+    )
+  )
+  (:process car2_moving
+    :precondition (and
+      (car2_running)
+    )
+    :effect (and
+      (increase (car2_v) (* #t car2_a))
+      (increase (car2_d) (* #t car2_v))
+      (increase (car2_running_time) (* #t 1))
+    )
+  )
+  (:process car2_windresistance
+    :precondition (and
+      (car2_running)
+      (>= (car2_v) car2_5)
+    )
+    :effect (and
+      (decrease (car2_v) (* #t (* 0.1 (* (- car2_v 50) (- car2_v 50)))))
+    )
+  )
+  (:process car3_moving
+    :precondition (and
+      (car3_running)
+    )
+    :effect (and
+      (increase (car3_v) (* #t car3_a))
+      (increase (car3_d) (* #t car3_v))
+      (increase (car3_running_time) (* #t 1))
+    )
+  )
+  (:process car3_windresistance
+    :precondition (and
+      (car3_running)
+      (>= (car3_v) car3_5)
+    )
+    :effect (and
+      (decrease (car3_v) (* #t (* 0.1 (* (- car3_v 50) (- car3_v 50)))))
+    )
+  )
+  (:event car1_engineexplode
+    :precondition (and
+      (car1_running)
+      (>= (car1_a) car1_1)
+      (>= (car1_v) car1_1)
+    )
+    :effect (and
+      (not (car1_running))
+      (car1_engineblown)
+      (assign (car1_a) 0)
+    )
+  )
+  (:event car2_engineexplode
+    :precondition (and
+      (car2_running)
+      (>= (car2_a) car2_1)
+      (>= (car2_v) car2_1)
+    )
+    :effect (and
+      (not (car2_running))
+      (car2_engineblown)
+      (assign (car2_a) 0)
+    )
+  )
+  (:event car3_engineexplode
+    :precondition (and
+      (car3_running)
+      (>= (car3_a) car3_1)
+      (>= (car3_v) car3_1)
+    )
+    :effect (and
+      (not (car3_running))
+      (car3_engineblown)
+      (assign (car3_a) 0)
     )
   )
 )
