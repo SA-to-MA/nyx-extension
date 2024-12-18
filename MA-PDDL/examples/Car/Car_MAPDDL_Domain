@@ -1,0 +1,60 @@
+(define (domain car-ma)
+  (:requirements :typing :fluents :time :negative-preconditions :multi-agent)
+  (:types car)
+
+  (:predicates
+    (running ?car - car)
+    (engineBlown ?car - car)
+    (transmission_fine ?car - car)
+    (goal_reached ?car - car)
+  )
+
+  (:functions
+    (d ?car - car)
+    (v ?car - car)
+    (a ?car - car)
+    (up_limit ?car - car)
+    (down_limit ?car - car)
+    (running_time ?car - car)
+  )
+
+  (:process moving
+    :parameters (?car - car)
+    :precondition (and (running ?car))
+    :effect (and
+      (increase (v ?car) (* #t (a ?car)))
+      (increase (d ?car) (* #t (v ?car)))
+      (increase (running_time ?car) (* #t 1))
+    )
+  )
+
+  (:process windResistance
+    :parameters (?car - car)
+    :precondition (and (running ?car) (>= (v ?car) 50))
+    :effect (decrease (v ?car) (* #t (* 0.1 (* (- (v ?car) 50) (- (v ?car) 50)))))
+  )
+
+  (:action accelerate
+    :parameters (?car - car)
+    :precondition (and (running ?car) (< (a ?car) (up_limit ?car)))
+    :effect (and (increase (a ?car) 1))
+  )
+
+  (:action decelerate
+    :parameters (?car - car)
+    :precondition (and (running ?car) (> (a ?car) (down_limit ?car)))
+    :effect (and (decrease (a ?car) 1))
+  )
+
+  (:event engineExplode
+    :parameters (?car - car)
+    :precondition (and (running ?car) (>= (a ?car) 1) (>= (v ?car) 100))
+    :effect (and (not (running ?car)) (engineBlown ?car) (assign (a ?car) 0))
+  )
+
+  (:action stop
+    :parameters (?car - car)
+    :precondition (and (= (v ?car) 0) (>= (d ?car) 30) (not (engineBlown ?car)))
+    :effect (goal_reached ?car)
+  )
+)

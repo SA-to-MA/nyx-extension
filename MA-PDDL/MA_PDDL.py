@@ -15,7 +15,7 @@ class MAPDDLDomain(PDDLDomain):
         # MA-specific properties
         self.agents = kwargs.get('agents', dict())
 
-    def add_agent(self, agent_name, agent_type):
+    def add_agent(self, agent_type, agent_name):
         """Add a new agent to the domain."""
         if agent_type not in self.agents.keys():
             self.agents[agent_type] = []
@@ -572,11 +572,11 @@ class MAPDDLParser:
 #-----------------------------------------------
 # Main
 #-----------------------------------------------
-if __name__ == '__main__':
-    domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\exMA\\Car_MAPDDL_Domain"
-    parser = MAPDDLParser(domain)
-    print('----------------------------')
-    print('Domain: ' + parser.domain.__repr__())
-    print('Actions: ')
-    for action in parser.domain.actions:
-        print(action)
+# if __name__ == '__main__':
+#     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\Car_MAPDDL_Domain"
+#     parser = MAPDDLParser(domain)
+#     print('----------------------------')
+#     print('Domain: ' + parser.domain.__repr__())
+#     print('Actions: ')
+#     for action in parser.domain.actions:
+#         print(action)

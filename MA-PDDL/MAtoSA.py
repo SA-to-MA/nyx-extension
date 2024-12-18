@@ -1,5 +1,5 @@
 import itertools
-from MA_PDDL import MAPDDLParser, MAPDDLDomain
+from MA_PDDL import MAPDDLParser
 
 
 class MAtoSA_Domain:
@@ -11,7 +11,9 @@ class MAtoSA_Domain:
     # Set agents
     #-----------------------------------------------
     def set_agents(self, agents):
-        self.domain.agents = agents
+        for agent_type, agent_number in agents.items():
+            for i in range(1, agent_number+1):
+                self.domain.add_agent(agent_type, f"{agent_type}{i}")
 
     #-----------------------------------------------
     # Generate SA-PDDL+ file
@@ -35,14 +37,19 @@ class MAtoSA_Domain:
         """
         Generate all combinations of agent specific definitions for the agents based on their type (functions or predicates)
         """
+        # create list of new predicates to return
         agent_specific = []
-
+        # iterate all predicates and their parameters
         for predicate, params in assign_dict.items():
-            for param, agent_type in params.items():
-                if agent_type in self.domain.agents:
-                    for agent in self.domain.agents[agent_type]:
-                        # Generate predicate specific to the agent
-                        agent_specific.append(f"{agent}_{predicate}")
+            # if no parameters, add predicate as is
+            if len(params) == 0:
+                agent_specific.append(predicate)
+            else: # if there are parameters, generate them to all relevant agents in agent type
+                for param, agent_type in params.items():
+                    if agent_type in self.domain.agents:
+                        for agent in self.domain.agents[agent_type]:
+                            # Generate predicate specific to the agent
+                            agent_specific.append(f"{agent}_{predicate}")
         return agent_specific
 
     #-----------------------------------------------
@@ -258,11 +265,11 @@ class MAtoSA_Domain:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\exMA\\Car_MAPDDL_Domain"
+    domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\Car\\Car_MAPDDL_Domain"
     satoma = MAtoSA_Domain(domain)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
-
-    agents = {'agent': ["sb1", "sb2"]}
+    # dict of agent types and the number of agents to generate
+    agents = {'car': 2}
     satoma.set_agents(agents)
-    satoma.generate("sleeping_beauty_2agents.pddl")
+    satoma.generate("2_domain.pddl")
