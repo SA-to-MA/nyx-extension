@@ -11,9 +11,17 @@ class MAtoSA_Domain:
     # Set agents
     #-----------------------------------------------
     def set_agents(self, agents):
-        for agent_type, agent_number in agents.items():
-            for i in range(1, agent_number+1):
-                self.domain.add_agent(agent_type, f"{agent_type}{i}")
+        for agent_type in agents.keys():
+            for agent_name in agents[agent_type]:
+                self.domain.add_agent(agent_type, agent_name)
+    #-----------------------------------------------
+    # Set objects
+    #-----------------------------------------------
+    def set_objects(self, objects):
+        for obj_type in objects.keys():
+            for obj_name in objects[obj_type]:
+                self.domain.add_object(obj_type, obj_name)
+
 
     #-----------------------------------------------
     # Generate SA-PDDL+ file
@@ -35,21 +43,34 @@ class MAtoSA_Domain:
 
     def generate_functions_or_predicates(self, assign_dict):
         """
-        Generate all combinations of agent specific definitions for the agents based on their type (functions or predicates)
+        Generate all combinations of agent-specific definitions for the agents based on their type (functions or predicates).
+        Creates predicates in the format: holding_a1_b1 instead of (holding a1 b1).
         """
-        # create list of new predicates to return
         agent_specific = []
-        # iterate all predicates and their parameters
+
         for predicate, params in assign_dict.items():
-            # if no parameters, add predicate as is
             if len(params) == 0:
+                # No parameters, add predicate as is
                 agent_specific.append(predicate)
-            else: # if there are parameters, generate them to all relevant agents in agent type
-                for param, agent_type in params.items():
-                    if agent_type in self.domain.agents:
-                        for agent in self.domain.agents[agent_type]:
-                            # Generate predicate specific to the agent
-                            agent_specific.append(f"{agent}_{predicate}")
+            else:
+                # Collect lists of possible values for each parameter
+                param_lists = []
+
+                for param, ptype in params.items():
+                    if ptype in self.domain.agents:
+                        # If it's an agent type, generate all relevant agents
+                        relevant_agents = [f"{agent}" for agent in self.domain.agents[ptype]]
+                        param_lists.append(relevant_agents)
+                    elif ptype in self.domain.objects:
+                        # If it's an object type, generate all relevant objects
+                        relevant_objects = [f"{obj}" for obj in self.domain.objects[ptype]]
+                        param_lists.append(relevant_objects)
+
+                # Use itertools.product to generate all combinations of parameters
+                for combination in itertools.product(*param_lists):
+                    if not any(agent == obj for agent, obj in zip(combination[::2], combination[1::2])):
+                        agent_specific.append(f"{predicate}_{'_'.join(combination)}")
+
         return agent_specific
 
     #-----------------------------------------------
@@ -94,66 +115,148 @@ class MAtoSA_Domain:
     # Generate actions
     #-----------------------------------------------
 
-    def generate_actions(self):
-        """
-        Generate all combinations of actions for the agents and include their predicates and effects.
-        """
-        # Build the actions_by_agent dictionary
-        actions_by_agent = {}
+    def generate_combinations_for_actions(self):
+        '''
+        :return: a dictionary of action names as keys, and list of valid param tuples as values
+        '''
+        # create dictionary for all actions to be returned
+        actions = {}
+        # Iterate through each action
         for action in self.domain.actions:
-            for param in action.parameters:
-                actions_by_agent.setdefault(param[1], []).append(action)
+            params = action.parameters
+            if len(params) == 0:
+                actions[action.name] = []
+            else:
+                comb_list = [()]
+                # create all possible combinations
+                for param in params:
+                    if param[1] in self.domain.agents:
+                        # Get the list of agents for this parameter type
+                        param_values = self.domain.agents[param[1]]
+                    elif param[1] in self.domain.objects:
+                        # Get the list of objects for this parameter type
+                        param_values = self.domain.objects[param[1]]
+                    else:
+                        raise Exception(f"Unexpected type {param[1]} in action {action.name}")
+                    comb_list = [
+                        existing_comb + (new_value,)
+                        for existing_comb in comb_list
+                        for new_value in param_values
+                    ]
+                    filtered_combinations = []
+                    for comb in comb_list:
+                        # If there are no duplicate objects, keep the combination
+                        if len(comb) == len(set(comb)):
+                            filtered_combinations.append(comb)
+                    actions[action.name] = filtered_combinations
+        return actions
 
-        # Prepare agent-specific action combinations
-        agent_actions = [
-            [f"{agent}_{action.name}" for action in actions_by_agent.get(agent_type, [])]
-            for agent_type, agents in self.domain.agents.items() for agent in agents
+    def generate_joint_actions(self, action_combinations, total_agents):
+        """
+        Generate all possible joint actions based on the given action combinations
+        while ensuring no intersection of parameters across actions.
+
+        :param action_combinations: A dictionary of actions and their parameter combinations.
+        :param total_agents: Total number of agents in the system.
+        :return: A list of valid joint action combinations.
+        """
+        # Collect all possible actions for each agent
+        all_possible_actions = [
+            (action_name, params) for action_name, combinations in action_combinations.items()
+            for params in combinations
         ]
 
-        # Generate combinations of actions for all agents
-        all_combinations = itertools.product(*agent_actions)
+        # Generate all possible joint action combinations for the number of agents
+        joint_combinations = itertools.combinations(all_possible_actions, total_agents)
 
-        # Process each combination and gather predicates/effects
-        all_combined_info = []
-        for combination in all_combinations:
-            # Collect predicates and effects for each action in the combination
-            predicates = []
-            effects = []
-            for agent_action in combination:
-                agent, action_name = agent_action.split('_')
-                action = next(act for act in self.domain.actions if act.name == action_name)
-                # Process predicates (preconditions)
-                predicates.extend(self.get_predicates(action, agent))
-                # Process effects
-                effects.extend(self.get_effects(action, agent))
+        valid_joint_actions = []
 
-            # Collect all info for this combination
-            formatted_combination = '-'.join(combination)
-            all_combined_info.append({
-                'combination': formatted_combination,
-                'predicates': predicates,
-                'effects': effects
-            })
+        for joint_action in joint_combinations:
+            # Collect all agents and objects used in the joint action
+            used_agents = set()
+            used_objects = set()
+            is_valid = True
 
-        return all_combined_info
+            for action_name, params in joint_action:
+                agent = params[0]
+                objects = params[1:]
+
+                # Check if the agent or objects are already used
+                if agent in used_agents or any(obj in used_objects for obj in objects):
+                    is_valid = False
+                    break
+
+                # Add the agent and objects to the used sets
+                used_agents.add(agent)
+                used_objects.update(objects)
+
+            if is_valid:
+                valid_joint_actions.append(joint_action)
+
+        return valid_joint_actions
+
+    def generate_actions(self):
+        """
+        Generate all valid combinations of actions based on agents and objects, with no repetition of agents or objects in the same combination.
+        """
+        # get all possible combinations
+        params_for_actions = self.generate_combinations_for_actions()
+        # generate joined actions
+        total_agents = sum(len(values) for values in self.domain.agents.values())
+        joint_act = self.generate_joint_actions(params_for_actions, total_agents)
+        # all actions
+        all_actions = []
+        # create helper domain to use for quick access of actions
+        action_dict = {action.name: action for action in self.domain.actions}
+        # iterate all possible combinations
+        for combination in joint_act:
+            # set initial values of combination
+            action_name = ''
+            predicates, effects = [], []
+            # iterate all actions in combination
+            for action in combination:
+                # add action name and params to full action name
+                formatted_string = f"{action[0]}_" + "_".join(action[1])
+                if action_name == '':
+                    action_name += formatted_string
+                else:
+                    action_name += f'&{formatted_string}'
+                predicates.extend(self.get_predicates(action_dict[action[0]], action[1]))
 
     #-----------------------------------------------
     # Helper function for predicates and effects as part of actions, processes and events
     #-----------------------------------------------
-    def get_predicates(self, action, agent):
+    def get_predicates(self, action, params):
         """
         Extract predicates (preconditions) for a given action/process/event and agent.
         Modify to use the agent's name in predicates (e.g., car1_running).
         """
+        # iterate params of action and map each argument to a param from input
+        mapped_params = {}
+        for i in range(len(action.parameters)):
+            mapped_params[action.parameters[i][0]] = params[i]
         predicates = []
+        agent= ""
         for condition in action.preconditions:
+            predicate = ''
             if isinstance(condition[0], str) and condition[0] in ['<', '<=', '>', '>=', '=']:
                 # Comparison condition
-                predicates.append(f'{condition[0]} ({agent}_{condition[1][0]}) {agent}_{condition[2][0]}')
+                predicate = f'{condition[0]} ({condition[1][0]}_{mapped_params[condition[1][1]]}) '
+                if isinstance(condition[2], str): # if simple integer, put as is
+                    predicate += condition[2]
+                else: # if function, put function
+                    predicate += f'({condition[2][0]}_{mapped_params[condition[2][1]]})'
+                predicates.append(predicate)
             elif condition[0] == 'not': # not predicate
-                predicates.append(f'not ({agent}_{condition[1][0]})')
-            else: # Simple condition
-                predicates.append(f'{agent}_{condition[0]}')
+                predicate = f'not ({condition[1][0]}'
+                for i in range(1, len(condition[1])):
+                    predicate += f'_{mapped_params[condition[1][i]]}'
+                predicate += ')'
+            else: # Simple condition - add all required
+                predicate = condition[0]
+                for i in range(1, len(condition)):
+                    predicate += f'_{mapped_params[condition[i]]}'
+            predicates.append(predicate)
         return predicates
 
     def get_effects(self, action, agent):
@@ -265,11 +368,21 @@ class MAtoSA_Domain:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\Car\\Car_MAPDDL_Domain"
+    # domain = r"examples\Blocks\domain-a1.pddl"
+    # satoma = MAtoSA_Domain(domain)
+    # print('----------------------------')
+    # # print('Domain: ' + satoma.domain.__repr__())
+    # # dict of agent types and the number of agents to generate
+    # agents = {'agent': ['agent1', 'agent2']}
+    # objects = {'block': ['block1', 'block2', 'block3']}
+    # satoma.set_agents(agents)
+    # satoma.set_objects(objects)
+    # satoma.generate("2_domain.pddl")
+    domain = r"examples\Car\Car_MAPDDL_Domain"
     satoma = MAtoSA_Domain(domain)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    agents = {'car': 2}
+    agents = {'car': ['car1', 'car2']}
     satoma.set_agents(agents)
     satoma.generate("2_domain.pddl")

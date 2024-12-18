@@ -14,6 +14,21 @@
 	)
 )
 
+(:action stack
+	:parameters (?a - agent ?x - block ?y - block)
+	:precondition (and
+		(holding ?a ?x)
+		(clear ?y)
+	)
+	:effect (and
+		(not (holding ?a ?x))
+		(not (clear ?y))
+		(clear ?x)
+		(handempty ?a)
+		(on ?x ?y)
+	)
+)
+
 (:action pick-up
 	:parameters (?a - agent ?x - block)
 	:precondition (and
@@ -38,22 +53,6 @@
 		(clear ?x)
 		(handempty ?a)
 		(ontable ?x)
-	)
-)
-
-
-(:action stack
-	:parameters (?a - agent ?x - block ?y - block)
-	:precondition (and
-		(holding ?a ?x)
-		(clear ?y)
-	)
-	:effect (and
-		(not (holding ?a ?x))
-		(not (clear ?y))
-		(clear ?x)
-		(handempty ?a)
-		(on ?x ?y)
 	)
 )
 

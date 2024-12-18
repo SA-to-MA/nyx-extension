@@ -14,12 +14,23 @@ class MAPDDLDomain(PDDLDomain):
         super().__init__(**kwargs)
         # MA-specific properties
         self.agents = kwargs.get('agents', dict())
+        self.objects = kwargs.get('objects', dict())
 
     def add_agent(self, agent_type, agent_name):
         """Add a new agent to the domain."""
+        if agent_type not in self.types['object']:
+            raise Exception('Trying to add agent of invalid type')
         if agent_type not in self.agents.keys():
             self.agents[agent_type] = []
         self.agents[agent_type].append(agent_name)
+
+    def add_object(self, obj_type, obj_name):
+        """Add a new agent to the domain."""
+        if obj_type not in self.types['object']:
+            raise Exception('Trying to add object of invalid type')
+        if obj_type not in self.objects.keys():
+            self.objects[obj_type] = []
+        self.objects[obj_type].append(obj_name)
 
 
     def __repr__(self):
@@ -27,7 +38,7 @@ class MAPDDLDomain(PDDLDomain):
             f"MAPDDLDomain(name={self.name}, requirements={self.requirements}, "
             f"types={self.types}, predicates={self.predicates}, functions={self.functions}, "
             f"constants={self.constants}, processes={self.processes}, actions={self.actions}, "
-            f"events={self.events}, agents={self.agents}, "
+            f"events={self.events}, agents={self.agents}, objects={self.objects}"
         )
 
 class MAPDDLParser:
@@ -89,13 +100,13 @@ class MAPDDLParser:
                 if t == 'domain':
                     self.domain.name = group[0]
                 elif t == ':requirements':
-                    for req in group:
+                    for req in group[:]:  # Iterate over a copy of the list to modify the original group
                         if req == ':time':
                             constants.TEMPORAL_DOMAIN = True
                         if req == ':semantic-attachment':
                             constants.SEMANTIC_ATTACHMENT = True
-                        if not req in self.SUPPORTED_REQUIREMENTS:
-                            raise Exception('Requirement ' + req + ' not supported')
+                        if req not in self.SUPPORTED_REQUIREMENTS:  # Remove the unsupported requirement
+                            group.remove(req)
                         if req == ':timed-initial-literals' or req == ':timed-initial-fluents':
                             constants.CONTAINS_TIL_TIF = True
                     self.domain.requirements = group
@@ -176,6 +187,12 @@ class MAPDDLParser:
     def parse_predicates(self, group):
         for pred in group:
             predicate_name = pred.pop(0)
+            # if private predicates, parse them separately
+            if predicate_name == ":private":
+                if len(pred) == 0: # if private defined but no private predicates present, raise error
+                    raise Exception('Private predicates section defined but is empty')
+                self.parse_predicates(pred) # parse private predicates and break after that
+                continue
             if predicate_name in self.domain.predicates:
                 raise Exception('Predicate ' + predicate_name + ' redefined')
             arguments = {}
