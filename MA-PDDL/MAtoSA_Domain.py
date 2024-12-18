@@ -30,8 +30,8 @@ class MAtoSA_Domain:
         """
         Generate all combinations and write the corresponding SA format file.
         """
-        combined_actions = self.generate_actions()
         predicates = self.generate_functions_or_predicates(self.domain.predicates)
+        combined_actions = self.generate_actions()
         func = self.generate_functions_or_predicates(self.domain.functions)
         procs = self.generate_processes_or_events(self.domain.processes)
         events = self.generate_processes_or_events(self.domain.events)
@@ -208,6 +208,8 @@ class MAtoSA_Domain:
         all_actions = []
         # create helper domain to use for quick access of actions
         action_dict = {action.name: action for action in self.domain.actions}
+        # create dictionary for memoization of effects and preconditions, where every key is (action, (objects)) and value is effects or preconditions
+        effects_memo, preconditions_memo = {}, {}
         # iterate all possible combinations
         for combination in joint_act:
             # set initial values of combination
@@ -221,22 +223,31 @@ class MAtoSA_Domain:
                     action_name += formatted_string
                 else:
                     action_name += f'&{formatted_string}'
-                predicates.extend(self.get_predicates(action_dict[action[0]], action[1]))
+                if action not in effects_memo:
+                    mapped_params = {} # mapping params to types inserted
+                    cur_act = action_dict[action[0]] # current action object
+                    for i in range(len(cur_act.parameters)):
+                        mapped_params[cur_act.parameters[i][0]] = action[1][i]
+                    preconditions_memo[action] = self.get_predicates(action_dict[action[0]], mapped_params)
+                    effects_memo[action] = self.get_effects(action_dict[action[0]], mapped_params)
+                effects.extend(effects_memo[action])
+                predicates.extend(preconditions_memo[action])
+            all_actions.append({
+                'combination': action_name,
+                'predicates': predicates,
+                'effects': effects
+            })
+        return all_actions
 
     #-----------------------------------------------
     # Helper function for predicates and effects as part of actions, processes and events
     #-----------------------------------------------
-    def get_predicates(self, action, params):
+    def get_predicates(self, action, mapped_params):
         """
         Extract predicates (preconditions) for a given action/process/event and agent.
         Modify to use the agent's name in predicates (e.g., car1_running).
         """
-        # iterate params of action and map each argument to a param from input
-        mapped_params = {}
-        for i in range(len(action.parameters)):
-            mapped_params[action.parameters[i][0]] = params[i]
         predicates = []
-        agent= ""
         for condition in action.preconditions:
             predicate = ''
             if isinstance(condition[0], str) and condition[0] in ['<', '<=', '>', '>=', '=']:
@@ -259,22 +270,23 @@ class MAtoSA_Domain:
             predicates.append(predicate)
         return predicates
 
-    def get_effects(self, action, agent):
+    def get_effects(self, action, mapped_params):
         """
         Extract effects for a given action/process/event and agent.
         """
         effects = []
+        agent = ""
         for effect in action.effects:
             if effect[0] == 'increase' or effect[0] == 'decrease' or effect[0] == 'assign':
                 if isinstance(effect[2], list): # if nested, create nested expression accordingly
                     expression = self.process_expression(effect[2], agent)
-                    effects.append(f'{effect[0]} ({agent}_{effect[1][0]}) {expression}')
+                    effects.append(f'{effect[0]} ({effect[1][0]}_{mapped_params[[1][1]]}) {expression}')
                 else: # if simple values assignment
-                    effects.append(f'{effect[0]} ({agent}_{effect[1][0]}) {effect[2]}')
+                    effects.append(f'{effect[0]} ({effect[1][0]}_{mapped_params[effect[1][1]]}) {effect[2]}')
             elif effect[0] == 'not':  # If negating the predicate
-                effects.append(f'not ({agent}_{effect[1][0]})')
+                effects.append(f'not ({effect[1][0]}_{mapped_params[effect[1][1]]})')
             else: # if simple predicate
-                effects.append(f'{agent}_{effect[0]}')
+                effects.append(f'{effect[0]}_{mapped_params[effect[1]]}')
         return effects
 
     def process_expression(self, expression, agent):
@@ -311,16 +323,19 @@ class MAtoSA_Domain:
             file.write(f"(define (domain {self.domain.name})\n")
             file.write("  (:requirements :typing :fluents :time :negative-preconditions)\n")
 
-            # Write predicates and functions
-            file.write("  (:predicates\n")
-            for predicate in predicates:
-                file.write(f"    ({predicate})\n")
-            file.write("  )\n")
+            # Write predicates
+            if predicates:
+                file.write("  (:predicates\n")
+                for predicate in predicates:
+                    file.write(f"    ({predicate})\n")
+                file.write("  )\n")
 
-            file.write("  (:functions\n")
-            for func in functions:
-                file.write(f"    ({func})\n")
-            file.write("  )\n")
+            # if there are functions, write
+            if self.domain.functions:
+                file.write("  (:functions\n")
+                for func in functions:
+                    file.write(f"    ({func})\n")
+                file.write("  )\n")
 
             # Write actions
             for action_info in combined_actions:
@@ -368,21 +383,23 @@ class MAtoSA_Domain:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    # domain = r"examples\Blocks\domain-a1.pddl"
-    # satoma = MAtoSA_Domain(domain)
-    # print('----------------------------')
-    # # print('Domain: ' + satoma.domain.__repr__())
-    # # dict of agent types and the number of agents to generate
-    # agents = {'agent': ['agent1', 'agent2']}
-    # objects = {'block': ['block1', 'block2', 'block3']}
-    # satoma.set_agents(agents)
-    # satoma.set_objects(objects)
-    # satoma.generate("2_domain.pddl")
-    domain = r"examples\Car\Car_MAPDDL_Domain"
+    domain = r"examples\Blocks\domain-a1.pddl"
     satoma = MAtoSA_Domain(domain)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    agents = {'car': ['car1', 'car2']}
+    agents = {'agent': ['agent1', 'agent2']}
+    objects = {'block': ['block1', 'block2', 'block3']}
     satoma.set_agents(agents)
+    satoma.set_objects(objects)
     satoma.generate("2_domain.pddl")
+
+
+    # domain = r"examples\Car\Car_MAPDDL_Domain"
+    # satoma = MAtoSA_Domain(domain)
+    # print('----------------------------')
+    # # print('Domain: ' + satoma.domain.__repr__())
+    # # dict of agent types and the number of agents to generate
+    # agents = {'car': ['car1', 'car2']}
+    # satoma.set_agents(agents)
+    # satoma.generate("2_domain.pddl")
