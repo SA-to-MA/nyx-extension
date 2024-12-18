@@ -2,7 +2,7 @@ import re
 import sys
 from pprint import pprint
 
-class MultiAgentToSingleAgentConverter:
+class MAtoSA_Problem:
     def __init__(self, domain_file, problem_file):
         self.domain_file = domain_file
         self.problem_file = problem_file
@@ -90,5 +90,5 @@ class MultiAgentToSingleAgentConverter:
 if __name__ == '__main__':
     domain_file = 'C:\\Users\\PC\\PycharmProjects\\nyx-extension\\MA-PDDL\\exMA\\car\\Car_MAPDDL_Domain'  # Replace with input domain file
     problem_file = 'C:\\Users\\PC\\PycharmProjects\\nyx-extension\\MA-PDDL\\exMA\\car\\problems\\problem_1.pddl'  # Replace with input problem file
-    converter = MultiAgentToSingleAgentConverter(domain_file, problem_file)
+    converter = MAtoSA_Problem(domain_file, problem_file)
     converter.convert()
