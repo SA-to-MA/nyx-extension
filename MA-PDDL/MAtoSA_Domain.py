@@ -79,50 +79,45 @@ class MAtoSA_Domain:
 
     def generate_processes_or_events(self, processes_or_events):
         """
-        Generate agent-specific processes or events and include their predicates and effects.
+        Generate agent-specific processes or events and include their predicates and effects efficiently.
 
         :param processes_or_events: List of process or event objects.
         :return: List of dictionaries containing the specific process/event combinations with predicates and effects.
         """
-        agent_specific_info = []
+        if not processes_or_events:
+            return []
+        all_process = [] # list of processes to return
+        process_combinations = self.generate_combinations(processes_or_events) # all combinations for possible processes
+        for process in processes_or_events: # iterate all process
+            cur_combinations = process_combinations[process.name] # get all combinations
+            for combination in cur_combinations: # iterate combinations
+                process_name = str(process.name) + '_' + '_'.join(combination)
+                mapped_params = {}  # mapping params to types inserted
+                for i in range(len(process.parameters)):
+                    mapped_params[process.parameters[i][0]] = combination[i]
+                effects = self.get_effects(process, mapped_params)
+                predicates = self.get_predicates(process, mapped_params)
+                all_process.append({
+                    'process_or_event': process_name,
+                    'predicates': predicates,
+                    'effects': effects
+                })
+        return all_process
 
-        # Iterate over each agent type and their respective agents
-        for agent_type, agents in self.domain.agents.items():
-            for agent in agents:
-                for process_or_event in processes_or_events:
-                    # Check if the process/event matches the agent type
-                    if any(param[1] == agent_type for param in process_or_event.parameters):
-                        # Generate the agent-specific name for the process/event
-                        agent_specific_name = f"{agent}_{process_or_event.name}"
 
-                        # Process preconditions (predicates) using the existing get_predicates function
-                        predicates = self.get_predicates(process_or_event, agent)
-
-                        # Process effects using the existing get_effects function
-                        effects = self.get_effects(process_or_event, agent)
-
-                        # Collect information for this specific agent-process/event pair
-                        agent_specific_info.append({
-                            'agent': agent,
-                            'process_or_event': agent_specific_name,
-                            'predicates': predicates,
-                            'effects': effects,
-                        })
-
-        return agent_specific_info
 
     #-----------------------------------------------
     # Generate actions
     #-----------------------------------------------
 
-    def generate_combinations_for_actions(self):
+    def generate_combinations(self, actions_list):
         '''
         :return: a dictionary of action names as keys, and list of valid param tuples as values
         '''
         # create dictionary for all actions to be returned
         actions = {}
         # Iterate through each action
-        for action in self.domain.actions:
+        for action in actions_list:
             params = action.parameters
             if len(params) == 0:
                 actions[action.name] = []
@@ -199,8 +194,11 @@ class MAtoSA_Domain:
         """
         Generate all valid combinations of actions based on agents and objects, with no repetition of agents or objects in the same combination.
         """
+        # base case - empty domain, return empty array of actions
+        if not self.domain.actions:
+            return []
         # get all possible combinations
-        params_for_actions = self.generate_combinations_for_actions()
+        params_for_actions = self.generate_combinations(self.domain.actions)
         # generate joined actions
         total_agents = sum(len(values) for values in self.domain.agents.values())
         joint_act = self.generate_joint_actions(params_for_actions, total_agents)
@@ -275,12 +273,11 @@ class MAtoSA_Domain:
         Extract effects for a given action/process/event and agent.
         """
         effects = []
-        agent = ""
         for effect in action.effects:
             if effect[0] == 'increase' or effect[0] == 'decrease' or effect[0] == 'assign':
                 if isinstance(effect[2], list): # if nested, create nested expression accordingly
-                    expression = self.process_expression(effect[2], agent)
-                    effects.append(f'{effect[0]} ({effect[1][0]}_{mapped_params[[1][1]]}) {expression}')
+                    expression = self.process_expression(effect[2], mapped_params)
+                    effects.append(f'{effect[0]} ({effect[1][0]}_{mapped_params[effect[1][1]]}) {expression}')
                 else: # if simple values assignment
                     effects.append(f'{effect[0]} ({effect[1][0]}_{mapped_params[effect[1][1]]}) {effect[2]}')
             elif effect[0] == 'not':  # If negating the predicate
@@ -289,7 +286,7 @@ class MAtoSA_Domain:
                 effects.append(f'{effect[0]}_{mapped_params[effect[1]]}')
         return effects
 
-    def process_expression(self, expression, agent):
+    def process_expression(self, expression, mapped_params):
         """
         Process a mathematical expression or time-continuous effect, replacing agent-specific variables.
         """
@@ -298,17 +295,17 @@ class MAtoSA_Domain:
             if len(expression) > 2:  # If it's a nested or continuous action (more than 2 items)
                 for elem in expression:
                     if isinstance(elem, list):  # Nested expressions need to be processed
-                        processed.append(self.process_expression(elem, agent))
+                        processed.append(self.process_expression(elem, mapped_params))
                     else:  # Constant or operator
                         processed.append(elem)
                 return f"({' '.join(processed)})"  # Wrap processed list in parentheses
             else:  # If not nested, like an assignment or simple effect
-                # Example: ['v', '?agent'] => 'car1_v'
-                processed.append(f'{agent}_{expression[0]}')
+                # Example: ['v', '?agent'] => 'v_car1'
+                processed.append(f'({expression[0]}_{mapped_params[expression[1]]})')
                 return ' '.join(processed)
         else:
             # If it's not a list, it's a simple string or constant, so just replace the agent's variables
-            return f'{agent}_{expression}'  # Add agent-specific prefix
+            return f'{expression}'  # Add agent-specific prefix
 
     #-----------------------------------------------
     # Write all generated information to file
@@ -321,7 +318,11 @@ class MAtoSA_Domain:
         with open(file_name, "w") as file:
             # Write the header (domain name, requirements, types, predicates, functions, etc.)
             file.write(f"(define (domain {self.domain.name})\n")
-            file.write("  (:requirements :typing :fluents :time :negative-preconditions)\n")
+            file.write("  (:requirements ")
+            # Join the list elements with a space and write them
+            file.write(" ".join(self.domain.requirements))
+            # Close the parentheses and write a newline
+            file.write(")\n")
 
             # Write predicates
             if predicates:
@@ -383,23 +384,23 @@ class MAtoSA_Domain:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = r"examples\Blocks\domain-a1.pddl"
-    satoma = MAtoSA_Domain(domain)
-    print('----------------------------')
-    # print('Domain: ' + satoma.domain.__repr__())
-    # dict of agent types and the number of agents to generate
-    agents = {'agent': ['agent1', 'agent2']}
-    objects = {'block': ['block1', 'block2', 'block3']}
-    satoma.set_agents(agents)
-    satoma.set_objects(objects)
-    satoma.generate("2_domain.pddl")
-
-
-    # domain = r"examples\Car\Car_MAPDDL_Domain"
+    # domain = r"examples\Blocks\domain-a1.pddl"
     # satoma = MAtoSA_Domain(domain)
     # print('----------------------------')
     # # print('Domain: ' + satoma.domain.__repr__())
     # # dict of agent types and the number of agents to generate
-    # agents = {'car': ['car1', 'car2']}
+    # agents = {'agent': ['agent1', 'agent2']}
+    # objects = {'block': ['block1', 'block2', 'block3']}
     # satoma.set_agents(agents)
+    # satoma.set_objects(objects)
     # satoma.generate("2_domain.pddl")
+
+
+    domain = r"examples\Car\Car_MAPDDL_Domain"
+    satoma = MAtoSA_Domain(domain)
+    print('----------------------------')
+    # print('Domain: ' + satoma.domain.__repr__())
+    # dict of agent types and the number of agents to generate
+    agents = {'car': ['car1', 'car2']}
+    satoma.set_agents(agents)
+    satoma.generate("2_domain.pddl")

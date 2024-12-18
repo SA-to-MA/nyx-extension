@@ -43,7 +43,7 @@ class MAPDDLDomain(PDDLDomain):
 
 class MAPDDLParser:
 
-    SUPPORTED_REQUIREMENTS = [':multi-agent', ':strips', ':adl', ':negative-preconditions', ':typing', ':time', ':fluents', ':timed-initial-literals', ':durative-actions', ':duration-inequalities', ':continuous-effects', ':disjunctive-preconditions', ':semantic-attachment', ':conditional-effects']
+    SUPPORTED_REQUIREMENTS = [':strips', ':adl', ':negative-preconditions', ':typing', ':time', ':fluents', ':timed-initial-literals', ':durative-actions', ':duration-inequalities', ':continuous-effects', ':disjunctive-preconditions', ':semantic-attachment', ':conditional-effects']
 
     def __init__(self, domain_file):
         self.domain = MAPDDLDomain()
