@@ -384,23 +384,23 @@ class MAtoSA_Domain:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    # domain = r"examples\Blocks\domain-a1.pddl"
-    # satoma = MAtoSA_Domain(domain)
-    # print('----------------------------')
-    # # print('Domain: ' + satoma.domain.__repr__())
-    # # dict of agent types and the number of agents to generate
-    # agents = {'agent': ['agent1', 'agent2']}
-    # objects = {'block': ['block1', 'block2', 'block3']}
-    # satoma.set_agents(agents)
-    # satoma.set_objects(objects)
-    # satoma.generate("2_domain.pddl")
-
-
-    domain = r"examples\Car\Car_MAPDDL_Domain"
+    domain = r"examples\Blocks\domain-a1.pddl"
     satoma = MAtoSA_Domain(domain)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    agents = {'car': ['car1', 'car2']}
+    agents = {'agent': ['agent1', 'agent2']}
+    objects = {'block': ['block1', 'block2', 'block3']}
     satoma.set_agents(agents)
+    satoma.set_objects(objects)
     satoma.generate("2_domain.pddl")
+
+
+    # domain = r"examples\Car\Car_MAPDDL_Domain"
+    # satoma = MAtoSA_Domain(domain)
+    # print('----------------------------')
+    # # print('Domain: ' + satoma.domain.__repr__())
+    # # dict of agent types and the number of agents to generate
+    # agents = {'car': ['car1', 'car2']}
+    # satoma.set_agents(agents)
+    # satoma.generate("2_domain.pddl")
