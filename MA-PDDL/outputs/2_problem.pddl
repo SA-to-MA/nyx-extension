@@ -1,5 +1,4 @@
 (define (problem blocks-4-0) (:domain blocks)
-)
 (:init
     (handempty_a1)
     (handempty_a2)
@@ -26,3 +25,5 @@
     (on_f_e)
     (on_e_h)
   )
+)
+)

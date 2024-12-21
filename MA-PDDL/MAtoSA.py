@@ -378,8 +378,6 @@ class MAtoSA:
         with open(file_name, "w") as file:
             # Write the header (domain name, requirements, types, predicates, functions, etc.)
             file.write(f"(define (problem {self.problem.name}) (:domain {self.domain.name})\n")
-            # Close the parentheses and write a newline
-            file.write(")\n")
 
             # Write init
             if self.problem.init:
@@ -396,7 +394,10 @@ class MAtoSA:
                     # Join the elements of the predicate list into a string
                     predicate_str = "_".join(predicate)
                     file.write(f"    ({predicate_str})\n")
-                file.write("  )\n")
+                file.write("  )\n)\n")
+
+            # Close the parentheses
+            file.write(")\n")
 
 
 
