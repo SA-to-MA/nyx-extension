@@ -410,7 +410,7 @@ if __name__ == '__main__':
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    satoma.generate("2_domain.pddl", "2_problem.pddl")
+    satoma.generate("outputs\\2_domain.pddl", "outputs\\2_problem.pddl")
 
 
     # domain = r"examples\Car\Car_MAPDDL_Domain"
