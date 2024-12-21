@@ -12,10 +12,12 @@
 
 	(:private
 		a1 - agent
+		a2 - agent
 	)
 )
 (:init
 	(handempty a1)
+	(handempty a2)
 	(clear c)
 	(clear f)
 	(ontable c)

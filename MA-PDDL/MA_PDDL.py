@@ -6,7 +6,7 @@ from syntax.action import Action
 from syntax.event import Event
 from syntax.process import Process
 import syntax.constants as constants
-from PDDL import PDDLDomain
+from PDDL import PDDLDomain, PDDLProblem
 
 class MAPDDLDomain(PDDLDomain):
     def __init__(self, **kwargs):
@@ -16,23 +16,6 @@ class MAPDDLDomain(PDDLDomain):
         self.agents = kwargs.get('agents', dict())
         self.objects = kwargs.get('objects', dict())
 
-    def add_agent(self, agent_type, agent_name):
-        """Add a new agent to the domain."""
-        if agent_type not in self.types['object']:
-            raise Exception('Trying to add agent of invalid type')
-        if agent_type not in self.agents.keys():
-            self.agents[agent_type] = []
-        self.agents[agent_type].append(agent_name)
-
-    def add_object(self, obj_type, obj_name):
-        """Add a new agent to the domain."""
-        if obj_type not in self.types['object']:
-            raise Exception('Trying to add object of invalid type')
-        if obj_type not in self.objects.keys():
-            self.objects[obj_type] = []
-        self.objects[obj_type].append(obj_name)
-
-
     def __repr__(self):
         return (
             f"MAPDDLDomain(name={self.name}, requirements={self.requirements}, "
@@ -41,13 +24,22 @@ class MAPDDLDomain(PDDLDomain):
             f"events={self.events}, agents={self.agents}, objects={self.objects}"
         )
 
+class MAPDDLProblem(PDDLProblem):
+    def __init__(self, **kwargs):
+        # call the parent class initializer
+        super().__init__(**kwargs)
+        # MA-specific properties
+        self.agents = kwargs.get('agents', dict())
+
 class MAPDDLParser:
 
     SUPPORTED_REQUIREMENTS = [':strips', ':adl', ':negative-preconditions', ':typing', ':time', ':fluents', ':timed-initial-literals', ':durative-actions', ':duration-inequalities', ':continuous-effects', ':disjunctive-preconditions', ':semantic-attachment', ':conditional-effects']
 
-    def __init__(self, domain_file):
+    def __init__(self, domain_file, problem_file):
         self.domain = MAPDDLDomain()
+        self.problem = MAPDDLProblem()
         self.parse_domain(domain_file)
+        self.parse_problem(problem_file)
 
     #-----------------------------------------------
     # Tokens
@@ -171,7 +163,41 @@ class MAPDDLParser:
     #-----------------------------------------------
 
     def parse_objects(self, group, name):
-        self.parse_hierarchy(group, self.problem.objects, name, False)
+        # Separate the :private list which contains the agents
+        private_list = [
+            item for item in group if isinstance(item, list) and item[0] == ':private'
+        ]
+        # Filter out :private from the group
+        filtered_group = [
+            item for item in group if not (isinstance(item, list) and item[0] == ':private')
+        ]
+        # Send the filtered group to parse_hierarchy
+        self.parse_hierarchy(filtered_group, self.problem.objects, name, False)
+        # If there are private lists, pass them to another function to process
+        for private_item in private_list:
+            if private_item[0] == ":private":
+                private_item.pop(0)
+            self.parse_agents(private_item)
+
+    #-----------------------------------------------
+    # Parse agents
+    #-----------------------------------------------
+    def parse_agents(self, agents):
+        list = []
+        while agents:
+            if agents[0] == '-':
+                if not list:
+                    raise Exception('Unexpected hyphen in private')
+                agents.pop(0)
+                type = agents.pop(0)
+                if not type in self.problem.agents:
+                    self.problem.agents[type] = []
+                self.problem.agents[type] += list
+                list = []
+            else:
+                list.append(agents.pop(0))
+        if list:
+            raise Exception("Undefined agent in private section")
 
     # -----------------------------------------------
     # Parse types
