@@ -1,4 +1,4 @@
-(define (domain car-ma)
+(define (domain ma-car)
   (:requirements :typing :fluents :time :negative-preconditions :multi-agent)
   (:types car)
 

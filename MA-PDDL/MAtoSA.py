@@ -87,8 +87,8 @@ class MAtoSA:
                 mapped_params = {}  # mapping params to types inserted
                 for i in range(len(process.parameters)):
                     mapped_params[process.parameters[i][0]] = combination[i]
-                effects = self.get_effects(process, mapped_params)
-                predicates = self.get_predicates(process, mapped_params)
+                effects = self.get_effects(process.effects, mapped_params)
+                predicates = self.get_predicates(process.preconditions, mapped_params)
                 all_process.append({
                     'process_or_event': process_name,
                     'predicates': predicates,
@@ -218,8 +218,8 @@ class MAtoSA:
                     cur_act = action_dict[action[0]] # current action object
                     for i in range(len(cur_act.parameters)):
                         mapped_params[cur_act.parameters[i][0]] = action[1][i]
-                    preconditions_memo[action] = self.get_predicates(action_dict[action[0]], mapped_params)
-                    effects_memo[action] = self.get_effects(action_dict[action[0]], mapped_params)
+                    preconditions_memo[action] = self.get_predicates(action_dict[action[0]].preconditions, mapped_params)
+                    effects_memo[action] = self.get_effects(action_dict[action[0]].effects, mapped_params)
                 effects.extend(effects_memo[action])
                 predicates.extend(preconditions_memo[action])
             all_actions.append({
@@ -232,13 +232,13 @@ class MAtoSA:
     #-----------------------------------------------
     # Helper function for predicates and effects as part of actions, processes and events
     #-----------------------------------------------
-    def get_predicates(self, action, mapped_params):
+    def get_predicates(self, action_pred, mapped_params):
         """
         Extract predicates (preconditions) for a given action/process/event and agent.
         Modify to use the agent's name in predicates (e.g., car1_running).
         """
         predicates = []
-        for condition in action.preconditions:
+        for condition in action_pred:
             predicate = ''
             if isinstance(condition[0], str) and condition[0] in ['<', '<=', '>', '>=', '=']:
                 # Comparison condition
@@ -260,12 +260,12 @@ class MAtoSA:
             predicates.append(predicate)
         return predicates
 
-    def get_effects(self, action, mapped_params):
+    def get_effects(self, act_effects, mapped_params):
         """
         Extract effects for a given action/process/event and agent.
         """
         effects = []
-        for effect in action.effects:
+        for effect in act_effects:
             if effect[0] == 'increase' or effect[0] == 'decrease' or effect[0] == 'assign':
                 if isinstance(effect[2], list): # if nested, create nested expression accordingly
                     expression = self.process_expression(effect[2], mapped_params)
@@ -333,6 +333,7 @@ class MAtoSA:
             # Write actions
             for action_info in combined_actions:
                 file.write(f"  (:action {action_info['combination']}\n")
+                file.write("    :parameters ()\n")
                 file.write("    :precondition (and\n")
                 for pred in action_info['predicates']:
                     file.write(f"      ({pred})\n")
@@ -379,34 +380,41 @@ class MAtoSA:
             # Write the header (domain name, requirements, types, predicates, functions, etc.)
             file.write(f"(define (problem {self.problem.name}) (:domain {self.domain.name})\n")
 
+            # map each object and agent to itself
+            mapped = {}
+            for key, values in self.domain.agents.items():
+                for value in values:
+                    mapped[value] = value
+            for key, values in self.domain.objects.items():
+                for value in values:
+                    mapped[value] = value
+
             # Write init
             if self.problem.init:
                 file.write("(:init\n")
-                for predicate in self.problem.init:
-                    # Join the elements of the predicate list into a string
-                    predicate_str = "_".join(predicate)
-                    file.write(f"    ({predicate_str})\n")
+                pred = self.get_predicates(self.problem.init, mapped)
+                for p in pred:
+                    file.write(f"    ({p})\n")
                 file.write("  )\n")
 
+            # Write goals
             if self.problem.goals:
                 file.write("(:goal\n  (and\n")
-                for predicate in self.problem.goals:
-                    # Join the elements of the predicate list into a string
-                    predicate_str = "_".join(predicate)
-                    file.write(f"    ({predicate_str})\n")
+                pred = self.get_predicates(self.problem.goals, mapped)
+                for p in pred:
+                    file.write(f"    ({p})\n")
                 file.write("  )\n)\n")
 
             # Close the parentheses
             file.write(")\n")
 
 
-
 # -----------------------------------------------
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = r"examples\Blocks\domain-a1.pddl"
-    problem = r"examples\Blocks\problem-a1.pddl"
+    domain = r"examples\Car\domain-2c.pddl"
+    problem = r"examples\Car\problem-2c.pddl"
     satoma = MAtoSA(domain, problem)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
@@ -414,7 +422,7 @@ if __name__ == '__main__':
     satoma.generate("outputs\\2_domain.pddl", "outputs\\2_problem.pddl")
 
 
-    # domain = r"examples\Car\Car_MAPDDL_Domain"
+    # domain = r"examples\Car\domain-2c.pddl"
     # satoma = MAtoSA_Domain(domain)
     # print('----------------------------')
     # # print('Domain: ' + satoma.domain.__repr__())

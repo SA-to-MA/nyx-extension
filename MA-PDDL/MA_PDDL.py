@@ -530,6 +530,8 @@ class MAPDDLParser:
                     pass # Ignore requirements in problem, parse them in the domain
                 elif t == ':objects':
                     self.parse_objects(group, t)
+                elif t == ':private':
+                    self.parse_agents(group)
                 elif t == ':init':
                     self.problem.init = copy.copy(group)
                     if (constants.CONTAINS_TIL_TIF):
@@ -616,7 +618,7 @@ class MAPDDLParser:
 # Main
 #-----------------------------------------------
 # if __name__ == '__main__':
-#     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\Car_MAPDDL_Domain"
+#     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\domain-2c.pddl"
 #     parser = MAPDDLParser(domain)
 #     print('----------------------------')
 #     print('Domain: ' + parser.domain.__repr__())
