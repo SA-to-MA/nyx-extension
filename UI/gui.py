@@ -1,5 +1,6 @@
 import tkinter as tk
 import solve
+from UI import visualize
 
 '''
     Tkinter is ideal here because it’s built into Python, simple to use, 
@@ -12,11 +13,11 @@ def solve_problem():
 
 
 def visualize_search():
-    print("Visualize Search selected!")
+    visualize.visualize_search_page(root)
 
 
 def visualize_plan():
-    print("Visualize Plan selected!")
+    visualize.visualize_plan_page(root)
 
 
 # Main window setup
