@@ -9,9 +9,8 @@
 	f - block
 	i - block
 	h - block
-a1 - agent a2 - agent
 
-	
+    a1 - agent a2 - agent
 )
 (:init
 	(handempty a1)

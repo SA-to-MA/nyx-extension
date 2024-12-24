@@ -1,16 +1,132 @@
 (define (domain car)
 (:requirements :typing :fluents :time :negative-preconditions )
 (:types car - object )
-(:predicates (running ?car )(engineblown ?car )(transmission_fine ?car )(goal_reached ?car ))
-(:functions (d ?car )(v ?car )(a ?car )(up_limit )(down_limit )(running_time ?car ))
-(:process moving :parameters (?car ):precondition (and (running ?car )):effect (and (increase (v ?car )(* #t (a ?car )))(increase (d ?car )(* #t (v ?car )))(increase (running_time ?car )(* #t 1 ))))
-(:process windresistance :parameters (?car ):precondition (and (running ?car )(>= (v ?car )50 )):effect (decrease (v ?car )(* #t (* 0.1 (* (- (v ?car )50 )(- (v ?car )50 ))))))
-(:event engineexplode :parameters (?car ):precondition (and (running ?car )(>= (a ?car )1 )(>= (v ?car )100 )):effect (and (not (running ?car ))(engineblown ?car )(assign (a ?car )0 )))
-(:action 
-:parameters ()
+(:predicates (running ?car - car )(engineblown ?car - car )(transmission_fine ?car - car )(goal_reached ?car - car ))
+(:functions (d ?car - car )(v ?car - car )(a ?car - car )(up_limit )(down_limit )(running_time ?car - car ))
+(:process moving :parameters (?car - car ):precondition (and (running ?car )):effect (and (increase (v ?car )(* #t (a ?car )))(increase (d ?car )(* #t (v ?car )))(increase (running_time ?car )(* #t 1 ))))
+(:process windresistance :parameters (?car - car ):precondition (and (running ?car )(>= (v ?car )50 )):effect (decrease (v ?car )(* #t (* 0.1 (* (- (v ?car )50 )(- (v ?car )50 ))))))
+(:event engineexplode :parameters (?car - car ):precondition (and (running ?car )(>= (a ?car )1 )(>= (v ?car )100 )):effect (and (not (running ?car ))(engineblown ?car )(assign (a ?car )0 )))
+(:action accelerate&accelerate
+:parameters (?car1 - car ?car2 - car)
 :precondition (and
+(running ?car1 )
+(< (a ?car1 )(up_limit ))
+(running ?car2 )
+(< (a ?car2 )(up_limit ))
 )
 :effect (and
+(increase (a ?car1 )1 )
+(increase (a ?car2 )1 )
+)
+)
+(:action accelerate&decelerate
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(running ?car1 )
+(< (a ?car1 )(up_limit ))
+(running ?car2 )
+(> (a ?car2 )(down_limit ))
+)
+:effect (and
+(increase (a ?car1 )1 )
+(decrease (a ?car2 )1 )
+)
+)
+(:action accelerate&stop
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(running ?car1 )
+(< (a ?car1 )(up_limit ))
+(= (v ?car2 )0 )
+(>= (d ?car2 )30 )
+(not (engineblown ?car2 ))
+)
+:effect (and
+(increase (a ?car1 )1 )
+(? c a r 2 )
+)
+)
+(:action decelerate&accelerate
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(running ?car1 )
+(> (a ?car1 )(down_limit ))
+(running ?car2 )
+(< (a ?car2 )(up_limit ))
+)
+:effect (and
+(decrease (a ?car1 )1 )
+(increase (a ?car2 )1 )
+)
+)
+(:action decelerate&decelerate
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(running ?car1 )
+(> (a ?car1 )(down_limit ))
+(running ?car2 )
+(> (a ?car2 )(down_limit ))
+)
+:effect (and
+(decrease (a ?car1 )1 )
+(decrease (a ?car2 )1 )
+)
+)
+(:action decelerate&stop
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(running ?car1 )
+(> (a ?car1 )(down_limit ))
+(= (v ?car2 )0 )
+(>= (d ?car2 )30 )
+(not (engineblown ?car2 ))
+)
+:effect (and
+(decrease (a ?car1 )1 )
+(? c a r 2 )
+)
+)
+(:action stop&accelerate
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(= (v ?car1 )0 )
+(>= (d ?car1 )30 )
+(not (engineblown ?car1 ))
+(running ?car2 )
+(< (a ?car2 )(up_limit ))
+)
+:effect (and
+(? c a r 1 )
+(increase (a ?car2 )1 )
+)
+)
+(:action stop&decelerate
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(= (v ?car1 )0 )
+(>= (d ?car1 )30 )
+(not (engineblown ?car1 ))
+(running ?car2 )
+(> (a ?car2 )(down_limit ))
+)
+:effect (and
+(? c a r 1 )
+(decrease (a ?car2 )1 )
+)
+)
+(:action stop&stop
+:parameters (?car1 - car ?car2 - car)
+:precondition (and
+(= (v ?car1 )0 )
+(>= (d ?car1 )30 )
+(not (engineblown ?car1 ))
+(= (v ?car2 )0 )
+(>= (d ?car2 )30 )
+(not (engineblown ?car2 ))
+)
+:effect (and
+(? c a r 1 )
+(? c a r 2 )
 )
 )
 )

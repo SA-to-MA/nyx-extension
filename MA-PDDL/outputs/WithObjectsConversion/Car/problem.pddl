@@ -1,7 +1,7 @@
 (define (problem car_prob)
   (:domain car)
 (:objects
-	
+    car1 - car car2 - car
 )
 
   ;; Initial state for car 1
@@ -14,7 +14,6 @@
     (= (d car1) 0)
     (= (a car1) 0)
     (= (v car1) 0)
-car1 - car car2 - car
   )
 
   ;; Initial state for car 2

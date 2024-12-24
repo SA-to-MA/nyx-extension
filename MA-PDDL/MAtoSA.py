@@ -272,65 +272,53 @@ class MAtoSA:
                 file.write(')\n')
             file.write(")\n")
 
-    def unify_private_objects(self, pddl_text):
-        # Pattern to match the private section
-        private_pattern = re.compile(r'\(:private\n(.*?)\)', re.DOTALL)
-
-        # Match the (:private ...) section
-        private_match = private_pattern.search(pddl_text)
-
-        if private_match:
-            # Extract the content of the private section
-            private_content = private_match.group(1)
-
-            # Find all object definitions in the private section
-            private_objects = re.findall(r'(\S+) - (\S+)', private_content)  # captures name and type, e.g. a1 - agent
-
-            # Create a string to add objects to the :objects section
-            object_definitions = ' '.join([f"{name} - {object_type}" for name, object_type in private_objects])
-
-            # Remove the private section from the PDDL text
-            pddl_text = pddl_text.replace(private_match.group(0), '')
-
-            # Find the :objects section and add the objects to it
-            objects_pattern = re.compile(r'(:objects\n\s*)(.*?)(\n\s*\))', re.DOTALL)
-            objects_match = objects_pattern.search(pddl_text)
-
-            if objects_match:
-                # Extract the existing objects and append the private objects
-                new_objects = objects_match.group(2) + '\n' + object_definitions
-                # Replace the old objects section with the new one
-                pddl_text = pddl_text.replace(objects_match.group(2), new_objects)
-
-            else:
-                # If there is no :objects section, create a new one and add the private objects
-                pddl_text = pddl_text.replace("(:domain", f"(:objects\n{object_definitions}\n\n(:domain")
-
-        return pddl_text
-
     def write_problem(self, output_filename):
-        # Read the input PDDL file
-        with open(self.ma_problem_file, 'r') as infile:
-            pddl_text = infile.read()
+        with open(self.ma_problem_file, 'r') as infile, open(output_filename, 'w') as outfile:
+            lines = infile.readlines()
+            private_section = False
+            private_objects = []
+            in_objects_section = False
 
-        # Process the PDDL content
-        processed_pddl = self.unify_private_objects(pddl_text)
+            for line in lines:
+                # Check if we're entering the :objects section
+                if ':objects' in line:
+                    in_objects_section = True
+                    writing_objects = True
+                    outfile.write(line)  # Write the :objects line
+                    continue
 
-        # Write the processed content to a new file
-        with open(output_filename, 'w') as outfile:
-            outfile.write(processed_pddl)
+                # Check for the start of the :private section
+                if '(:private' in line and in_objects_section:
+                    private_section = True
+                    continue  # Skip this line, we don't write it to output
+
+                # If we're in the private section, collect private objects
+                if private_section:
+                    if ')' in line:  # End of the private section
+                        private_section = False
+                        # Write the private objects into the :objects section
+                        if private_objects:
+                            outfile.write("    " + " ".join(private_objects) + '\n')
+                        continue
+                    else:
+                        # Collect private objects
+                        private_objects.append(line.strip())
+                        continue
+                else:
+                    # Write all other lines as they are
+                    outfile.write(line)
 
 
 # -----------------------------------------------
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    # domain = r"examples\Blocks\domain-a1.pddl"
-    # problem = r"examples\Blocks\problem-a1.pddl"
-    domain = r"examples\Car\domain-2c.pddl"
-    problem = r"examples\Car\problem-2c.pddl"
+    domain = r"examples\Blocks\domain-a1.pddl"
+    problem = r"examples\Blocks\problem-a1.pddl"
+    # domain = r"examples\Car\domain-2c.pddl"
+    # problem = r"examples\Car\problem-2c.pddl"
     satoma = MAtoSA(domain, problem)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    satoma.generate("outputs\\WithObjectsConversion\\Car\\domain.pddl", "outputs\\WithObjectsConversion\\Car\\problem.pddl")
+    satoma.generate("outputs\\WithObjectsConversion\\Blocks\\domain.pddl", "outputs\\WithObjectsConversion\\Blocks\\problem.pddl")
