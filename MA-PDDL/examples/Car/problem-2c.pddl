@@ -1,35 +1,48 @@
-(define (problem ma-car-problem)
-  (:domain ma-car)
+(define (problem car_prob)
+  (:domain car)
+(:objects
+	(:private
+		car1 - car
+		car2 - car
+	)
+)
 
-  (:private
-    car1 car2 - car
-  )
-
+  ;; Initial state for car 1
   (:init
     (running car1)
-    (running car2)
-    (not (engineBlown car1))
-    (not (engineBlown car2))
-    (not (goal_reached car1))
-    (not (goal_reached car2))
-    (>= (up_limit car1) 10)
-    (>= (up_limit car2) 10)
-    (<= (down_limit car1) 0)
-    (<= (down_limit car2) 0)
-    (= (v car1) 0)
-    (= (v car2) 0)
-    (= (a car1) 0)
-    (= (a car2) 0)
-    (= (d car1) 0)
-    (= (d car2) 0)
+    (transmission_fine car1)
     (= (running_time car1) 0)
-    (= (running_time car2) 0)
+    (= (up_limit) 1)
+    (= (down_limit) -1)
+    (= (d car1) 0)
+    (= (a car1) 0)
+    (= (v car1) 0)
   )
 
+  ;; Initial state for car 2
+  (:init
+    (running car2)
+    (transmission_fine car2)
+    (= (running_time car2) 0)
+    (= (d car2) 0)
+    (= (a car2) 0)
+    (= (v car2) 0)
+  )
+
+  ;; Goal state for both cars
   (:goal
     (and
       (goal_reached car1)
       (goal_reached car2)
+      (not (engineBlown car1))
+      (not (engineBlown car2))
+      (<= (running_time car1) 50)
+      (<= (running_time car2) 50)
+      (transmission_fine car1)
+      (transmission_fine car2)
     )
   )
+
+  ;; Minimize total time (this applies to both cars)
+  (:metric minimize (total-time))
 )

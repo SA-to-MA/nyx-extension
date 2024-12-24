@@ -1,7 +1,15 @@
 (define (domain car)
 (:requirements :typing :fluents :time :negative-preconditions)
-(:predicates (running) (engineBlown) (transmission_fine) (goal_reached) )
-(:functions (d) (v) (a) (up_limit) (down_limit) (running_time) )
+(:predicates (running)
+(engineBlown)
+(transmission_fine)
+(goal_reached) )
+(:functions (d)
+(v)
+(a)
+(up_limit)
+(down_limit)
+(running_time) )
 
 (:process moving
 :parameters ()

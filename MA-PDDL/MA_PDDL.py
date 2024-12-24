@@ -71,8 +71,10 @@ class MAPDDLParser:
             raise Exception('Malformed expression')
         return list[0]
 
+
+
     #-----------------------------------------------
-    # Parse domain
+    # Parse domain - no objects
     #-----------------------------------------------
 
     def parse_domain(self, domain_filename):
