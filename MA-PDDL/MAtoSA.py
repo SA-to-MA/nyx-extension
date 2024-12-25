@@ -115,6 +115,9 @@ class MAtoSA:
 
         # Step 3: Combine across agent types
         all_combinations = list(product(*action_combinations_by_agent_type.values()))
+        # eliminate redundancies
+        unique_combinations = list(set(tuple(sorted(comb[0])) for comb in all_combinations))
+        all_combinations = unique_combinations
 
         # Step 4: Assign unique parameter names for each action and update preconditions/effects
         def update_references(expression, param_mapping):
@@ -135,33 +138,32 @@ class MAtoSA:
         for combo in all_combinations:
             flat_combo = []
             action_index = 1  # Track the action index for unique parameter naming
-            for agent_actions in combo:
-                for action in agent_actions:
-                    # Get the original action details
-                    action_details = parsed_actions[action]
-                    # Assign unique parameter names and create a mapping
-                    unique_params = [
-                        f"{param}{action_index}" if param.startswith('?') else param
-                        for param in action_details['params']
-                    ]
-                    param_mapping = {
-                        original: unique
-                        for original, unique in zip(action_details['params'], unique_params)
-                    }
+            for action in combo:
+                # Get the original action details
+                action_details = parsed_actions[action]
+                # Assign unique parameter names and create a mapping
+                unique_params = [
+                    f"{param}{action_index}" if param.startswith('?') else param
+                    for param in action_details['params']
+                ]
+                param_mapping = {
+                    original: unique
+                    for original, unique in zip(action_details['params'], unique_params)
+                }
 
-                    # Update preconditions, effects, and other relevant structures
-                    updated_pre = update_references(action_details['pre'], param_mapping)
-                    updated_effects = update_references(action_details['effects'], param_mapping)
+                # Update preconditions, effects, and other relevant structures
+                updated_pre = update_references(action_details['pre'], param_mapping)
+                updated_effects = update_references(action_details['effects'], param_mapping)
 
-                    # Construct the unique action structure
-                    unique_action = {
-                        'name': action,
-                        'params': unique_params,
-                        'pre': updated_pre,
-                        'effects': updated_effects
-                    }
-                    flat_combo.append(unique_action)
-                    action_index += 1
+                # Construct the unique action structure
+                unique_action = {
+                    'name': action,
+                    'params': unique_params,
+                    'pre': updated_pre,
+                    'effects': updated_effects
+                }
+                flat_combo.append(unique_action)
+                action_index += 1
             final_combinations.append(flat_combo)
 
         return final_combinations
@@ -321,4 +323,4 @@ if __name__ == '__main__':
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    satoma.generate("outputs\\WithObjectsConversion\\Blocks\\domain.pddl", "outputs\\WithObjectsConversion\\Blocks\\problem.pddl")
+    satoma.generate("outputs\\WithObjectsConversion\\Blocks\\a1-domain.pddl", "outputs\\WithObjectsConversion\\Blocks\\a1-problem.pddl")

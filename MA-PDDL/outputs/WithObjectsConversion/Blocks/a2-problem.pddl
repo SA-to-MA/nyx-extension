@@ -10,11 +10,7 @@
 	i - block
 	h - block
 
-	(:private
-        a1 - agent
-		a2 - agent
-		a3 - agent
-	)
+    a1 - agent a2 - agent a3 - agent
 )
 (:init
 	(handempty a2)
