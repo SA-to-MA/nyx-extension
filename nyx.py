@@ -451,4 +451,4 @@ if __name__ == '__main__':
     #
     # runner(sys.argv[1], sys.argv[2], sys.argv[3:])
     runner('MA-PDDL/outputs/WithObjectsConversion/Blocks/a1-domain.pddl',
-           'MA-PDDL/outputs/WithObjectsConversion/Blocks/a1-problem.pddl', ['-t:1'])
+           'MA-PDDL/outputs/WithObjectsConversion/Blocks/a1-problem-garbage.pddl', ['-t:1'])

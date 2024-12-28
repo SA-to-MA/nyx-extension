@@ -168,6 +168,26 @@ class MAtoSA:
 
         return final_combinations
 
+    def generate_constraints(self, data):
+        # Group objects by type
+        groups = {}
+        for i in range(0, len(data), 3):  # Process every triplet
+            obj = data[i]
+            obj_type = data[i + 2]
+            if obj_type not in groups:
+                groups[obj_type] = []
+            groups[obj_type].append(obj)
+
+        # Generate preconditions
+        preconditions = []
+        for obj_type, objects in groups.items():
+            for i in range(len(objects)):
+                for j in range(i + 1, len(objects)):
+                    preconditions.append(['not', ['=', objects[i], objects[j]]])
+
+        return preconditions
+
+
     def unify_combinations(self, combinations):
         """
         Unify parameters, preconditions, and effects for each combination of actions.
@@ -184,6 +204,8 @@ class MAtoSA:
                 unified_params.extend(action['params'])
                 unified_pre.extend(action['pre'][1:])
                 unified_effects.extend(action['effects'][1:])
+            # get constraints
+            unified_pre.extend(self.generate_constraints(unified_params))
             # Create the unified action
             unified_action = {
                 'name': '&'.join([action['name'] for action in combination]),

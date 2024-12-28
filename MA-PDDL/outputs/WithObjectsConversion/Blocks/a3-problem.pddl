@@ -1,24 +1,27 @@
 (define (problem BLOCKS-4-0) (:domain blocks)
 (:objects
 	a - block
-	c - block
 	b - block
+	c - block
+	d - block
 
-    a1 - agent a2 - agent
+    a3 - agent
 )
 (:init
-	(handempty a1)
-	(handempty a2)
-	(clear c)
+	(handempty a3)
 	(clear a)
+	(clear c)
+	(clear d)
 	(ontable a)
 	(ontable b)
+	(ontable d)
 	(on c b)
 )
 (:goal
 	(and
-		(on c b)
 		(on b a)
+		(on c b)
+		(on d c)
 	)
 )
 )

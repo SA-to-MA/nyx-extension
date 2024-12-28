@@ -3,12 +3,6 @@
 	a - block
 	c - block
 	b - block
-	e - block
-	d - block
-	g - block
-	f - block
-	i - block
-	h - block
 
 	(:private
 		a1 - agent
@@ -19,27 +13,15 @@
 	(handempty a1)
 	(handempty a2)
 	(clear c)
-	(clear f)
-	(ontable c)
+	(clear a)
+	(ontable a)
 	(ontable b)
-	(on f g)
-	(on g e)
-	(on e a)
-	(on a i)
-	(on i d)
-	(on d h)
-	(on h b)
+	(on c b)
 )
 (:goal
 	(and
-		(on g d)
-		(on d b)
-		(on b c)
-		(on c a)
-		(on a i)
-		(on i f)
-		(on f e)
-		(on e h)
+		(on c b)
+		(on b a)
 	)
 )
 )
