@@ -1,3 +1,4 @@
+import itertools
 from itertools import product
 import re
 
@@ -8,31 +9,10 @@ class MAtoSA:
         self.ma_problem_file = ma_problem
         self.agents = {}
         self.actions = {}
+        self.objects = {}
 
-    def extract_agents(self):
-        with open(self.ma_problem_file, 'r') as file:
-            content = file.read()
-        # Regular expression to find the private section
-        private_section_pattern = r'\(:private\s*(.*?)\s*\)'
-        # Find the private section
-        private_section = re.search(private_section_pattern, content, flags=re.DOTALL)
-        if private_section:
-            # Extract objects and their types from the private section
-            objects_section = private_section.group(1)
-            # Regular expression to match type and name pairs (e.g., 'a1 - agent')
-            object_pattern = r'(\w+)\s*-\s*(\w+)'
-            # Find all objects and types
-            matches = re.findall(object_pattern, objects_section)
-
-            # Populate the dictionary
-            for obj, obj_type in matches:
-                if obj_type not in self.agents:
-                    self.agents[obj_type] = []
-                self.agents[obj_type].append(obj)
-
-
-    def scan_tokens(self):
-        with open(self.ma_domain_file,'r') as f:
+    def scan_tokens(self, file):
+        with open(file,'r') as f:
             # Remove single line comments
             str = re.sub(r';.*$', '', f.read(), flags=re.MULTILINE).lower()
         # Tokenize
@@ -183,7 +163,8 @@ class MAtoSA:
         for obj_type, objects in groups.items():
             for i in range(len(objects)):
                 for j in range(i + 1, len(objects)):
-                    preconditions.append(['not', ['=', objects[i], objects[j]]])
+                    dif_cond = ['dif', objects[i], objects[j]]
+                    preconditions.append(dif_cond)
 
         return preconditions
 
@@ -235,6 +216,28 @@ class MAtoSA:
                 uni_exp += f"{exp} "
         return uni_exp
 
+    def process_objects_and_agents(self, input_list):
+
+        # Iterate through the input list to classify the items
+        i = 0
+        while i < len(input_list):
+            if isinstance(input_list[i], list) and input_list[i][0] == ':private':
+                private_list = input_list[i]
+                for k in range(1, len(private_list), 3):
+                    item_value = private_list[k]
+                    item_type = private_list[k + 2]
+                    if item_type not in self.agents:
+                        self.agents[item_type] = []
+                    self.agents[item_type].append(item_value)
+                i+=1
+            else:
+                item_value = input_list[i]
+                item_type = input_list[i + 2]
+                if item_type not in self.objects:
+                    self.objects[item_type] = []
+                self.objects[item_type].append(item_value)
+            i+=3
+
 
 
     #-----------------------------------------------
@@ -245,11 +248,11 @@ class MAtoSA:
         Generate all combinations and write the corresponding SA format file.
         """
         # get agents from problem file (should be defined under :private in objects)
-        self.extract_agents()
-        domain_tokens = self.scan_tokens() # get tokens of domain
+        # and write new problem
+        self.write_problem(output_problem)
+        domain_tokens = self.scan_tokens(self.ma_domain_file) # get tokens of domain
         self.generate_actions(domain_tokens) # replace token with real names
         self.write_domain(output_domain, domain_tokens)
-        self.write_problem(output_problem)
 
     def write_domain(self, output, domain_tokens):
         '''
@@ -270,6 +273,7 @@ class MAtoSA:
                         private = token.pop(len(token)-1)
                         private.pop(0)
                         token.extend(private)
+                    token.append(["dif ?ob1 - object ?ob2 - object"])
                 # if not action, write to file
                 if token[0] != ':action':
                     exp = self.process_expression(token)
@@ -297,40 +301,38 @@ class MAtoSA:
             file.write(")\n")
 
     def write_problem(self, output_filename):
-        with open(self.ma_problem_file, 'r') as infile, open(output_filename, 'w') as outfile:
-            lines = infile.readlines()
-            private_section = False
-            private_objects = []
-            in_objects_section = False
-
-            for line in lines:
-                # Check if we're entering the :objects section
-                if ':objects' in line:
-                    in_objects_section = True
-                    writing_objects = True
-                    outfile.write(line)  # Write the :objects line
-                    continue
-
-                # Check for the start of the :private section
-                if '(:private' in line and in_objects_section:
-                    private_section = True
-                    continue  # Skip this line, we don't write it to output
-
-                # If we're in the private section, collect private objects
-                if private_section:
-                    if ')' in line:  # End of the private section
-                        private_section = False
-                        # Write the private objects into the :objects section
-                        if private_objects:
-                            outfile.write("    " + " ".join(private_objects) + '\n')
-                        continue
-                    else:
-                        # Collect private objects
-                        private_objects.append(line.strip())
-                        continue
+        problem = self.scan_tokens(self.ma_problem_file)
+        with open(output_filename, "w") as file:
+            if problem[0] == "define":
+                file.write(f'(define ')
+                problem.pop(0)
+            else:
+                raise Exception("Problem not defined correctly")
+            for token in problem:
+                if token[0] == ':objects':
+                    token.pop(0)
+                    self.process_objects_and_agents(token)
+                    # write objects
+                    file.write(f"(:objects ")
+                    for agent_type, agent_value in self.agents.items():
+                        for agent in agent_value:
+                            file.write(f"{agent} - {agent_type}\n")
+                    for obj_type, obj_value in self.objects.items():
+                        for obj in obj_value:
+                            file.write(f"{obj} - {obj_type}\n")
+                    file.write(f")\n")
                 else:
-                    # Write all other lines as they are
-                    outfile.write(line)
+                    if token[0] == ":init":
+                        # add dif predicate
+                        for agent_type, agent_value in self.agents.items():
+                            permutations = list(itertools.permutations(agent_value, 2))
+                        for obj_type, obj_value in self.objects.items():
+                            permutations.extend(list(itertools.permutations(obj_value, 2)))
+                        for perm in permutations:
+                            token.append([f"dif {perm[0]} {perm[1]}"])
+                    exp = self.process_expression(token)
+                    file.write(f"({exp})\n")
+            file.write(')')
 
 
 # -----------------------------------------------
