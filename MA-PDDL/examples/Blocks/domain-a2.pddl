@@ -1,5 +1,5 @@
 (define (domain blocks)
-	(:requirements :factored-privacy :typing)
+	(:requirements :typing)
 (:types
 	 agent block - object 
  )

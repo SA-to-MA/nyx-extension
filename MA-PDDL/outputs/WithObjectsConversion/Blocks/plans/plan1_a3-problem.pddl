@@ -1,8 +1,0 @@
-     0.000:	unstack a3 c b	[0.0]
-     0.000:	stack a3 c d	[0.0]
-     0.000:	pick-up a3 b	[0.0]
-     0.000:	stack a3 b a	[0.0]
-     0.000:	unstack a3 c d	[0.0]
-     0.000:	stack a3 c b	[0.0]
-     0.000:	pick-up a3 d	[0.0]
-     0.000:	stack a3 d c	[0.0]

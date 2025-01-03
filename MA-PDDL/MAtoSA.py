@@ -163,7 +163,7 @@ class MAtoSA:
         for obj_type, objects in groups.items():
             for i in range(len(objects)):
                 for j in range(i + 1, len(objects)):
-                    dif_cond = ['dif', objects[i], objects[j]]
+                    dif_cond = [f'dif_{obj_type}', objects[i], objects[j]]
                     preconditions.append(dif_cond)
 
         return preconditions
@@ -199,6 +199,8 @@ class MAtoSA:
 
     def generate_actions(self, tokens):
         parsed_act = self.parse_actions(tokens)
+        for agent in self.agents.keys():
+            parsed_act[f"no-op_{agent}"] = {'params': ['?a', '-', agent], 'pre': [], 'effects': []}
         possible_combinations = self.generate_action_combinations(parsed_act)
         self.actions = self.unify_combinations(possible_combinations)
 
@@ -273,7 +275,10 @@ class MAtoSA:
                         private = token.pop(len(token)-1)
                         private.pop(0)
                         token.extend(private)
-                    token.append(["dif ?ob1 - object ?ob2 - object"])
+                    for agent_type in self.agents.keys():
+                        token.append([f"dif_{agent_type} ?ob1 - {agent_type} ?ob2 - {agent_type}"])
+                    for obj_type in self.objects.keys():
+                        token.append([f"dif_{obj_type} ?ob1 - {obj_type} ?ob2 - {obj_type}"])
                 # if not action, write to file
                 if token[0] != ':action':
                     exp = self.process_expression(token)
@@ -323,13 +328,15 @@ class MAtoSA:
                     file.write(f")\n")
                 else:
                     if token[0] == ":init":
+                        permutations = {}
                         # add dif predicate
                         for agent_type, agent_value in self.agents.items():
-                            permutations = list(itertools.permutations(agent_value, 2))
+                            permutations[agent_type] = list(itertools.permutations(agent_value, 2))
                         for obj_type, obj_value in self.objects.items():
-                            permutations.extend(list(itertools.permutations(obj_value, 2)))
-                        for perm in permutations:
-                            token.append([f"dif {perm[0]} {perm[1]}"])
+                            permutations[obj_type] = list(itertools.permutations(obj_value, 2))
+                        for type, list_of_perms in permutations.items():
+                            for perm in list_of_perms:
+                                token.append([f"dif_{type} {perm[0]} {perm[1]}"])
                     exp = self.process_expression(token)
                     file.write(f"({exp})\n")
             file.write(')')
@@ -339,12 +346,12 @@ class MAtoSA:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = r"examples\Blocks\domain-a1.pddl"
-    problem = r"examples\Blocks\problem-a1.pddl"
+    domain = r"examples\Blocks\domain-a2.pddl"
+    problem = r"examples\Blocks\problem-a2.pddl"
     # domain = r"examples\Car\domain-2c.pddl"
     # problem = r"examples\Car\problem-2c.pddl"
     satoma = MAtoSA(domain, problem)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    satoma.generate("outputs\\WithObjectsConversion\\Blocks\\a1-domain.pddl", "outputs\\WithObjectsConversion\\Blocks\\a1-problem.pddl")
+    satoma.generate("outputs\\WithObjectsConversion\\Blocks\\a2-domain.pddl", "outputs\\WithObjectsConversion\\Blocks\\a2-problem.pddl")
