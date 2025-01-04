@@ -183,8 +183,20 @@ class MAtoSA:
             for action in combination:
                 # Merge parameters, preconditions and effects
                 unified_params.extend(action['params'])
-                unified_pre.extend(action['pre'][1:])
-                unified_effects.extend(action['effects'][1:])
+                # Check if any item in the list is a list
+                # if no list - only one effect/precondition
+                contains_list = any(isinstance(item, list) for item in action['pre'])
+                if contains_list:
+                    unified_pre.extend(action['pre'][1:])
+                else:
+                    if len(action['pre']) > 0:
+                        unified_pre.append(action['pre'])
+                contains_list = any(isinstance(item, list) for item in action['effects'])
+                if contains_list:
+                    unified_effects.extend(action['effects'][1:])
+                else:
+                    if len(action['effects']) > 0:
+                        unified_pre.append(action['effects'])
             # get constraints
             unified_pre.extend(self.generate_constraints(unified_params))
             # Create the unified action
@@ -346,12 +358,13 @@ class MAtoSA:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = r"examples\Blocks\domain-a2.pddl"
-    problem = r"examples\Blocks\problem-a2.pddl"
-    # domain = r"examples\Car\domain-2c.pddl"
-    # problem = r"examples\Car\problem-2c.pddl"
+    # domain = r"examples\Blocks\domain-a2.pddl"
+    # problem = r"examples\Blocks\problem-a2.pddl"
+    domain = r"examples\Car\domain-2c.pddl"
+    problem = r"examples\Car\problem-2c.pddl"
     satoma = MAtoSA(domain, problem)
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    satoma.generate("outputs\\WithObjectsConversion\\Blocks\\a2-domain.pddl", "outputs\\WithObjectsConversion\\Blocks\\a2-problem.pddl")
+    #satoma.generate("outputs\\WithObjectsConversion\\Car\\domain.pddl", "outputs\\WithObjectsConversion\\Car\\problem.pddl")
+    satoma.generate("outputs\\WithObjectsConversion\\Car\\domain.pddl", "outputs\\WithObjectsConversion\\Car\\problem.pddl")

@@ -7,7 +7,6 @@
 	)
 )
 
-  ;; Initial state for car 1
   (:init
     (running car1)
     (transmission_fine car1)
@@ -17,10 +16,6 @@
     (= (d car1) 0)
     (= (a car1) 0)
     (= (v car1) 0)
-  )
-
-  ;; Initial state for car 2
-  (:init
     (running car2)
     (transmission_fine car2)
     (= (running_time car2) 0)
