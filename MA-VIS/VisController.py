@@ -1,4 +1,3 @@
-import VisBlocks
 
 class Parser:
     def __init__(self, _agents, _actions):
@@ -23,7 +22,7 @@ class Parser:
     def parse_line(self, line):
         # Match the format: "<time>: <agent>&<action1>&<action2> <params> [<time_cost>]"
         parts = line.split()
-        parts = parts[1:-2]
+        parts = parts[1:-1]
         actions = parts.pop(0).split('&')
         for act in actions:
             req_params = len(self.actions[act])
@@ -46,6 +45,27 @@ class Agent:
         self.actions.append(_action)
 
     def get_next_action(self):
-        return self.actions.pop(0)
+        if self.actions:
+            return self.actions.pop(0)
+        return "Done"
+
+    def execute(self, _action):
+        pass
 
 
+def simulate_agents(parser):
+    """Simulates the agents' actions step by step."""
+    max_steps = max(len(agent.actions) for agent in parser.agents.values())
+
+    for step in range(max_steps):
+        print(f"Step {step + 1}:")
+        for agent in parser.agents.values():
+            action = agent.get_next_action()
+            print(f"  {agent.name} -> {action}")
+
+if __name__ == '__main__':
+    agents = ['a1', 'a2']
+    actions = {'no-op_agent': ['agent'], 'stack': ['agent','block', 'block'], 'unstack': ['agent','block', 'block'], 'pick-up': ['agent','block'], 'put-down': ['agent','block']}
+    parser = Parser(agents, actions)
+    parser.parse(r'../MA-PDDL/outputs/WithObjectsConversion/Blocks/plans/plan1_a2-problem.pddl')
+    simulate_agents(parser)
