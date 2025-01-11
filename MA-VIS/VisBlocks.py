@@ -1,4 +1,6 @@
 import pygame
+from sympy import false
+
 from VisController import Parser, Agent
 import BlocksWindow
 import time
@@ -54,32 +56,52 @@ class BlocksSimulator:
 class BlockAgent(Agent):
     def __init__(self, _name, _actions):
         super().__init__(_name, _actions)
+        self.empty = True
+        self.block = None # type of BlockState
 
-    def execute(self, action):
-        if action == "no-op":
-            self.stay()
-        elif action == "pick-up":
-            self.pick_up()
+    def execute(self, action, block=None):
+        # if action == "no-op":
+        #     pass
+        if action == "pick-up":
+            self.empty = False
+            self.block = block
         elif action == "stack":
-            self.stack()
+            self.empty = True
+            self.block = None
         elif action == "unstack":
-            self.unstack()
+            self.empty = False
+            self.block = block
         elif action == "put-down":
-            self.put_down()
-        else:
-            print(f"Unknown action: {action}")
+            self.empty = True
+            self.block = None
+        # else:
+        #     print(f"Unknown action: {action}")
 
-    def stay(self):
-        pass
-    def pick_up(self):
-        pass
-    def stack(self):
-        pass
-    def unstack(self):
-        pass
-    def put_down(self):
-        pass
+class BlockState:
+    def __init__(self, state):
+        self.x = state['x']
+        self.y = state['y']
+        """
+        Boolean variables to represent the current state of the block.
+        """
+        self.clear = state['clear']
+        self.on_table = state['on_table']
+        self.in_hand = state['in_hand']
 
+    def get_state(self):
+        return {
+            'x': self.x,
+            'y': self.y,
+            'clear': self.clear,
+            'on_table': self.on_table,
+            'in_hand': self.in_hand
+        }
+    def set_state(self, state):
+        self.x = state['x']
+        self.y = state['y']
+        self.clear = state['clear']
+        self.on_table = state['on_table']
+        self.in_hand = state['in_hand']
 
 
 if __name__ == '__main__':

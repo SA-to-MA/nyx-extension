@@ -1,4 +1,3 @@
-
 class Parser:
     def __init__(self, _agents, _actions):
         # create list of Agents
@@ -49,7 +48,7 @@ class Agent:
             return self.actions.pop(0)
         return "Done"
 
-    def execute(self, _action):
+    def execute(self, _action, blocks):
         pass
 
 
