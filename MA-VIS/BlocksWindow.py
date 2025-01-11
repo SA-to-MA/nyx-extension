@@ -1,3 +1,4 @@
+import random
 import pygame
 import time
 from VisController import Agent
@@ -11,32 +12,39 @@ class BlocksWindow:
         self.agent_size = 40
         self.margin = 10
 
+        # Load the table background image
+        self.background_image = pygame.image.load('images/table.png')  # Replace with your image file
+        self.background_image = pygame.transform.scale(self.background_image, screen.get_size())  # Scale to screen size
+
+        # Load the hand image for agents
+        self.hand_image = pygame.image.load('images/hand.png')  # Load the hand image
+        self.hand_image = pygame.transform.scale(self.hand_image,(150, 110))
+
     def draw(self):
         # Clear the screen
-        self.screen.fill((255, 255, 255))  # White background
+        self.screen.blit(self.background_image, (0, 0))
+
+        # Draw agents as hands
+        for agent in self.agents:
+            # Render the hand image for each agent
+            self.screen.blit(self.hand_image, (agent.x, agent.y))
+
+            # Display the agent name above the hand
+            font = pygame.font.SysFont(None, 20)
+            label = font.render(agent.name, True, (255, 255, 255))
+            self.screen.blit(label, (agent.x + 10, agent.y - 20))  # Name above the hand
 
         # Draw blocks
         for block in self.blocks.values():
             pygame.draw.rect(
                 self.screen,
-                (0, 0, 255),  # Blue color for blocks
+                block.color,  # Blue color for blocks
                 (block.x, block.y, self.block_size, self.block_size),
             )
             font = pygame.font.SysFont(None, 24)
             label = font.render(block.name, True, (255, 255, 255))
             self.screen.blit(label, (block.x + 10, block.y + 10))
 
-        # Draw agents
-        for agent in self.agents:
-            pygame.draw.circle(
-                self.screen,
-                (255, 0, 0),  # Red color for agents
-                (agent.x, agent.y),
-                self.agent_size,
-            )
-            font = pygame.font.SysFont(None, 24)
-            label = font.render(agent.name, True, (255, 255, 255))
-            self.screen.blit(label, (agent.x - 15, agent.y - 10))
 
         # Update display
         pygame.display.flip()
@@ -50,6 +58,10 @@ class Block:
         self.clear = clear
         self.on_table = on_table
         self.in_hand = in_hand
+        self.color = self.random_color()
+    def random_color(self):
+        """Generate a random RGB color."""
+        return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 
 class BlockAgent(Agent):
@@ -69,7 +81,7 @@ class BlockAgent(Agent):
                 block.on_table = False
                 #block.clear = False
                 block.x = self.x
-                block.y = self.y - 50  # Hold above the agent
+                block.y = self.y + 70 # Hold above the agent
         elif action[0] == "put-down":
             if self.holding:
                 block = self.holding
@@ -103,7 +115,7 @@ class BlockAgent(Agent):
                 block.on_table = False
                 block.clear = False
                 block.x = self.x
-                block.y = self.y - 50  # Unstack to agent's position
+                block.y = self.y + 70 # Unstack to agent's position
                 under_block.clear = True
 
 class BlocksSimulator:
@@ -140,8 +152,8 @@ pygame.display.set_caption("Blocks Simulator")
 
 # Initialize agents and blocks
 agents = {
-    "a1": BlockAgent("A1", [('no-op_agent', []), ('pick-up', ['b']), ('stack', ['b', 'a']), ('pick-up', ['d']),('stack', ['d', 'c'])], 100, 500),
-    "a2": BlockAgent("A2", [('unstack', ['a', 'b']), ('put-down', ['a']), ('pick-up', ['c']), ('stack', ['c', 'b']), ('no-op_agent', [])], 300, 500),
+    "a1": BlockAgent("A1", [('no-op_agent', []), ('pick-up', ['b']), ('stack', ['b', 'a']), ('pick-up', ['d']),('stack', ['d', 'c'])], 100, 100),
+    "a2": BlockAgent("A2", [('unstack', ['a', 'b']), ('put-down', ['a']), ('pick-up', ['c']), ('stack', ['c', 'b']), ('no-op_agent', [])], 300, 100),
 }
 blocks = {
     'a': Block('a', x=300, y=350, clear=True, on_table=False),  # Block a is on Block b
