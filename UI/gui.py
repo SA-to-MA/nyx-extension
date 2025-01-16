@@ -41,6 +41,7 @@ class ModernApp(tk.Tk):
             "Home": self.create_home_page,
             "Solve": self.create_solve_page,
             "Visualize": self.create_vis_page,
+            "PlanResults": self.create_result_page,
         }
         self.current_frame = None
         self.switch_page("Home")
@@ -102,6 +103,12 @@ class ModernApp(tk.Tk):
         if file_path:
             self.problem_file = file_path
 
+    def select_plan_file(self):
+        file_path = filedialog.askopenfilename(title="Select Plan File",
+                                               filetypes=[("PDDL Files", "*.pddl"), ("All Files", "*.*")])
+        if file_path:
+            self.plan_file = file_path
+
     def handle_solve(self):
         if not self.domain_file or not self.problem_file:
             print("Error: Please select both domain and problem files before planning.")
@@ -110,8 +117,72 @@ class ModernApp(tk.Tk):
         # Call the solve function and save the result
         try:
             self.plan_result = SolveController.solve(self.domain_file, self.problem_file)
+            self.switch_page("PlanResults")
         except Exception as e:
             print(f"An error occurred while planning: {e}")
+
+    def show_solution(self):
+        try:
+            with open(self.plan_result, "r") as file:
+                solution = file.read()
+
+            # Create a new page to show the solution
+            self.current_frame.destroy()
+            self.current_frame = tk.Frame(self, bg="#B3E5FC")
+            self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+            solution_label = tk.Label(
+                self.current_frame,
+                text=solution,
+                font=("Comic Sans MS", 12),
+                bg="#B3E5FC",
+                fg="#333333",
+                wraplength=600,
+                justify="left",
+            )
+            solution_label.place(relx=0.5, rely=0.3, anchor="center")
+
+            # Add a back button
+            back_button = ttk.Button(
+                self.current_frame,
+                text="Back",
+                style="Custom.TButton",
+                command=lambda: self.switch_page("Home")
+            )
+            back_button.place(relx=0.5, rely=0.8, anchor="center", relwidth=0.3)
+        except Exception as e:
+            print(f"An error occurred while reading the solution: {e}")
+
+    def create_result_page(self):
+        # Create a label to display the result path
+        result_label = tk.Label(
+            self.current_frame,
+            text=f"Plan saved to:\n{self.plan_result}",
+            font=("Comic Sans MS", 16),
+            bg="#B3E5FC",
+            fg="#0078D7",
+            wraplength=400,
+            justify="center",
+        )
+        result_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        # Add "Show Solution" button
+        show_button = ttk.Button(
+            self.current_frame,
+            text="Show Solution",
+            style="Custom.TButton",
+            command=lambda: self.show_solution()
+        )
+        show_button.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4)
+
+        # Add "Back to Home" button
+        back_button = ttk.Button(
+            self.current_frame,
+            text="Back to Home",
+            style="Custom.TButton",
+            command=lambda: self.switch_page("Home")
+        )
+        back_button.place(relx=0.5, rely=0.6, anchor="center", relwidth=0.4)
 
     def create_solve_page(self):
         label = tk.Label(
@@ -153,46 +224,35 @@ class ModernApp(tk.Tk):
         label.place(relx=0.5, rely=0.1, anchor="center")
         self.add_back_button("Home")
 
+        # תווית קלט של תחום
+        domain_label = ttk.Label(self.current_frame, text="Domain Input:", style="TLabel")
+        domain_label.place(relx=0.2, rely=0.25, anchor="center")
 
-def create_vis_page(self):
-    # כותרת הדף
-    label = tk.Label(
-        self.current_frame,
-        text="Visualize",
-        font=("Comic Sans MS", 24, "bold"),
-        bg="#B3E5FC",
-        fg="#0078D7",
-    )
-    label.place(relx=0.5, rely=0.1, anchor="center")
-    # תווית קלט של תחום
-    domain_label = ttk.Label(self.current_frame, text="Domain Input:", style="TLabel")
-    domain_label.place(relx=0.2, rely=0.25, anchor="center")
+        # כפתור בחירת תחום
+        domain_button = ttk.Button(self.current_frame, text="Choose Domain File", command=self.select_domain_file)
+        domain_button.place(relx=0.55, rely=0.25, anchor="center", relwidth=0.4)
 
-    # כפתור בחירת תחום
-    domain_button = ttk.Button(self.current_frame, text="Choose Domain File", command=self.select_domain_file)
-    domain_button.place(relx=0.55, rely=0.25, anchor="center", relwidth=0.4)
+        # תווית קלט של בעיה
+        problem_label = ttk.Label(self.current_frame, text="Problem Input:", style="TLabel")
+        problem_label.place(relx=0.2, rely=0.35, anchor="center")
 
-    # תווית קלט של בעיה
-    problem_label = ttk.Label(self.current_frame, text="Problem Input:", style="TLabel")
-    problem_label.place(relx=0.2, rely=0.35, anchor="center")
+        # כפתור בחירת בעיה
+        problem_button = ttk.Button(self.current_frame, text="Choose Problem File", command=self.select_problem_file)
+        problem_button.place(relx=0.55, rely=0.35, anchor="center", relwidth=0.4)
 
-    # כפתור בחירת בעיה
-    problem_button = ttk.Button(self.current_frame, text="Choose Problem File", command=self.select_problem_file)
-    problem_button.place(relx=0.55, rely=0.35, anchor="center", relwidth=0.4)
+        # תווית קלט של תכנית (אופציונלי)
+        plan_label = ttk.Label(self.current_frame, text="Plan Input (optional):", style="TLabel")
+        plan_label.place(relx=0.2, rely=0.45, anchor="center")
 
-    # תווית קלט של תכנית (אופציונלי)
-    plan_label = ttk.Label(self.current_frame, text="Plan Input (optional):", style="TLabel")
-    plan_label.place(relx=0.2, rely=0.45, anchor="center")
+        # כפתור בחירת תכנית
+        plan_button = ttk.Button(self.current_frame, text="Choose Plan File", command=self.select_plan_file)
+        plan_button.place(relx=0.55, rely=0.45, anchor="center", relwidth=0.4)
 
-    # כפתור בחירת תכנית
-    plan_button = ttk.Button(self.current_frame, text="Choose Plan File", command=self.select_plan_file)
-    plan_button.place(relx=0.55, rely=0.45, anchor="center", relwidth=0.4)
+        # כפתור Go
+        go_button = ttk.Button(self.current_frame, text="Go!", command=self.select_plan_file)
+        go_button.place(relx=0.55, rely=0.55, anchor="center", relwidth=0.2)
 
-    # כפתור Go
-    go_button = ttk.Button(self.current_frame, text="Go!", command=self.select_plan_file)
-    go_button.place(relx=0.55, rely=0.55, anchor="center", relwidth=0.2)
-
-    self.add_back_button("Home")
+        self.add_back_button("Home")
 
 if __name__ == "__main__":
     app = ModernApp()
