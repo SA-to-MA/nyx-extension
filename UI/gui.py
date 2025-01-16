@@ -41,6 +41,13 @@ class ModernApp(tk.Tk):
 
         # Call the page creation function
         self.pages[page_name]()
+    def add_back_button(self, target_page):
+        """Add a back button in the top-left corner."""
+        back_label = tk.Label(
+            self.current_frame, text="←", bg="#f5f5f5", fg="black", font=("Arial", 24, "bold"), cursor="hand2"
+        )
+        back_label.place(relx=0.05, rely=0.05, anchor="nw")  # Position in the top-left corner
+        back_label.bind("<Button-1>", lambda e: self.switch_page(target_page))  # Bind left-click to switch page
 
     def create_home_page(self):
         label = ttk.Label(self.current_frame, text="Welcome to MA Nyx and Visualization", style="TLabel")
@@ -79,14 +86,12 @@ class ModernApp(tk.Tk):
         plan_button = ttk.Button(self.current_frame, text="Plan", command=lambda: print("Plan button clicked"))
         plan_button.pack(pady=20)
 
-        back_button = ttk.Button(self.current_frame, text="Back to Home", command=lambda: self.switch_page("Home"))
-        back_button.pack(side="bottom", pady=10)
+        self.add_back_button("Home")
 
     def create_vis_page(self):
         label = ttk.Label(self.current_frame, text="Visualize", style="TLabel")
         label.pack(pady=20)
-        back_button = ttk.Button(self.current_frame, text="Back to Home", command=lambda: self.switch_page("Home"))
-        back_button.pack(pady=10)
+        self.add_back_button("Home")
 
 if __name__ == "__main__":
     app = ModernApp()
