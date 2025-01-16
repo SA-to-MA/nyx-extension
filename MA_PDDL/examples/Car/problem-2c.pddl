@@ -3,7 +3,6 @@
 (:objects
 	(:private
 		car1 - car
-		car2 - car
 	)
 )
 

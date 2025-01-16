@@ -6,7 +6,6 @@
 
 	(:private
 		a1 - agent
-		a2 - agent
 	)
 )
 (:init

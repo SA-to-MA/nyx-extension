@@ -1,7 +1,7 @@
 from MA_PDDL import MAtoSA
-import InitParser
 import subprocess
-import BlocksWindow
+from .InitParser import InitState
+from .BlocksWindow import Agent, main
 
 class Parser:
     def __init__(self, _agents, _actions):
@@ -10,7 +10,7 @@ class Parser:
         self.agents = {}
         self.actions = _actions
         for a in _agents:
-            self.agents[a] = BlocksWindow.Agent(a, [])
+            self.agents[a] = Agent(a, [])
         self.objects = {}
 
     def parse(self, _plan):
@@ -54,14 +54,14 @@ def simulate_agents(parser):
 def run(domain_path, problem_path, parse=False, plan_file=""):
     # parse domain and problem, and create multiagent files
     satoma = MAtoSA.MAtoSA(domain_path, problem_path)
-    new_domain = "../MA_PDDL/outputs_old/Blocks/domain.pddl"
-    new_problem = "../MA_PDDL/outputs_old/Blocks/problem.pddl"
+    new_domain = "../MA_PDDL/outputs/Blocks/domain.pddl"
+    new_problem = "../MA_PDDL/outputs/Blocks/problem.pddl"
     satoma.generate(new_domain, new_problem)
     # get all agents and blocks
     agents = satoma.agents['agent']
     blocks = satoma.objects['block']
     # parse init state
-    parser = InitParser.InitState(new_problem, agents, blocks)
+    parser = InitState(new_problem, agents, blocks)
     object_dict = parser.parse_pddl_init()
     # create parser for plan
     actions = {'no-op_agent': ['agent'], 'stack': ['agent','block', 'block'], 'unstack': ['agent','block', 'block'], 'pick-up': ['agent','block'], 'put-down': ['agent','block']}
@@ -77,13 +77,13 @@ def run(domain_path, problem_path, parse=False, plan_file=""):
         ]
         command = " ".join(command)
         subprocess.run(command, text=True, capture_output=True)
-        plan_file = r'../MA_PDDL/outputs_old/Blocks/plans/plan1_problem.pddl'
+        plan_file = r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
     parser.parse(plan_file)
-    BlocksWindow.main(parser.agents, object_dict)
+    main(parser.agents, object_dict)
 
 
 # if __name__ == "__main__":
 #     domain = r"../MA_PDDL/examples/Blocks/domain-a3.pddl"
 #     problem = r"../MA_PDDL/examples/Blocks/problem-a3.pddl"
-#     plan_file = r'../MA_PDDL/outputs_old/Blocks/plans/plan1_problem.pddl'
+#     plan_file = r'../MA_PDDL/outputs/plans/plan3_problem.pddl'
 #     run(domain, problem, False, plan_file)

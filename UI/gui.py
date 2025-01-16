@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-from MA_PDDL import SolveController
+from MA_PDDL import MAtoSA
+from MA_VIS import VisController
+
 
 class ModernApp(tk.Tk):
     def __init__(self):
@@ -41,7 +43,8 @@ class ModernApp(tk.Tk):
             "Home": self.create_home_page,
             "Solve": self.create_solve_page,
             "Visualize": self.create_vis_page,
-            "PlanResults": self.create_result_page,
+            "PlanResults": self.create_plan_result_page,
+            "VisResults": self.create_vis_results_page,
         }
         self.current_frame = None
         self.switch_page("Home")
@@ -116,7 +119,8 @@ class ModernApp(tk.Tk):
 
         # Call the solve function and save the result
         try:
-            self.plan_result = SolveController.solve(self.domain_file, self.problem_file)
+            controller = MAtoSA.SolveController(self.domain_file, self.problem_file)
+            self.plan_result = controller.solve()
             self.switch_page("PlanResults")
         except Exception as e:
             print(f"An error occurred while planning: {e}")
@@ -153,7 +157,7 @@ class ModernApp(tk.Tk):
         except Exception as e:
             print(f"An error occurred while reading the solution: {e}")
 
-    def create_result_page(self):
+    def create_plan_result_page(self):
         # Create a label to display the result path
         result_label = tk.Label(
             self.current_frame,
@@ -249,10 +253,57 @@ class ModernApp(tk.Tk):
         plan_button.place(relx=0.55, rely=0.45, anchor="center", relwidth=0.4)
 
         # כפתור Go
-        go_button = ttk.Button(self.current_frame, text="Go!", command=self.select_plan_file)
+        go_button = ttk.Button(self.current_frame, text="Go!",style="Custom.TButton", command=lambda: self.switch_page("VisResults"))
         go_button.place(relx=0.55, rely=0.55, anchor="center", relwidth=0.2)
 
         self.add_back_button("Home")
+
+    def create_vis_results_page(self):
+        if self.current_frame is not None:
+            self.current_frame.destroy()
+
+        self.current_frame = tk.Frame(self, bg="#B3E5FC")
+        self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        # Set the paths for domain, problem, and optional plan file
+        if hasattr(self, 'plan_file'):
+            plan_file = self.plan_file
+            parse = False
+        else:
+            plan_file = ""
+            parse = True
+        # Call the `run` function and handle results or errors
+        try:
+            VisController.run(self.domain_file, self.problem_file, parse, plan_file)
+
+            result_label = tk.Label(
+                self.current_frame,
+                text="Visualization completed successfully!",
+                font=("Comic Sans MS", 16),
+                bg="#B3E5FC",
+                fg="#0078D7",
+            )
+            result_label.place(relx=0.5, rely=0.3, anchor="center")
+        except Exception as e:
+            error_label = tk.Label(
+                self.current_frame,
+                text=f"An error occurred:\n{e}",
+                font=("Comic Sans MS", 14),
+                bg="#B3E5FC",
+                fg="#FF0000",
+                wraplength=400,
+            )
+            error_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        # Add a "Back to Home" button
+        back_button = ttk.Button(
+            self.current_frame,
+            text="Back to Home",
+            style="Custom.TButton",
+            command=lambda: self.switch_page("Home"),
+        )
+        back_button.place(relx=0.5, rely=0.8, anchor="center", relwidth=0.3)
+
 
 if __name__ == "__main__":
     app = ModernApp()

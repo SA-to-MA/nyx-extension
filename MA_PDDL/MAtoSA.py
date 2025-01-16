@@ -1,4 +1,5 @@
 import itertools
+import subprocess
 from itertools import product
 import re
 
@@ -341,17 +342,23 @@ class MAtoSA:
                     file.write(f"({exp})\n")
             file.write(')')
 
+class SolveController:
+    def __init__(self, domain_file, problem_file):
+        self.domain = domain_file
+        self.problem = problem_file
 
-# -----------------------------------------------
-# Main - Usage Example
-# -----------------------------------------------
-# if __name__ == '__main__':
-#     domain = r"examples\Blocks\domain-a3.pddl"
-#     problem = r"examples\Blocks\problem-a3.pddl"
-#     # domain = r"examples\Car\domain-2c.pddl"
-#     # problem = r"examples\Car\problem-2c.pddl"
-#     satoma = MAtoSA(domain, problem)
-#     print('----------------------------')
-#     # print('Domain: ' + satoma.domain.__repr__())
-#     # dict of agent types and the number of agents to generate
-#     satoma.generate("outputs_old\\Blocks\\domain.pddl", "outputs_old\\Blocks\\problem.pddl")
+    def solve(self):
+        satoma = MAtoSA(self.domain, self.problem)
+        new_domain = "../MA_PDDL/outputs/domain.pddl"
+        new_problem = "../MA_PDDL/outputs/problem.pddl"
+        satoma.generate(new_domain, new_problem)
+        command = [
+            'python',
+            '../nyx.py',
+            new_domain,
+            new_problem,
+            '-t:1 -pt'
+        ]
+        command = " ".join(command)
+        subprocess.run(command, text=True, capture_output=True)
+        return r'../MA_PDDL/outputs/plans/plan3_problem.pddl'

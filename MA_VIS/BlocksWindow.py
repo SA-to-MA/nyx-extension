@@ -32,11 +32,11 @@ class BlocksWindow:
         self.agent_size = 40
         self.margin = 10
         # Load the table background image
-        self.background_image = pygame.image.load('images/table.png')  # Replace with your image file
+        self.background_image = pygame.image.load('../MA_VIS/images/table.png')  # Replace with your image file
         self.background_image = pygame.transform.scale(self.background_image, screen.get_size())  # Scale to screen size
 
         # Load the hand image for agents
-        self.hand_image = pygame.image.load('images/hand.png')  # Load the hand image
+        self.hand_image = pygame.image.load('../MA_VIS/images/hand.png')  # Load the hand image
         self.hand_image = pygame.transform.scale(self.hand_image,(150, 110))
 
     def initializeVisObjects(self, agents, init_obj, dis=150):
