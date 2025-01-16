@@ -455,4 +455,4 @@ if __name__ == '__main__':
     print('----------------------------')
     # print('Domain: ' + satoma.domain.__repr__())
     # dict of agent types and the number of agents to generate
-    satoma.generate("outputs\\domain.pddl", "outputs\\problem.pddl")
+    satoma.generate("outputs\\domain_3_agents.pddl", "outputs\\problem_3_agents.pddl")

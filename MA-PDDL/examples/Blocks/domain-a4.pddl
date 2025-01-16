@@ -1,5 +1,5 @@
 (define (domain blocks)
-	(:requirements  :typing)
+	(:requirements :typing)
 (:types
 	 agent block - object 
  )

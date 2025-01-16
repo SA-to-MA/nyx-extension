@@ -128,7 +128,7 @@ class BlocksSimulator:
         print("Starting simulation...")
         self.window.draw()  # Initial state
         running = True
-
+        time.sleep(1)
         while running:
             running = False  # Assume no actions are left
             for agent_name, agent in self.agents.items():
@@ -137,7 +137,7 @@ class BlocksSimulator:
                     action = agent.actions.pop(0)  # Get the next action
                     agent.execute(action, blocks)  # Execute the action
                     self.window.draw()  # Update visualization
-                    time.sleep(1)  # Pause for visualization
+            time.sleep(1)  # Pause for visualization
 
         print("Simulation complete.")
 

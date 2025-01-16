@@ -450,5 +450,5 @@ if __name__ == '__main__':
     #     exit(1)
     #
     # runner(sys.argv[1], sys.argv[2], sys.argv[3:])
-    runner('MA-PDDL/outputs/WithObjectsConversion/Blocks/domain.pddl',
-           'MA-PDDL/outputs/WithObjectsConversion/Blocks/problem.pddl', ['-t:1'])
+    runner('MA-PDDL/outputs/WithObjectsConversion/Blocks/domain_4_agents.pddl',
+           'MA-PDDL/outputs/WithObjectsConversion/Blocks/problem_4_agents.pddl', ['-t:1'])
