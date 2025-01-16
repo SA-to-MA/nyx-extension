@@ -445,10 +445,8 @@ def extract_variable_values(plan_f, var_list, csv_f=None):
 # -----------------------------------------------
 if __name__ == '__main__':
 
-    # if len(sys.argv) < 3 or '-h' in sys.argv:
-    #     print(constants.HELP_TEXT)
-    #     exit(1)
-    #
-    # runner(sys.argv[1], sys.argv[2], sys.argv[3:])
-    runner('MA-PDDL/outputs/WithObjectsConversion/Blocks/a2-domain.pddl',
-           'MA-PDDL/outputs/WithObjectsConversion/Blocks/a2-problem.pddl', ['-t:1'])
+    if len(sys.argv) < 3 or '-h' in sys.argv:
+        print(constants.HELP_TEXT)
+        exit(1)
+
+    runner(sys.argv[1], sys.argv[2], sys.argv[3:])

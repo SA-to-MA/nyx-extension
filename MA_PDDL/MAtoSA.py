@@ -346,8 +346,8 @@ class MAtoSA:
 # Main
 # -----------------------------------------------
 if __name__ == '__main__':
-    domain = r"examples\Car\domain-2c.pddl"
-    problem = r"examples\Car\problem-2c.pddl"
+    domain = r"examples\Blocks\domain-a2.pddl"
+    problem = r"examples\Blocks\problem-a2.pddl"
     # domain = r"examples\Car\domain-2c.pddl"
     # problem = r"examples\Car\problem-2c.pddl"
     satoma = MAtoSA(domain, problem)

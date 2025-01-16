@@ -620,7 +620,7 @@ class MAPDDLParser:
 # Main
 #-----------------------------------------------
 # if __name__ == '__main__':
-#     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\domain-2c.pddl"
+#     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA_PDDL\\examples\\domain-2c.pddl"
 #     parser = MAPDDLParser(domain)
 #     print('----------------------------')
 #     print('Domain: ' + parser.domain.__repr__())

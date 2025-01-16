@@ -18,7 +18,7 @@ SCREEN_HEIGHT = 400
 
 # Initialize screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("MA-PDDL+ Solver")
+pygame.display.set_caption("MA_PDDL+ Solver")
 
 # Font
 font = pygame.font.Font(None, 36)
@@ -54,7 +54,7 @@ while running:
     screen.fill(LIGHT_BLUE)
 
     # Draw title
-    title_surface = font.render("Welcome to the MA-PDDL+ Solver", True, DARK_GREEN)
+    title_surface = font.render("Welcome to the MA_PDDL+ Solver", True, DARK_GREEN)
     title_rect = title_surface.get_rect(center=(SCREEN_WIDTH // 2, 80))
     screen.blit(title_surface, title_rect)
 

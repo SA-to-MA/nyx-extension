@@ -35,6 +35,8 @@ class InitState:
                     stack += line.count("(") - line.count(")")
                     # Remove the :init keyword and continue processing
                     line = line.replace("(:init", "").strip()
+                elif "(:goal" in line:
+                    inside_init = False
 
                 # If we are inside the :init section
                 if inside_init:
@@ -91,12 +93,12 @@ class InitState:
 
 
 # Example usage
-file_path = "../MA-PDDL/examples/Blocks/problem-a1.pddl"  # Replace with your file path
-try:
-    parser = InitState(file_path,['a1', 'a2'], ['a', 'b', 'c'])
-    object_dict = parser.parse_pddl_init()
-    print(object_dict)
-except FileNotFoundError:
-    print(f"File not found: {file_path}")
-except ValueError as e:
-    print(e)
+# file_path = "../MA_PDDL/examples/Blocks/problem-a1.pddl"  # Replace with your file path
+# try:
+#     parser = InitState(file_path,['a1', 'a2'], ['a', 'b', 'c'])
+#     object_dict = parser.parse_pddl_init()
+#     print(object_dict)
+# except FileNotFoundError:
+#     print(f"File not found: {file_path}")
+# except ValueError as e:
+#     print(e)
