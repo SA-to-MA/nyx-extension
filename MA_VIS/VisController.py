@@ -1,7 +1,5 @@
 from MA_PDDL import MAtoSA
 import InitParser
-import nyx
-import sys
 import subprocess
 import BlocksWindow
 
