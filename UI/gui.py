@@ -201,14 +201,14 @@ class ModernApp(tk.Tk):
         domain_label = ttk.Label(self.current_frame, text="Domain Input:", style="TLabel")
         domain_label.place(relx=0.2, rely=0.25, anchor="center")
 
-        domain_button = ttk.Button(self.current_frame, text="Choose Domain File", style="Custom.TButton",
+        domain_button = ttk.Button(self.current_frame, text="Choose Domain File", style="File.TButton",
                                    command=self.select_domain_file)
         domain_button.place(relx=0.5, rely=0.25, anchor="center", relwidth=0.4)
 
         problem_label = ttk.Label(self.current_frame, text="Problem Input:", style="TLabel")
         problem_label.place(relx=0.2, rely=0.35, anchor="center")
 
-        problem_button = ttk.Button(self.current_frame, text="Choose Problem File", style="Custom.TButton",
+        problem_button = ttk.Button(self.current_frame, text="Choose Problem File", style="File.TButton",
                                     command=self.select_problem_file)
         problem_button.place(relx=0.5, rely=0.35, anchor="center", relwidth=0.4)
 
