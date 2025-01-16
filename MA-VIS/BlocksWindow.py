@@ -152,8 +152,9 @@ pygame.display.set_caption("Blocks Simulator")
 
 # Initialize agents and blocks
 agents = {
-    "a1": BlockAgent("A1", [('no-op_agent', []), ('pick-up', ['b']), ('stack', ['b', 'a']), ('pick-up', ['d']),('stack', ['d', 'c'])], 100, 100),
-    "a2": BlockAgent("A2", [('unstack', ['a', 'b']), ('put-down', ['a']), ('pick-up', ['c']), ('stack', ['c', 'b']), ('no-op_agent', [])], 300, 100),
+    "a1": BlockAgent("A1", [('no-op_agent', []), ('pick-up', ['c']), ('no-op_agent', []), ('stack', ['c', 'b']), ('no-op_agent', [])], 100, 100),
+    "a2": BlockAgent("A2", [('no-op_agent', []), ('pick-up', ['b']), ('stack', ['b', 'a']), ('no-op_agent', []), ('no-op_agent', [])],  250, 100),
+    "a3": BlockAgent("A3", [('unstack', ['a', 'b']), ('put-down', ['a']), ('pick-up', ['d']), ('no-op_agent', []), ('stack', ['d', 'c'])], 400, 100)
 }
 blocks = {
     'a': Block('a', x=300, y=350, clear=True, on_table=False),  # Block a is on Block b
@@ -161,6 +162,8 @@ blocks = {
     'c': Block('c', x=400, y=400, clear=True, on_table=True),  # Block c is on the table
     'd': Block('d', x=500, y=400, clear=True, on_table=True),  # Block d is on the table
 }
+
+
 
 
 # Create visualization window
