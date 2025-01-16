@@ -1,57 +1,68 @@
 import tkinter as tk
-import solve
-from UI import visualize
+from tkinter import ttk
 
-'''
-    Tkinter is ideal here because it’s built into Python, simple to use, 
-    supports structured layouts, and provides professional-looking widgets like dropdowns and buttons. 
-    It’s cross-platform and allows for faster, cleaner GUI development compared to Pygame.
-'''
+class ModernApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
 
-def solve_problem():
-    solve.sa_or_ma(root)
+        self.title("Modern Minimal GUI")
+        self.geometry("400x300")
+        self.configure(bg="#f5f5f5")
 
+        # Create a ttk Style
+        self.style = ttk.Style(self)
+        self.style.theme_use("clam")
 
-def visualize_search():
-    visualize.visualize_search_page(root)
+        # Customize button style
+        self.style.configure("TButton", font=("Arial", 12), padding=10, background="#0984e3", foreground="white")
+        self.style.map("TButton",
+                       background=[("active", "#74b9ff")],
+                       foreground=[("active", "white")])
 
+        # Customize label style
+        self.style.configure("TLabel", font=("Arial", 14), background="#f5f5f5", foreground="#2d3436")
 
-def visualize_plan():
-    visualize.visualize_plan_page(root)
+        # Initial Page
+        self.pages = {
+            "Home": self.create_home_page,
+            "Solve": self.create_solve_page,
+            "Visualize": self.create_vis_page,
+        }
+        self.current_frame = None
+        self.switch_page("Home")
 
+    def switch_page(self, page_name):
+        if self.current_frame is not None:
+            self.current_frame.destroy()
 
-# Main window setup
-root = tk.Tk()
-root.title("MA-PDDL+ Solver")
-root.geometry("800x600")
-root.configure(bg="#f2e5bf")  # Soft cream background
+        self.current_frame = tk.Frame(self, bg="#f5f5f5")
+        self.current_frame.pack(fill="both", expand=True)
 
-# Title
-title = tk.Label(root, text="Welcome to the MA-PDDL+ Solver", bg="#f2e5bf", fg="#257180", font=("Montserrat", 24, "bold"))
-title.pack(pady=20)
+        # Call the page creation function
+        self.pages[page_name]()
 
-# Buttons
-button_frame = tk.Frame(root, bg="#f2e5bf")
-button_frame.pack(pady=50)
+    def create_home_page(self):
+        label = ttk.Label(self.current_frame, text="Welcome to MA Nyx and Visualization", style="TLabel")
+        label.pack(pady=20)
 
-solve_button = tk.Button(
-    button_frame, text="Solve Problem", bg="#fd8b51", fg="white",
-    font=("Roboto", 16), command=solve_problem  # Navigate to solve page
-)
-solve_button.pack(fill="x", pady=10)
+        button1 = ttk.Button(self.current_frame, text="Solve", command=lambda: self.switch_page("Solve"))
+        button2 = ttk.Button(self.current_frame, text="Visualize", command=lambda: self.switch_page("Visualize"))
 
+        button1.pack(pady=10)
+        button2.pack(pady=10)
 
-visualize_plan_button = tk.Button(
-    button_frame, text="Visualize Plan", bg="#fd8b51", fg="white",
-    font=("Roboto", 16), command=visualize_plan  # Placeholder for plan
-)
-visualize_plan_button.pack(fill="x", pady=10)
+    def create_solve_page(self):
+        label = ttk.Label(self.current_frame, text="Solve", style="TLabel")
+        label.pack(pady=20)
+        back_button = ttk.Button(self.current_frame, text="Back to Home", command=lambda: self.switch_page("Home"))
+        back_button.pack(pady=10)
 
+    def create_vis_page(self):
+        label = ttk.Label(self.current_frame, text="Visualize", style="TLabel")
+        label.pack(pady=20)
+        back_button = ttk.Button(self.current_frame, text="Back to Home", command=lambda: self.switch_page("Home"))
+        back_button.pack(pady=10)
 
-visualize_search_button = tk.Button(
-    button_frame, text="Visualize Search", bg="#fd8b51", fg="white",
-    font=("Roboto", 16), command=visualize_search  # Placeholder for search
-)
-visualize_search_button.pack(fill="x", pady=10)
-
-root.mainloop()
+if __name__ == "__main__":
+    app = ModernApp()
+    app.mainloop()
