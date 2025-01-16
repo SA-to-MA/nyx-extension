@@ -1,12 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
+
 
 class ModernApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.title("Modern Minimal GUI")
-        self.geometry("400x300")
+        self.geometry("350x350")
         self.configure(bg="#f5f5f5")
 
         # Create a ttk Style
@@ -51,11 +52,35 @@ class ModernApp(tk.Tk):
         button1.pack(pady=10)
         button2.pack(pady=10)
 
+    def select_domain_file(self):
+        file_path = filedialog.askopenfilename(title="Select Domain File", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        if file_path:
+            print(f"Selected Domain File: {file_path}")
+
+    def select_problem_file(self):
+        file_path = filedialog.askopenfilename(title="Select Problem File", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        if file_path:
+            print(f"Selected Problem File: {file_path}")
+
     def create_solve_page(self):
         label = ttk.Label(self.current_frame, text="Solve", style="TLabel")
         label.pack(pady=20)
+
+        domain_label = ttk.Label(self.current_frame, text="Domain Input:", style="TLabel")
+        domain_label.pack(pady=5)
+        domain_button = ttk.Button(self.current_frame, text="Choose Domain File", command=self.select_domain_file)
+        domain_button.pack(pady=5)
+
+        problem_label = ttk.Label(self.current_frame, text="Problem Input:", style="TLabel")
+        problem_label.pack(pady=5)
+        problem_button = ttk.Button(self.current_frame, text="Choose Problem File", command=self.select_problem_file)
+        problem_button.pack(pady=5)
+
+        plan_button = ttk.Button(self.current_frame, text="Plan", command=lambda: print("Plan button clicked"))
+        plan_button.pack(pady=20)
+
         back_button = ttk.Button(self.current_frame, text="Back to Home", command=lambda: self.switch_page("Home"))
-        back_button.pack(pady=10)
+        back_button.pack(side="bottom", pady=10)
 
     def create_vis_page(self):
         label = ttk.Label(self.current_frame, text="Visualize", style="TLabel")
