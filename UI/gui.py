@@ -1,13 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-
+from MA_PDDL import SolveController
 
 class ModernApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.title("Modern Minimal GUI")
-        self.geometry("800x600")  # גודל ברירת מחדל
+        self.geometry("800x600")
         self.configure(bg="#f5f5f5")
 
         # Create a ttk Style
@@ -31,6 +31,10 @@ class ModernApp(tk.Tk):
         }
         self.current_frame = None
         self.switch_page("Home")
+        self.problem_file = ""
+        self.domain_file = ""
+        self.plan_file = ""
+        self.plan_result = ""
 
     def switch_page(self, page_name):
         if self.current_frame is not None:
@@ -61,14 +65,27 @@ class ModernApp(tk.Tk):
         button2.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.3)
 
     def select_domain_file(self):
-        file_path = filedialog.askopenfilename(title="Select Domain File", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        file_path = filedialog.askopenfilename(title="Select Domain File", filetypes=[("PDDL Files", "*.pddl"), ("All Files", "*.*")])
         if file_path:
-            print(f"Selected Domain File: {file_path}")
+            self.domain_file = file_path
 
     def select_problem_file(self):
-        file_path = filedialog.askopenfilename(title="Select Problem File", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        file_path = filedialog.askopenfilename(title="Select Problem File", filetypes=[("PDDL Files", "*.pddl"), ("All Files", "*.*")])
         if file_path:
-            print(f"Selected Problem File: {file_path}")
+            self.problem_file = file_path
+
+    def handle_solve(self):
+        if not self.domain_file or not self.problem_file:
+            print("Error: Please select both domain and problem files before planning.")
+            return
+
+        # Call the solve function and save the result
+        try:
+            self.plan_result = SolveController.solve(self.domain_file, self.problem_file)
+            print("Plan result:", self.plan_result)
+            # You can process or display `self.plan_result` here
+        except Exception as e:
+            print(f"An error occurred while planning: {e}")
 
     def create_solve_page(self):
         label = ttk.Label(self.current_frame, text="Solve", style="TLabel")
@@ -86,7 +103,7 @@ class ModernApp(tk.Tk):
         problem_button = ttk.Button(self.current_frame, text="Choose Problem File", command=self.select_problem_file)
         problem_button.place(relx=0.5, rely=0.35, anchor="center", relwidth=0.4)
 
-        plan_button = ttk.Button(self.current_frame, text="Plan", command=lambda: print("Plan button clicked"))
+        plan_button = ttk.Button(self.current_frame, text="Plan", command=self.handle_solve)
         plan_button.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.3)
 
         self.add_back_button("Home")
