@@ -54,8 +54,8 @@ def simulate_agents(parser):
 def run(domain_path, problem_path, parse=False, plan_file=""):
     # parse domain and problem, and create multiagent files
     satoma = MAtoSA.MAtoSA(domain_path, problem_path)
-    new_domain = "../MA_PDDL/outputs/Blocks/domain.pddl"
-    new_problem = "../MA_PDDL/outputs/Blocks/problem.pddl"
+    new_domain = "../MA_PDDL/outputs_old/Blocks/domain.pddl"
+    new_problem = "../MA_PDDL/outputs_old/Blocks/problem.pddl"
     satoma.generate(new_domain, new_problem)
     # get all agents and blocks
     agents = satoma.agents['agent']
@@ -77,13 +77,13 @@ def run(domain_path, problem_path, parse=False, plan_file=""):
         ]
         command = " ".join(command)
         subprocess.run(command, text=True, capture_output=True)
-        plan_file = r'../MA_PDDL/outputs/Blocks/plans/plan1_problem.pddl'
+        plan_file = r'../MA_PDDL/outputs_old/Blocks/plans/plan1_problem.pddl'
     parser.parse(plan_file)
     BlocksWindow.main(parser.agents, object_dict)
 
 
-if __name__ == "__main__":
-    domain = r"../MA_PDDL/examples/Blocks/domain-a3.pddl"
-    problem = r"../MA_PDDL/examples/Blocks/problem-a3.pddl"
-    plan_file = r'../MA_PDDL/outputs/Blocks/plans/plan1_problem.pddl'
-    run(domain, problem, False, plan_file)
+# if __name__ == "__main__":
+#     domain = r"../MA_PDDL/examples/Blocks/domain-a3.pddl"
+#     problem = r"../MA_PDDL/examples/Blocks/problem-a3.pddl"
+#     plan_file = r'../MA_PDDL/outputs_old/Blocks/plans/plan1_problem.pddl'
+#     run(domain, problem, False, plan_file)

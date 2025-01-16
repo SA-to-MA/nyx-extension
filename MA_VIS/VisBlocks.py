@@ -114,7 +114,7 @@ if __name__ == '__main__':
         'put-down': ['agent', 'block'],
     }
     parser = Parser(agents, actions)
-    parser.parse(r'../MA_PDDL/outputs/WithObjectsConversion/Blocks/plans/plan1_a2-problem.pddl')
+    parser.parse(r'../MA_PDDL/outputs_old/WithObjectsConversion/Blocks/plans/plan1_a2-problem.pddl')
 
     pygame.init()
     # Get the screen's height

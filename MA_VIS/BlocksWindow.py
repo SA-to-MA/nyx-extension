@@ -41,7 +41,7 @@ class BlocksWindow:
 
     def initializeVisObjects(self, agents, init_obj, dis=150):
         block_x = 300
-        block_y = 350
+        block_y = 400
         positions = {}
         # calculate positions of objects recursively
         def calculateBlockPosition(obj):

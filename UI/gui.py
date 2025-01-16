@@ -106,7 +106,6 @@ class ModernApp(tk.Tk):
         # Call the solve function and save the result
         try:
             self.plan_result = SolveController.solve(self.domain_file, self.problem_file)
-            print("Plan result:", self.plan_result)
         except Exception as e:
             print(f"An error occurred while planning: {e}")
 
