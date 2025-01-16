@@ -53,7 +53,7 @@ def simulate_agents(parser):
             action = agent.get_next_action()
             print(f"  {agent.name} -> {action}")
 
-def run(domain_path, problem_path):
+def run(domain_path, problem_path, parse=False, plan_file=""):
     # parse domain and problem, and create multiagent files
     satoma = MAtoSA.MAtoSA(domain_path, problem_path)
     new_domain = "../MA_PDDL/outputs/Blocks/domain.pddl"
@@ -69,16 +69,17 @@ def run(domain_path, problem_path):
     actions = {'no-op_agent': ['agent'], 'stack': ['agent','block', 'block'], 'unstack': ['agent','block', 'block'], 'pick-up': ['agent','block'], 'put-down': ['agent','block']}
     parser = Parser(agents, actions)
     # get plan from nyx
-    command = [
-        'python',
-        '../nyx.py',
-        new_domain,
-        new_problem,
-        '-t:1'
-    ]
-    command = " ".join(command)
-    # subprocess.run(command, text=True, capture_output=True)
-    plan_file = r'../MA_PDDL/outputs/Blocks/plans/plan1_problem.pddl'
+    if parse:
+        command = [
+            'python',
+            '../nyx.py',
+            new_domain,
+            new_problem,
+            '-t:1'
+        ]
+        command = " ".join(command)
+        subprocess.run(command, text=True, capture_output=True)
+        plan_file = r'../MA_PDDL/outputs/Blocks/plans/plan1_problem.pddl'
     parser.parse(plan_file)
     BlocksWindow.main(parser.agents, object_dict)
 
@@ -86,4 +87,5 @@ def run(domain_path, problem_path):
 if __name__ == "__main__":
     domain = r"../MA_PDDL/examples/Blocks/domain-a3.pddl"
     problem = r"../MA_PDDL/examples/Blocks/problem-a3.pddl"
-    run(domain, problem)
+    plan_file = r'../MA_PDDL/outputs/Blocks/plans/plan1_problem.pddl'
+    run(domain, problem, False, plan_file)

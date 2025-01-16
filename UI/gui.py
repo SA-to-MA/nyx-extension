@@ -9,17 +9,11 @@ from UI import visualize
 '''
 
 def solve_problem():
-    solve.solve_problem_page(root)
+    solve.sa_or_ma(root)
 
 
-<<<<<<< HEAD
-# Initialize screen
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("MA_PDDL+ Solver")
-=======
 def visualize_search():
     visualize.visualize_search_page(root)
->>>>>>> origin/gui
 
 
 def visualize_plan():
@@ -40,29 +34,24 @@ title.pack(pady=20)
 button_frame = tk.Frame(root, bg="#f2e5bf")
 button_frame.pack(pady=50)
 
-<<<<<<< HEAD
-    # Draw title
-    title_surface = font.render("Welcome to the MA_PDDL+ Solver", True, DARK_GREEN)
-    title_rect = title_surface.get_rect(center=(SCREEN_WIDTH // 2, 80))
-    screen.blit(title_surface, title_rect)
-=======
 solve_button = tk.Button(
     button_frame, text="Solve Problem", bg="#fd8b51", fg="white",
     font=("Roboto", 16), command=solve_problem  # Navigate to solve page
 )
 solve_button.pack(fill="x", pady=10)
->>>>>>> origin/gui
 
-visualize_search_button = tk.Button(
-    button_frame, text="Visualize Search", bg="#fd8b51", fg="white",
-    font=("Roboto", 16), command=visualize_search  # Placeholder for search
-)
-visualize_search_button.pack(fill="x", pady=10)
 
 visualize_plan_button = tk.Button(
     button_frame, text="Visualize Plan", bg="#fd8b51", fg="white",
     font=("Roboto", 16), command=visualize_plan  # Placeholder for plan
 )
 visualize_plan_button.pack(fill="x", pady=10)
+
+
+visualize_search_button = tk.Button(
+    button_frame, text="Visualize Search", bg="#fd8b51", fg="white",
+    font=("Roboto", 16), command=visualize_search  # Placeholder for search
+)
+visualize_search_button.pack(fill="x", pady=10)
 
 root.mainloop()
