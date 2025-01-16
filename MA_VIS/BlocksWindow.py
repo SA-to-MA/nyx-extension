@@ -196,7 +196,6 @@ class BlocksSimulator:
                     agent.execute(action, self.window.blocks)  # Execute the action
                     self.window.draw()  # Update visualization
             time.sleep(1)  # Pause for visualization
-
         print("Simulation complete.")
 
 def main(agents, init_obj):

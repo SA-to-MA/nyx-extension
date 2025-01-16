@@ -77,13 +77,13 @@ def run(domain_path, problem_path):
         '-t:1'
     ]
     command = " ".join(command)
-    subprocess.run(command, text=True, capture_output=True)
+    # subprocess.run(command, text=True, capture_output=True)
     plan_file = r'../MA_PDDL/outputs/Blocks/plans/plan1_problem.pddl'
     parser.parse(plan_file)
     BlocksWindow.main(parser.agents, object_dict)
 
 
 if __name__ == "__main__":
-    domain = r"../MA_PDDL/examples/Blocks/domain-a2.pddl"
-    problem = r"../MA_PDDL/examples/Blocks/problem-a2.pddl"
+    domain = r"../MA_PDDL/examples/Blocks/domain-a3.pddl"
+    problem = r"../MA_PDDL/examples/Blocks/problem-a3.pddl"
     run(domain, problem)
