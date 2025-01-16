@@ -68,11 +68,14 @@ class ModernApp(tk.Tk):
         back_label.bind("<Button-1>", lambda e: self.switch_page(target_page))  # Bind left-click to switch page
 
     def create_home_page(self):
-        label = ttk.Label(
+        label = tk.Label(
             self.current_frame,
             text="Welcome to SAtoMA Nyx and Visualization",
-            style="TLabel",
-            font=("Segoe UI", 18, "bold"),
+            font=("Comic Sans MS", 24, "bold"),
+            bg="#B3E5FC",
+            fg="#0078D7",
+            padx=10,
+            pady=10,
         )
         label.place(relx=0.5, rely=0.2, anchor="center")
 
@@ -85,6 +88,7 @@ class ModernApp(tk.Tk):
 
         solve_button.place(relx=0.5, rely=0.4, anchor="center", relwidth=0.3)
         visualize_button.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.3)
+
 
     def select_domain_file(self):
         file_path = filedialog.askopenfilename(title="Select Domain File",
@@ -110,7 +114,13 @@ class ModernApp(tk.Tk):
             print(f"An error occurred while planning: {e}")
 
     def create_solve_page(self):
-        label = ttk.Label(self.current_frame, text="Solve", style="TLabel")
+        label = tk.Label(
+            self.current_frame,
+            text="Solve problem",
+            font=("Comic Sans MS", 24, "bold"),
+            bg="#B3E5FC",
+            fg="#0078D7",
+        )
         label.place(relx=0.5, rely=0.1, anchor="center")
 
         domain_label = ttk.Label(self.current_frame, text="Domain Input:", style="TLabel")
@@ -133,9 +143,56 @@ class ModernApp(tk.Tk):
         self.add_back_button("Home")
 
     def create_vis_page(self):
-        label = ttk.Label(self.current_frame, text="Visualize", style="TLabel")
+        label = tk.Label(
+            self.current_frame,
+            text="Visualize",
+            font=("Comic Sans MS", 24, "bold"),
+            bg="#B3E5FC",
+            fg="#0078D7",
+        )
         label.place(relx=0.5, rely=0.1, anchor="center")
         self.add_back_button("Home")
+
+
+def create_vis_page(self):
+    # כותרת הדף
+    label = tk.Label(
+        self.current_frame,
+        text="Visualize",
+        font=("Comic Sans MS", 24, "bold"),
+        bg="#B3E5FC",
+        fg="#0078D7",
+    )
+    label.place(relx=0.5, rely=0.1, anchor="center")
+    # תווית קלט של תחום
+    domain_label = ttk.Label(self.current_frame, text="Domain Input:", style="TLabel")
+    domain_label.place(relx=0.2, rely=0.25, anchor="center")
+
+    # כפתור בחירת תחום
+    domain_button = ttk.Button(self.current_frame, text="Choose Domain File", command=self.select_domain_file)
+    domain_button.place(relx=0.55, rely=0.25, anchor="center", relwidth=0.4)
+
+    # תווית קלט של בעיה
+    problem_label = ttk.Label(self.current_frame, text="Problem Input:", style="TLabel")
+    problem_label.place(relx=0.2, rely=0.35, anchor="center")
+
+    # כפתור בחירת בעיה
+    problem_button = ttk.Button(self.current_frame, text="Choose Problem File", command=self.select_problem_file)
+    problem_button.place(relx=0.55, rely=0.35, anchor="center", relwidth=0.4)
+
+    # תווית קלט של תכנית (אופציונלי)
+    plan_label = ttk.Label(self.current_frame, text="Plan Input (optional):", style="TLabel")
+    plan_label.place(relx=0.2, rely=0.45, anchor="center")
+
+    # כפתור בחירת תכנית
+    plan_button = ttk.Button(self.current_frame, text="Choose Plan File", command=self.select_plan_file)
+    plan_button.place(relx=0.55, rely=0.45, anchor="center", relwidth=0.4)
+
+    # כפתור Go
+    go_button = ttk.Button(self.current_frame, text="Go!", command=self.select_plan_file)
+    go_button.place(relx=0.55, rely=0.55, anchor="center", relwidth=0.2)
+
+    self.add_back_button("Home")
 
 if __name__ == "__main__":
     app = ModernApp()
