@@ -2,6 +2,39 @@ import tkinter as tk
 from tkinter import ttk
 
 
+def sa_or_ma(parent):
+    # Create the main window
+    root = tk.Toplevel(parent)
+    root.title("Choose Solver Type")
+    root.geometry("600x400")
+    root.configure(bg="#f2e5bf")
+
+    # Title Label
+    title_label = tk.Label(root, text="Choose Solver Type", bg="#f2e5bf", fg="#257180", font=("Roboto", 16, "bold"))
+    title_label.pack(pady=20)
+
+    # Radio buttons for choosing solver type
+    solver_choice = tk.StringVar(value="Single-Agent")
+
+    single_agent_radio = tk.Radiobutton(
+        root, text="Single-Agent Solver", variable=solver_choice, value="Single-Agent", bg="#f2e5bf"
+    )
+    single_agent_radio.pack(pady=10, anchor="w", padx=50)
+
+    multi_agent_radio = tk.Radiobutton(
+        root, text="Multi-Agent Solver", variable=solver_choice, value="Multi-Agent", bg="#f2e5bf"
+    )
+    multi_agent_radio.pack(pady=10, anchor="w", padx=50)
+
+    # Solve button
+    def solve_action():
+        print(f"Selected Solver Type: {solver_choice.get()}")
+        solve_problem_page(root)  # Forward to the solve problem page
+
+    solve_button = tk.Button(root, text="Solve →", bg="#fd8b51", fg="white", command=solve_action)
+    solve_button.pack(pady=30)
+
+
 def solve_problem_page(parent):
     # New window for the "Solve Problem" page
     solve_window = tk.Toplevel(parent)

@@ -9,7 +9,7 @@ from UI import visualize
 '''
 
 def solve_problem():
-    solve.solve_problem_page(root)
+    solve.sa_or_ma(root)
 
 
 def visualize_search():
@@ -40,16 +40,18 @@ solve_button = tk.Button(
 )
 solve_button.pack(fill="x", pady=10)
 
-visualize_search_button = tk.Button(
-    button_frame, text="Visualize Search", bg="#fd8b51", fg="white",
-    font=("Roboto", 16), command=visualize_search  # Placeholder for search
-)
-visualize_search_button.pack(fill="x", pady=10)
 
 visualize_plan_button = tk.Button(
     button_frame, text="Visualize Plan", bg="#fd8b51", fg="white",
     font=("Roboto", 16), command=visualize_plan  # Placeholder for plan
 )
 visualize_plan_button.pack(fill="x", pady=10)
+
+
+visualize_search_button = tk.Button(
+    button_frame, text="Visualize Search", bg="#fd8b51", fg="white",
+    font=("Roboto", 16), command=visualize_search  # Placeholder for search
+)
+visualize_search_button.pack(fill="x", pady=10)
 
 root.mainloop()
