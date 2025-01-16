@@ -346,12 +346,12 @@ class MAtoSA:
 # Main - Usage Example
 # -----------------------------------------------
 # if __name__ == '__main__':
-#     domain = r"examples\Blocks\domain-a2.pddl"
-#     problem = r"examples\Blocks\problem-a2.pddl"
+#     domain = r"examples\Blocks\domain-a3.pddl"
+#     problem = r"examples\Blocks\problem-a3.pddl"
 #     # domain = r"examples\Car\domain-2c.pddl"
 #     # problem = r"examples\Car\problem-2c.pddl"
 #     satoma = MAtoSA(domain, problem)
 #     print('----------------------------')
 #     # print('Domain: ' + satoma.domain.__repr__())
 #     # dict of agent types and the number of agents to generate
-#     satoma.generate("outputs_old\\WithObjectsConversion\\Car\\domain.pddl", "outputs_old\\WithObjectsConversion\\Car\\problem.pddl")
+#     satoma.generate("outputs_old\\Blocks\\domain.pddl", "outputs_old\\Blocks\\problem.pddl")

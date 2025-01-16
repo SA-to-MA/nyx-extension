@@ -13,7 +13,7 @@ def solve(domain_file, problem_file):
         '../nyx.py',
         new_domain,
         new_problem,
-        '-t:1'
+        '-t:1 -pt'
     ]
     command = " ".join(command)
     subprocess.run(command, text=True, capture_output=True)
