@@ -1,0 +1,6 @@
+     0.000:	unstack a1 c b	[0.0]
+     0.000:	put-down a1 c	[0.0]
+     0.000:	pick-up a1 b	[0.0]
+     0.000:	stack a1 b a	[0.0]
+     0.000:	pick-up a1 c	[0.0]
+     0.000:	stack a1 c b	[0.0]

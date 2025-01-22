@@ -89,8 +89,8 @@ HELP_TEXT = "\n" \
             "" \
             "\n===========================================================================\n" \
             "\n\tNyx usage:\tpython nyx.py <domain_file.pddl> <problem_file.pddl> <option1> <option2> ...\n" \
-            "\n\texample:\tpython nyx.py ex/car/car.pddl ex/car/pb01.pddl -t:1 -v -search:bfs -pi:1000" \
-            "\n\texample:\tpython nyx.py ex/car/car.pddl ex/car/pb01.pddl -config:ex/car/car.config\n" \
+            "\n\texample:\tpython nyx.py ex/car/domain.pddl ex/car/pb01.pddl -t:1 -v -search:bfs -pi:1000" \
+            "\n\texample:\tpython nyx.py ex/car/domain.pddl ex/car/pb01.pddl -config:ex/car/car.config\n" \
             "\n===========================================================================\n" \
             "\n\tCOMMAND-LINE OPTIONS:\n" \
             "\n\t-h\t\thelp." \

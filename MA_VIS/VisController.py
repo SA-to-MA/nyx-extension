@@ -54,8 +54,8 @@ def simulate_agents(parser):
 def run(domain_path, problem_path, parse=False, plan_file=""):
     # parse domain and problem, and create multiagent files
     satoma = MAtoSA.MAtoSA(domain_path, problem_path)
-    new_domain = "../MA_PDDL/outputs/Blocks/domain.pddl"
-    new_problem = "../MA_PDDL/outputs/Blocks/problem.pddl"
+    new_domain = "../MA_PDDL/outputs/domain.pddl"
+    new_problem = "../MA_PDDL/outputs/problem.pddl"
     satoma.generate(new_domain, new_problem)
     # get all agents and blocks
     agents = satoma.agents['agent']

@@ -184,8 +184,18 @@ class MAtoSA:
             for action in combination:
                 # Merge parameters, preconditions and effects
                 unified_params.extend(action['params'])
-                unified_pre.extend(action['pre'][1:])
-                unified_effects.extend(action['effects'][1:])
+                if len(action['pre']) > 0:
+                    if action['pre'][0] == "and":
+                        action['pre'].pop(0)
+                        unified_pre.extend(action['pre'])
+                    else:
+                        unified_pre.append(action['pre'])
+                if len(action['effects']) > 0:
+                    if action['effects'][0] == "and":
+                        action['effects'].pop(0)
+                        unified_effects.extend(action['effects'])
+                    else:
+                        unified_effects.append(action['effects'])
             # get constraints
             unified_pre.extend(self.generate_constraints(unified_params))
             # Create the unified action
@@ -347,18 +357,26 @@ class SolveController:
         self.domain = domain_file
         self.problem = problem_file
 
-    def solve(self):
-        satoma = MAtoSA(self.domain, self.problem)
-        new_domain = "../MA_PDDL/outputs/domain.pddl"
-        new_problem = "../MA_PDDL/outputs/problem.pddl"
-        satoma.generate(new_domain, new_problem)
+    def sendToNyx(self, new_domain, new_problem, flags="-t:1 -pt"):
         command = [
             'python',
             '../nyx.py',
             new_domain,
             new_problem,
-            '-t:1 -pt'
+            flags
         ]
         command = " ".join(command)
         subprocess.run(command, text=True, capture_output=True)
-        return r'../MA_PDDL/outputs/plans/plan3_problem.pddl'
+        return r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
+
+    def solve(self):
+        satoma = MAtoSA(self.domain, self.problem)
+        new_domain = "../MA_PDDL/outputs/domain.pddl"
+        new_problem = "../MA_PDDL/outputs/problem.pddl"
+        satoma.generate(new_domain, new_problem)
+        return self.sendToNyx(new_domain, new_problem)
+
+# EXAMPLE OF USAGE
+# if __name__ == "__main__":
+#     solve = SolveController("examples/Car/domain.pddl", "../MA_PDDL/examples/Car/problem.pddl")
+#     solve.solve()

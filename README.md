@@ -50,12 +50,12 @@ This work was initially based on the classical parser and planner written by PUC
 
 ## Planner execution
 ```Shell
-python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -t:1
+python -B nyx.py ex/car/domain.pddl ex/car/pb01.pddl -t:1
 ```
 
 Planner options can also be stored in a config file.
 ```Shell
-python -B nyx.py ex/car/car.pddl ex/car/pb01.pddl -config:"ex/car/car.config"
+python -B nyx.py ex/car/domain.pddl ex/car/pb01.pddl -config:"ex/car/car.config"
 ```
 
 use flag ```-h``` for usage and planner option information.
