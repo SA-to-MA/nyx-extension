@@ -60,6 +60,10 @@ class ModernApp(tk.Tk):
         self.plan_file = ""
         self.plan_result = ""
 
+        self.domain_label_var = tk.StringVar(value="No file selected")
+        self.problem_label_var = tk.StringVar(value="No file selected")
+        self.plan_label_var = tk.StringVar(value="No file selected")
+
     def load_image(self, path, size):
         """Loads an image and resizes it to the specified size."""
         image = Image.open(path)
@@ -148,6 +152,8 @@ class ModernApp(tk.Tk):
                                                filetypes=[("PDDL Files", "*.pddl"), ("All Files", "*.*")])
         if file_path:
             self.plan_file = file_path
+            file_name = os.path.basename(file_path)  # Extract file name only
+            self.plan_label_var.set(f"Selected: {file_name}")  # Update label
 
     def handle_solve(self):
         # Check if both domain and problem files are selected
@@ -294,6 +300,13 @@ class ModernApp(tk.Tk):
             command=self.handle_solve
         )
         plan_button.place(relx=0.5, rely=0.55, anchor="center", relwidth=0.3)
+        # Icon for the Plan button
+        plan_icon_label = tk.Label(
+            self.current_frame,
+            image=self.plan_icon,
+            bg="#B3E5FC",
+        )
+        plan_icon_label.place(relx=0.35, rely=0.55, anchor="center")
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
@@ -322,6 +335,10 @@ class ModernApp(tk.Tk):
         )
         domain_button.place(relx=0.55, rely=0.25, anchor="center", relwidth=0.4)
 
+        # Label to display the selected domain file name
+        domain_file_label = ttk.Label(self.current_frame, textvariable=self.domain_label_var, style="TLabel")
+        domain_file_label.place(relx=0.55, rely=0.3, anchor="center")
+
         # Problem input label and button
         problem_label = ttk.Label(self.current_frame, text="Problem Input:", style="TLabel")
         problem_label.place(relx=0.2, rely=0.35, anchor="center")
@@ -332,6 +349,10 @@ class ModernApp(tk.Tk):
             command=self.select_problem_file
         )
         problem_button.place(relx=0.55, rely=0.35, anchor="center", relwidth=0.4)
+
+        # Label to display the selected problem file name
+        problem_file_label = ttk.Label(self.current_frame, textvariable=self.problem_label_var, style="TLabel")
+        problem_file_label.place(relx=0.55, rely=0.4, anchor="center")
 
         # Plan input label and button (optional)
         plan_label = ttk.Label(self.current_frame, text="Plan Input (optional):", style="TLabel")
@@ -344,6 +365,10 @@ class ModernApp(tk.Tk):
         )
         plan_button.place(relx=0.55, rely=0.45, anchor="center", relwidth=0.4)
 
+        # Label to display the selected plan file name
+        plan_file_label = ttk.Label(self.current_frame, textvariable=self.plan_label_var, style="TLabel")
+        plan_file_label.place(relx=0.55, rely=0.5, anchor="center")
+
         # Go button to start visualization
         go_button = ttk.Button(
             self.current_frame,
@@ -351,7 +376,11 @@ class ModernApp(tk.Tk):
             style="Custom.TButton",
             command=lambda: self.switch_page("VisResults")
         )
-        go_button.place(relx=0.55, rely=0.55, anchor="center", relwidth=0.2)
+        go_button.place(relx=0.55, rely=0.6, anchor="center", relwidth=0.2)
+        # show plan image neer the plan button
+        plan_image = tk.Label(self.current_frame, image=self.go_icon, bg="#B3E5FC")
+        plan_image.place(relx=0.45, rely=0.6, anchor="center")
+
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
