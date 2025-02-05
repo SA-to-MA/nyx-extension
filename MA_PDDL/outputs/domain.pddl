@@ -24,6 +24,20 @@
 (on ?x1 ?y1 )
 )
 )
+(:action pick-up
+:parameters (?a1 - agent ?x1 - block)
+:precondition (and
+(clear ?x1 )
+(ontable ?x1 )
+(handempty ?a1 )
+)
+:effect (and
+(not (ontable ?x1 ))
+(not (clear ?x1 ))
+(not (handempty ?a1 ))
+(holding ?a1 ?x1 )
+)
+)
 (:action put-down
 :parameters (?a1 - agent ?x1 - block)
 :precondition (and
@@ -50,20 +64,6 @@
 (not (clear ?x1 ))
 (not (handempty ?a1 ))
 (not (on ?x1 ?y1 ))
-)
-)
-(:action pick-up
-:parameters (?a1 - agent ?x1 - block)
-:precondition (and
-(clear ?x1 )
-(ontable ?x1 )
-(handempty ?a1 )
-)
-:effect (and
-(not (ontable ?x1 ))
-(not (clear ?x1 ))
-(not (handempty ?a1 ))
-(holding ?a1 ?x1 )
 )
 )
 )
