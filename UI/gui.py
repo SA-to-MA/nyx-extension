@@ -16,9 +16,10 @@ class ModernApp(tk.Tk):
         self.visualize_icon = self.load_image("img/visualize-icon.png", (30, 30))  # Size 30x30
         self.plan_icon = self.load_image("img/plan-icon.png", (30, 30))  # Size 30x30
         self.go_icon = self.load_image("img/go-icon.png", (30, 30))  # Size 30x30
+        self.home_icon = self.load_image("img/home-icon.png", (30, 30))  # Size 30x30
 
         self.title("SAtoMA Nyx and Visualization")  # Set window title
-        self.geometry("800x600") # Set window size
+        self.geometry("800x600")  # Set window size
 
         # Create a ttk Style
         self.style = ttk.Style(self)
@@ -60,7 +61,7 @@ class ModernApp(tk.Tk):
         self.plan_file = ""
         self.plan_result = ""
 
-        self.domain_label_var = tk.StringVar(value="No file selected")
+        self.domain_label_var = tk.StringVar(value="No file selected")  # Initialize with default text
         self.problem_label_var = tk.StringVar(value="No file selected")
         self.plan_label_var = tk.StringVar(value="No file selected")
 
@@ -201,6 +202,7 @@ class ModernApp(tk.Tk):
             self.add_back_button("PlanResults")
             # add a button to switch to the previous page using "create_button_with_icon" method
             self.create_button_with_icon(text="Visualize", y_position=0.7, command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
+            self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"), icon=self.home_icon)
 
         except Exception as e:
             print(f"An error occurred while reading the solution: {e}")
@@ -229,6 +231,7 @@ class ModernApp(tk.Tk):
 
         # Add a back button to return to the previous page using "add_back_button" method
         self.add_back_button("Solve")
+        self.create_button_with_icon(text="home", y_position=0.7, command=lambda: self.switch_page("home"), icon=self.home_icon)
 
     def create_solve_page(self):
         """Create the Solve page where the user can select input files and start the solving process."""
@@ -317,6 +320,7 @@ class ModernApp(tk.Tk):
 
         # Add a button to return to the last page using "add_back_button" method
         self.add_back_button("Visualize")
+        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"), icon=self.home_icon)
 
 
 if __name__ == "__main__":

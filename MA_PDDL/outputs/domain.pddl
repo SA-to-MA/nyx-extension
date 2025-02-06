@@ -2,13 +2,6 @@
 (:requirements :typing )
 (:types agent block - object )
 (:predicates (on ?x - block ?y - block )(ontable ?x - block )(clear ?x - block )(holding ?agent - agent ?x - block )(handempty ?agent - agent )(dif_agent ?ob1 - agent ?ob2 - agent )(dif_block ?ob1 - block ?ob2 - block ))
-(:action no-op_agent
-:parameters (?a1 - agent)
-:precondition (and
-)
-:effect (and
-)
-)
 (:action stack
 :parameters (?a1 - agent ?x1 - block ?y1 - block)
 :precondition (and
@@ -48,6 +41,13 @@
 (clear ?x1 )
 (handempty ?a1 )
 (ontable ?x1 )
+)
+)
+(:action no-op_agent
+:parameters (?a1 - agent)
+:precondition (and
+)
+:effect (and
 )
 )
 (:action unstack
