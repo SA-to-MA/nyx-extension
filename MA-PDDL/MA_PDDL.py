@@ -1,218 +1,45 @@
-#!/usr/bin/env python
-# Four spaces as indentation [no tabs]
-
-import itertools
 import re
 import sys
 import copy
 
-from compiler import JIT
-from compiler.preconditions_tree import PreconditionsTree
 from syntax.action import Action
 from syntax.event import Event
 from syntax.process import Process
-from syntax.state import State
 import syntax.constants as constants
+from PDDL import PDDLDomain, PDDLProblem
 
-
-class PDDLDomain:
-
+class MAPDDLDomain(PDDLDomain):
     def __init__(self, **kwargs):
-        self.name = kwargs.get('name', None)
-        self.requirements = kwargs.get('requirements', None)
-        self.types = kwargs.get('types', dict())
-        self.predicates = kwargs.get('predicates', dict())
-        self.functions = kwargs.get('functions', dict())
-        self.constants = kwargs.get('constants', dict())
-        self.processes = kwargs.get('processes', list())
-        self.actions = kwargs.get('actions', list())
-        self.events = kwargs.get('events', list())
-
-
-class PDDLProblem:
-
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name', None)
-        self.init = kwargs.get('init', None)
+        # call the parent class initializer
+        super().__init__(**kwargs)
+        # MA-specific properties
+        self.agents = kwargs.get('agents', dict())
         self.objects = kwargs.get('objects', dict())
-        self.goals = kwargs.get('goals', list())
-        self.metric = kwargs.get('metric', None)
 
+    def __repr__(self):
+        return (
+            f"MAPDDLDomain(name={self.name}, requirements={self.requirements}, "
+            f"types={self.types}, predicates={self.predicates}, functions={self.functions}, "
+            f"constants={self.constants}, processes={self.processes}, actions={self.actions}, "
+            f"events={self.events}, agents={self.agents}, objects={self.objects}"
+        )
 
-class GroundedPDDLInstance:
+class MAPDDLProblem(PDDLProblem):
+    def __init__(self, **kwargs):
+        # call the parent class initializer
+        super().__init__(**kwargs)
+        # MA-specific properties
+        self.agents = kwargs.get('agents', dict())
 
-    def __init__(self, domain: PDDLDomain, problem: PDDLProblem):
-        self.domain = domain
-        self.problem = problem
-        self.enact_requirements()
-        self._objects = None
-        self.modifiable_vars = self.find_non_constants_in_effects()
-        self._initialize_state()
-        self._goals_code, self.goals = JIT.compile_expression(self.problem.goals, name='goals')
-        if self.problem.metric != ['total-time'] and self.problem.metric != ['total-actions'] and self.problem.metric is not None:
-            self._metric_code, self.metric = JIT.compile_expression([self.problem.metric], name='metric')
-        self.processes = self._groundify_happenings(self.domain.processes)
-        self.events = self._groundify_happenings(self.domain.events)
-        self.actions = self._groundify_happenings(self.domain.actions)
-        self._duration_constraints_code, self.duration_constraints = JIT.compile_expression(self._translate_duration_constraints(), name='durative_constraints')
-        if constants.TEMPORAL_DOMAIN:
-            if constants.PRECONDITION_TREE:
-                self.actions.add_happening(constants.TIME_PASSING_ACTION)
-            else:
-                self.actions.insert(0, constants.TIME_PASSING_ACTION)
-
-    def print_domain_info(self):
-        print(f"\t* model information:")
-        if constants.PRECONDITION_TREE:
-            print(f"\t\t* grounded actions: {len(list(self.actions.iter()))}")
-            print(f"\t\t* grounded processes: {len(list(self.processes.iter()))}")
-            print(f"\t\t* grounded events: {len(list(self.events.iter()))}")
-        else:
-            print(f"\t\t* grounded actions: {len(self.actions)}")
-            print(f"\t\t* grounded processes: {len(self.processes)}")
-            print(f"\t\t* grounded events: {len(self.events)}")
-        print(f"\t\t* grounded state variables: {len(self.init_state.state_vars)}")
-        print(f"\t\t* grounded state size: {sys.getsizeof(self.init_state)}")
-        print(f"\t\t* grounded state size (state vars): {round(sys.getsizeof(self.init_state.state_vars)/1024)}kB")
-
-    def find_non_constants_in_effects(self):
-        # if a state variable features in effects of processes, events, or actions.
-
-        compiled_effects = []
-        # identify constant predicates and functions
-        for happ in self.domain.actions + self.domain.events + self.domain.processes:
-            for eff in happ.effects:
-                # print(eff)
-                compiled_effects.append(eff)
-
-        actual_vars = set()
-
-        for eff in compiled_effects:
-            if eff[0] in ['not', 'assign', 'increase', 'decrease', 'scale-up', 'scale-down']:
-                actual_vars.add(eff[1][0])
-            elif eff[0] == 'when':
-                for weff in eff[2]:
-                    if weff == 'and':
-                        continue
-                    if weff[0] in ['not', 'assign', 'increase', 'decrease', 'scale-up', 'scale-down']:
-                        actual_vars.add(weff[1][0])
-                    else:
-                        actual_vars.add(weff[0])
-            else:
-                actual_vars.add(eff[0])
-
-        return actual_vars
-
-
-    def _translate_duration_constraints(self):
-
-        duration_constraints = []
-        snap_end_actions_preconditions = []
-        durative_process_invariants = []
-
-        action_list = self.actions
-        process_list = self.processes
-        if constants.PRECONDITION_TREE:
-            action_list = self.actions.iter()
-            process_list = self.processes.iter()
-
-        ## collect action duration constraints
-        for ga in action_list:
-            if ga.happening_type == "snap_end":
-                for gap in ga.preconditions:
-                    snap_end_actions_preconditions.append(gap)
-
-
-
-        for pre in snap_end_actions_preconditions:
-            if pre[0] in ['=', '>', '>=', '<', '<='] and ('process_clock' in pre[1] or 'process_clock' in pre[1][0]):
-                # translate a numeric duration precondition into a constraint
-                if pre[0] == '=':
-                    copy_pre = copy.copy(pre)
-                    copy_pre[0] = '<='
-                    duration_constraints.append(copy_pre)
-                elif pre[0] == '<' or pre[0] == '<=':
-                    duration_constraints.append(copy.copy(pre))
-                continue
-
-        ## collect durative process invariants
-        for gp in process_list:
-            if gp.happening_type == "durative_action_process":
-                formatted_invariant = ['or'] + ([['not'] + [i for i in gp.preconditions if '{}_process_clock_activated'.format(gp.name.replace('_durative_process','')) in i]]) + [['and'] + gp.preconditions]
-                duration_constraints.append(formatted_invariant)
-
-        return duration_constraints
-
-    def enact_requirements(self):
-        for requirement in self.domain.requirements:
-            if requirement == ':time':
-                constants.TEMPORAL_DOMAIN = True
-
-    @property
-    def objects(self) -> dict:
-        if self._objects is None:
-            self._objects = dict()
-            for obj_source in [self.domain.constants, self.problem.objects]:
-                for type_name, obj_list in obj_source.items():
-                    if type_name not in self._objects:
-                        self._objects[type_name] = []
-                    self._objects[type_name].extend((obj for obj in obj_list if obj not in self._objects[type_name]))
-        return self._objects
-
-    @staticmethod
-    def _groundify(variables: dict, objects: dict):
-        grounded_vars = []
-        for var_name, type_pairs in variables.items():
-            grounded_type_instances = [objects[type_name] for _, type_name in type_pairs.items()]
-            for almost_grounded in itertools.product(*grounded_type_instances):
-                grounded_vars.append([var_name] + list(almost_grounded))
-        return grounded_vars
-
-    def _initialize_state(self):
-        state_variables = {}
-        state_constants = {}
-        for grounded_predicate in self._groundify(self.domain.predicates, self.objects):
-            if grounded_predicate[0] in self.modifiable_vars:
-                state_variables[str(grounded_predicate)] = False
-            else:
-                state_constants[str(grounded_predicate)] = False
-        for grounded_function in self._groundify(self.domain.functions, self.objects):
-            if grounded_function[0] in self.modifiable_vars:
-                state_variables[str(grounded_function)] = 0.0
-            else:
-                state_constants[str(grounded_function)] = 0.0
-
-        constants.state_constants = state_constants
-        self.init_state = State(state_vars=state_variables)
-        self.init_state.instantiate(self.problem.init)
-
-    def _groundify_happenings(self, happenings): # -> PreconditionsTree:
-
-        if constants.PRECONDITION_TREE:
-            preconditions_tree = PreconditionsTree()
-            for happening in happenings:
-                for grounded_happening in happening.groundify(self.objects, self.domain.types):
-                    preconditions_tree.add_happening(grounded_happening)
-            return preconditions_tree
-
-        else: 
-            grounded_happenings = []
-            for happening in happenings:
-                grounded_happenings.extend(happening.groundify(self.objects, self.domain.types))
-            return grounded_happenings
-
-
-class PDDL_Parser:
+class MAPDDLParser:
 
     SUPPORTED_REQUIREMENTS = [':strips', ':adl', ':negative-preconditions', ':typing', ':time', ':fluents', ':timed-initial-literals', ':durative-actions', ':duration-inequalities', ':continuous-effects', ':disjunctive-preconditions', ':semantic-attachment', ':conditional-effects']
 
     def __init__(self, domain_file, problem_file):
-        self.domain = PDDLDomain()
-        self.problem = PDDLProblem()
+        self.domain = MAPDDLDomain()
+        self.problem = MAPDDLProblem()
         self.parse_domain(domain_file)
         self.parse_problem(problem_file)
-        self.grounded_instance = GroundedPDDLInstance(self.domain, self.problem)
-
 
     #-----------------------------------------------
     # Tokens
@@ -244,13 +71,15 @@ class PDDL_Parser:
             raise Exception('Malformed expression')
         return list[0]
 
+
+
     #-----------------------------------------------
-    # Parse domain
+    # Parse domain - no objects
     #-----------------------------------------------
 
     def parse_domain(self, domain_filename):
 
-        try: 
+        try:
             tokens = self.scan_tokens(domain_filename)
         except Exception as dom_error:
             print("PDDL domain file error: missing file or malformed domain definition. \nRun \'python nyx.py -h\' for help and usage instructions.\n")
@@ -265,13 +94,13 @@ class PDDL_Parser:
                 if t == 'domain':
                     self.domain.name = group[0]
                 elif t == ':requirements':
-                    for req in group:
+                    for req in group[:]:  # Iterate over a copy of the list to modify the original group
                         if req == ':time':
                             constants.TEMPORAL_DOMAIN = True
                         if req == ':semantic-attachment':
                             constants.SEMANTIC_ATTACHMENT = True
-                        if not req in self.SUPPORTED_REQUIREMENTS:
-                            raise Exception('Requirement ' + req + ' not supported')
+                        if req not in self.SUPPORTED_REQUIREMENTS:  # Remove the unsupported requirement
+                            group.remove(req)
                         if req == ':timed-initial-literals' or req == ':timed-initial-fluents':
                             constants.CONTAINS_TIL_TIF = True
                     self.domain.requirements = group
@@ -336,7 +165,41 @@ class PDDL_Parser:
     #-----------------------------------------------
 
     def parse_objects(self, group, name):
-        self.parse_hierarchy(group, self.problem.objects, name, False)
+        # Separate the :private list which contains the agents
+        private_list = [
+            item for item in group if isinstance(item, list) and item[0] == ':private'
+        ]
+        # Filter out :private from the group
+        filtered_group = [
+            item for item in group if not (isinstance(item, list) and item[0] == ':private')
+        ]
+        # Send the filtered group to parse_hierarchy
+        self.parse_hierarchy(filtered_group, self.problem.objects, name, False)
+        # If there are private lists, pass them to another function to process
+        for private_item in private_list:
+            if private_item[0] == ":private":
+                private_item.pop(0)
+            self.parse_agents(private_item)
+
+    #-----------------------------------------------
+    # Parse agents
+    #-----------------------------------------------
+    def parse_agents(self, agents):
+        list = []
+        while agents:
+            if agents[0] == '-':
+                if not list:
+                    raise Exception('Unexpected hyphen in private')
+                agents.pop(0)
+                type = agents.pop(0)
+                if not type in self.problem.agents:
+                    self.problem.agents[type] = []
+                self.problem.agents[type] += list
+                list = []
+            else:
+                list.append(agents.pop(0))
+        if list:
+            raise Exception("Undefined agent in private section")
 
     # -----------------------------------------------
     # Parse types
@@ -352,6 +215,12 @@ class PDDL_Parser:
     def parse_predicates(self, group):
         for pred in group:
             predicate_name = pred.pop(0)
+            # if private predicates, parse them separately
+            if predicate_name == ":private":
+                if len(pred) == 0: # if private defined but no private predicates present, raise error
+                    raise Exception('Private predicates section defined but is empty')
+                self.parse_predicates(pred) # parse private predicates and break after that
+                continue
             if predicate_name in self.domain.predicates:
                 raise Exception('Predicate ' + predicate_name + ' redefined')
             arguments = {}
@@ -663,6 +532,8 @@ class PDDL_Parser:
                     pass # Ignore requirements in problem, parse them in the domain
                 elif t == ':objects':
                     self.parse_objects(group, t)
+                elif t == ':private':
+                    self.parse_agents(group)
                 elif t == ':init':
                     self.problem.init = copy.copy(group)
                     if (constants.CONTAINS_TIL_TIF):
@@ -748,36 +619,11 @@ class PDDL_Parser:
 #-----------------------------------------------
 # Main
 #-----------------------------------------------
-if __name__ == '__main__':
-    import sys, pprint
-    # domain = sys.argv[1]
-    domain = "ex/lg_process/generator.pddl"
-    # problem = sys.argv[2]
-    problem = "ex/lg_process/pb01.pddl"
-    parser = PDDL_Parser(domain, problem)
-    print('----------------------------')
-    print('Domain name: ' + parser.domain.name)
-    pprint.pprint(parser.domain.predicates)
-    pprint.pprint(parser.domain.functions)
-    for act in parser.domain.actions:
-        print(act)
-    for eve in parser.domain.events:
-        print(eve)
-    for pro in parser.domain.processes:
-        print(pro)
-    print('----------------------------')
-    print('Problem name: ' + parser.problem.name)
-    print('Objects: ' + str(parser.grounded_instance.objects))
-    print('Types: ' + str(parser.domain.types))
-    print('Init State:')
-    pprint.pprint(parser.problem.init)
-    print('Goals:')
-    pprint.pprint(parser.problem.goals)
-    print('----------------------------')
-    print('Grounded Happenings:')
-    for act in parser.grounded_instance.actions:
-        print(act)
-    for eve in parser.grounded_instance.events:
-        print(eve)
-    for pro in parser.grounded_instance.processes:
-        print(pro)
+# if __name__ == '__main__':
+#     domain = "C:\\Users\\Lior\\Desktop\\Nyx\\nyx-extension\\MA-PDDL\\examples\\domain-2c.pddl"
+#     parser = MAPDDLParser(domain)
+#     print('----------------------------')
+#     print('Domain: ' + parser.domain.__repr__())
+#     print('Actions: ')
+#     for action in parser.domain.actions:
+#         print(action)

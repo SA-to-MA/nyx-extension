@@ -11,8 +11,8 @@ all_predicates = [
     "ringing", "almostawake", "deeplyasleep", "awake"
 ]
 # create actions parser with problem and solution paths
-problem = "C:\\Users\\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\sleeping_beauty\\pb01.pddl"
-sol = "C:\\Users\\\Lior\\Desktop\\Nyx\\nyx-extension\\ex\\sleeping_beauty\\plans\\plan1_pb01.pddl"
+problem = "C:\\Users\\PC\\PycharmProjects\\nyx-extension\\ex\\sleeping_beauty\\pb01.pddl"
+sol = "C:\\Users\\PC\\PycharmProjects\\nyx-extension\\ex\\sleeping_beauty\\plans\\plan1_pb01.pddl"
 parser = ActionsParser(problem, sol)
 # get initial state and map it
 initial_state = parser.retrieve_initial_state(all_predicates)

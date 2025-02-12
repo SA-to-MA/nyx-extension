@@ -1,6 +1,5 @@
 from typing import Tuple, Callable
 import math
-import syntax.constants as constants
 
 from numba import njit, float64
 
@@ -55,6 +54,7 @@ def check_numeric(token):
 
 
 def state_var(tokens):
+    import syntax.constants as constants
     return "state.state_vars[\"{}\"]".format(str(tokens)) if str(tokens) not in constants.state_constants else "constants.state_constants[\"{}\"]".format(str(tokens))
 
 
