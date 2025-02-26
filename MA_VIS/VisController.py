@@ -83,7 +83,9 @@ def run(domain_path, problem_path, parse=False, plan_file=""):
 
 
 # if __name__ == "__main__":
-#     domain = r"../MA_PDDL/examples/Blocks/domain-a3.pddl"
-#     problem = r"../MA_PDDL/examples/Blocks/problem-a3.pddl"
-#     plan_file = r'../MA_PDDL/outputs/plans/plan3_problem.pddl'
+#     from InitParser import InitState
+#     from BlocksWindow import Agent, main
+#     domain = r"../MA_PDDL/examples/Blocks/domain-a2.pddl"
+#     problem = r"../MA_PDDL/examples/Blocks/problem-a2.pddl"
+#     plan_file = r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
 #     run(domain, problem, False, plan_file)

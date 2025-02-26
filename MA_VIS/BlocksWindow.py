@@ -16,7 +16,7 @@ class Agent:
             return self.actions.pop(0)
         return "Done"
 
-    def execute(self, _action, blocks):
+    def execute(self, _action, blocks, screen):
         pass
 
 class BlocksWindow:
@@ -40,8 +40,10 @@ class BlocksWindow:
         self.hand_image = pygame.transform.scale(self.hand_image,(150, 110))
 
     def initializeVisObjects(self, agents, init_obj, dis=150):
-        block_x = 300
-        block_y = 400
+        screen_width, screen_height = self.screen.get_size()
+        # Define base positions relative to screen size
+        block_x = int(screen_width * 0.3)
+        block_y = int(screen_height * 0.7)
         positions = {}
         # calculate positions of objects recursively
         def calculateBlockPosition(obj):
@@ -64,8 +66,8 @@ class BlocksWindow:
         # set blocks properties in blocks dictionary
         for block, pos in positions.items():
             self.blocks[block] = Block(block, pos['x'], pos['y'], init_obj[block]['clear'], init_obj[block]['on_table'], init_obj[block]['in_hand'])
-        agent_x = 50
-        agent_y = 100
+        agent_x = int(screen_width * 0.05)
+        agent_y = int(screen_height * 0.1)
         for agent_name, agent_obj in agents.items():
             # check if agent holding object, if so - put it
             if init_obj[agent_name]['is_empty'] == True:
@@ -130,7 +132,15 @@ class BlockAgent(Agent):
         self.y = y
         self.holding = holding
 
-    def execute(self, action, blocks):
+    def execute(self, action, blocks, screen):
+        # Get screen dimensions
+        screen_width, screen_height = screen.get_size()
+
+        # Define relative heights and offsets
+        agent_offset_y = int(screen_height * 0.1)  # Height above agent when holding
+        table_y = int(screen_height * 0.7)  # Baseline for placing blocks on table
+        stack_offset_y = int(screen_height * 0.06)  # Height difference when stacking
+
         if action[0] == "pick-up":
             block_name = action[1][0]  # Extract the first element from the list
             block = blocks[block_name]
@@ -138,44 +148,46 @@ class BlockAgent(Agent):
                 self.holding = block
                 block.in_hand = True
                 block.on_table = False
-                #block.clear = False
-                block.x = self.x
-                block.y = self.y + 70 # Hold above the agent
+                block.x = self.x  # Align with agent
+                block.y = self.y + agent_offset_y  # Hold above agent
+
         elif action[0] == "put-down":
-                if self.holding:
-                    block = self.holding
-                    block.in_hand = False
-                    block.on_table = True
-                    block.clear = True
-                    block.x = self.x
-                    block.y = 400  # Drop on table baseline
-                    self.holding = None
+            if self.holding:
+                block = self.holding
+                block.in_hand = False
+                block.on_table = True
+                block.clear = True
+                block.x = self.x  # Place at agent's position
+                block.y = table_y  # Drop to table level
+                self.holding = None
+
         elif action[0] == "stack":
-                block_name = action[1][0]  # Extract the first element from the list
-                target_block_name = action[1][1]
-                block = blocks[block_name]
-                target_block = blocks[target_block_name]
-                if target_block.clear:
-                    target_block.clear = False
-                    block.in_hand = False
-                    block.on_table = False
-                    block.clear = True
-                    block.x = target_block.x
-                    block.y = target_block.y - 50  # Stack above target block
-                    self.holding = None
+            block_name = action[1][0]  # Block to stack
+            target_block_name = action[1][1]  # Block on which to stack
+            block = blocks[block_name]
+            target_block = blocks[target_block_name]
+            if target_block.clear:
+                target_block.clear = False
+                block.in_hand = False
+                block.on_table = False
+                block.clear = True
+                block.x = target_block.x  # Align x with target
+                block.y = target_block.y - stack_offset_y  # Stack relative to target
+                self.holding = None
+
         elif action[0] == "unstack":
-                block_name = action[1][0]  # a
-                under_block_name = action[1][1]  # b
-                block = blocks[block_name]
-                under_block = blocks[under_block_name]
-                if block.clear and not block.in_hand:
-                    self.holding = block
-                    block.in_hand = True
-                    block.on_table = False
-                    block.clear = False
-                    block.x = self.x
-                    block.y = self.y + 70  # Unstack to agent's position
-                    under_block.clear = True
+            block_name = action[1][0]  # Block being picked up
+            under_block_name = action[1][1]  # Block below
+            block = blocks[block_name]
+            under_block = blocks[under_block_name]
+            if block.clear and not block.in_hand:
+                self.holding = block
+                block.in_hand = True
+                block.on_table = False
+                block.clear = False
+                block.x = self.x  # Align with agent
+                block.y = self.y + agent_offset_y  # Lift above agent
+                under_block.clear = True
 
 
 class BlocksSimulator:
@@ -193,7 +205,7 @@ class BlocksSimulator:
                 if agent.actions:  # Check if the agent still has actions
                     running = True
                     action = agent.actions.pop(0)  # Get the next action
-                    agent.execute(action, self.window.blocks)  # Execute the action
+                    agent.execute(action, self.window.blocks, self.window.screen)  # Execute the action
                     self.window.draw()  # Update visualization
             time.sleep(1)  # Pause for visualization
         print("Simulation complete.")
