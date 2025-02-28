@@ -2,8 +2,10 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog
 from MA_PDDL import MAtoSA
-from MA_VIS import VisController
+from VIS import VisController
 from PIL import Image, ImageTk
+
+SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "Other"]
 
 
 class ModernApp(tk.Tk):
@@ -59,10 +61,27 @@ class ModernApp(tk.Tk):
         self.problem_file = ""
         self.domain_file = ""
         self.plan_file = ""
+        self.controller = None
+        self.selected_domain = ""
 
         self.domain_label_var = tk.StringVar(value="No file selected")  # Initialize with default text
         self.problem_label_var = tk.StringVar(value="No file selected")
         self.plan_label_var = tk.StringVar(value="No file selected")
+
+    def create_dropdown_input(self, label_text, y_position, options, variable):
+        """Create a dropdown input field that matches the file input fields in position and width."""
+
+        # Label for the dropdown (same position as file input labels)
+        label = ttk.Label(self.current_frame, text=label_text, style="TLabel")
+        label.place(relx=0.2, rely=y_position, anchor="center")
+
+        # Dropdown (Combobox) - matches the width and positioning of file input button
+        dropdown = ttk.Combobox(self.current_frame, textvariable=variable, values=options, state="readonly", width=25)
+        dropdown.place(relx=0.55, rely=y_position, anchor="center", relwidth=0.4)
+
+        # Set default value if options exist
+        if options:
+            variable.set(options[0])  # Default selection
 
     def create_button_with_icon(self, text, y_position, command, icon=None, width=0.3, relx=0.5):
         """Create a button with an icon positioned to the left of the button."""
@@ -168,17 +187,15 @@ class ModernApp(tk.Tk):
 
         # Call the solve function and save the result
         try:
-            controller = MAtoSA.SolveController(self.domain_file, self.problem_file)
-            self.plan_file = controller.solve()  # Save the plan result
+            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file)
+            self.plan_file = self.controller.getPlanFile()  # Save the plan result
             self.switch_page("PlanResults")  # Switch to the PlanResults page
         except Exception as e:
             print(f"An error occurred while planning: {e}")
 
     def show_solution(self):
         try:
-            # Read the solution from the saved plan result
-            with open(self.plan_file, "r") as file:
-                solution = file.read()
+            solution = self.controller.getParsedPlan()
 
             # Create a new page to display the solution
             self.current_frame.destroy()
@@ -265,12 +282,17 @@ class ModernApp(tk.Tk):
         )
         label.place(relx=0.5, rely=0.1, anchor="center")
 
-        # Create input fields
-        self.create_file_input("Domain Input:", 0.25, self.select_domain_file, self.domain_label_var)
-        self.create_file_input("Problem Input:", 0.35, self.select_problem_file, self.problem_label_var)
-        self.create_file_input("Plan Input (optional):", 0.45, self.select_plan_file, self.plan_label_var)
+        self.selected_domain = tk.StringVar()
 
-        self.create_button_with_icon(text="Go!", y_position=0.6,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.54)  # Plan button
+        # Create domain selection dropdown
+        self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
+
+        # Create input fields
+        self.create_file_input("Domain Input:", 0.35, self.select_domain_file, self.domain_label_var)
+        self.create_file_input("Problem Input:", 0.45, self.select_problem_file, self.problem_label_var)
+        self.create_file_input("Plan Input (optional):", 0.55, self.select_plan_file, self.plan_label_var)
+
+        self.create_button_with_icon(text="Go!", y_position=0.7,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.54)  # Plan button
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")

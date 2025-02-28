@@ -2,6 +2,7 @@ import itertools
 import subprocess
 from itertools import product
 import re
+import os
 
 
 class MAtoSA:
@@ -353,11 +354,16 @@ class MAtoSA:
             file.write(')')
 
 class SolveController:
-    def __init__(self, domain_file, problem_file):
+    def __init__(self, domain_file, problem_file, domain_name="blocks"):
         self.domain = domain_file
         self.problem = problem_file
+        self.domain_name = domain_name
+        self.plan = self.solve()
 
     def sendToNyx(self, new_domain, new_problem, flags="-t:1 -pt"):
+        """
+        send a new problem to nyx and return the path to it
+        """
         command = [
             'python',
             '../nyx.py',
@@ -370,11 +376,58 @@ class SolveController:
         return r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
 
     def solve(self):
+        """
+        solves the problem using nyx and saves the solution path
+        """
         satoma = MAtoSA(self.domain, self.problem)
         new_domain = "../MA_PDDL/outputs/domain.pddl"
         new_problem = "../MA_PDDL/outputs/problem.pddl"
         satoma.generate(new_domain, new_problem)
-        return self.sendToNyx(new_domain, new_problem)
+        self.plan = self.sendToNyx(new_domain, new_problem)
+        return self.plan
+
+    def getPlanFile(self):
+        """
+        returns the path to the plan. if no path, will be none
+        """
+        return self.plan
+
+    def getParsedPlan(self):
+        """
+        return a parsed solution for display. only used for domains that are supported in visualization.
+        """
+        try:
+            # Read the solution from the saved plan result
+            with open(self.plan, "r") as file:
+                plan_text = file.read()
+                if self.domain_name == "blocks": # if domain is blocks
+                    action_mapping = {'no-op_agent': ['agent'], 'stack': ['agent', 'block', 'block'],
+                               'unstack': ['agent', 'block', 'block'], 'pick-up': ['agent', 'block'],
+                               'put-down': ['agent', 'block']}
+                else: # if no recognized domain, just return available solution from file as is
+                    return plan_text
+                parsed_lines = []
+                for line in plan_text.split("\n"):
+                    if not line.strip():
+                        continue
+                    parts = re.split(r'\s+', line.strip())
+                    time = parts[0].strip(':')
+                    actions_combined = parts[1]
+                    arguments = parts[2:-1]  # Exclude the last part (assumed to be not kind of action or argument)
+                    actions = actions_combined.split("&")  # Split multiple actions
+                    parsed_action_descriptions = []
+                    arg_index = 0  # Track argument index
+                    for action in actions:
+                        if action in action_mapping:
+                            roles = action_mapping[action]
+                            assigned_args = [f"{roles[i]} {arguments[arg_index + i]}" for i in range(len(roles))]
+                            parsed_action_descriptions.append(f"{action} - " + ", ".join(assigned_args))
+                            arg_index += len(roles)
+                    parsed_lines.append(f"{time}: " + ", ".join(parsed_action_descriptions))
+                return "\n".join(parsed_lines)
+        except:
+            return "Solution not found"
+
 
 # EXAMPLE OF USAGE
 # if __name__ == "__main__":

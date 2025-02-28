@@ -26,7 +26,7 @@ class SleepingBeautyWindow:
             "dresser": (int(700 * scale_x), int(400 * scale_y)),
             "chest": (int(590 * scale_x), int(675 * scale_y)),
         }
-        # load raw images and store them in a dictionary
+        # load raw resources and store them in a dictionary
         images = {
             "window_closed": pygame.image.load("resources/window-closed.png"),
             "window_open": pygame.image.load("resources/window-open.png"),
@@ -45,7 +45,7 @@ class SleepingBeautyWindow:
             "chest": pygame.image.load("resources/chest.png"),
         }
 
-        # Scale images proportionally
+        # Scale resources proportionally
         self.images = {
             name: pygame.transform.scale(image,
                                          (int(image.get_width() * scale_x),

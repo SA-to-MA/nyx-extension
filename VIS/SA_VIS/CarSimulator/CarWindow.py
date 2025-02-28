@@ -11,7 +11,7 @@ class CarWindow:
         self.window = window
         self.font = pygame.font.Font(None, 30)
 
-        # Load and resize images into a dictionary
+        # Load and resize resources into a dictionary
         self.images = {
             "car": pygame.transform.scale(pygame.image.load("resources/car.png"), (250, 107)),
             "goal_reached": pygame.transform.scale(pygame.image.load("resources/goal.png"), (120, 120)),

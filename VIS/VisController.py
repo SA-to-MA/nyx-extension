@@ -1,7 +1,9 @@
 from MA_PDDL import MAtoSA
 import subprocess
-from .InitParser import InitState
-from .BlocksWindow import Agent, main
+from VIS.InitParser import InitState
+from VIS.MA_VIS.BlocksSimulator.BlocksWindow import Agent, main
+
+
 
 class Parser:
     def __init__(self, _agents, _actions):
