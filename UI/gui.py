@@ -62,7 +62,7 @@ class ModernApp(tk.Tk):
         self.domain_file = ""
         self.plan_file = ""
         self.controller = None
-        self.selected_domain = ""
+        self.selected_domain = tk.StringVar()
 
         self.domain_label_var = tk.StringVar(value="No file selected")  # Initialize with default text
         self.problem_label_var = tk.StringVar(value="No file selected")
@@ -187,7 +187,7 @@ class ModernApp(tk.Tk):
 
         # Call the solve function and save the result
         try:
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file)
+            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get())
             self.plan_file = self.controller.getPlanFile()  # Save the plan result
             self.switch_page("PlanResults")  # Switch to the PlanResults page
         except Exception as e:
@@ -261,11 +261,14 @@ class ModernApp(tk.Tk):
         )
         label.place(relx=0.5, rely=0.1, anchor="center")
 
-        # Create input fields
-        self.create_file_input("Domain Input:", 0.25, self.select_domain_file, self.domain_label_var)
-        self.create_file_input("Problem Input:", 0.4, self.select_problem_file, self.problem_label_var)
+        # Create domain selection dropdown
+        self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
 
-        self.create_button_with_icon(text="Plan", y_position=0.6,  command=self.handle_solve, icon=self.plan_icon, relx=0.54) # Plan button
+        # Create input fields
+        self.create_file_input("Domain Input:", 0.35, self.select_domain_file, self.domain_label_var)
+        self.create_file_input("Problem Input:", 0.5, self.select_problem_file, self.problem_label_var)
+
+        self.create_button_with_icon(text="Plan", y_position=0.7,  command=self.handle_solve, icon=self.plan_icon, relx=0.54) # Plan button
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
@@ -281,8 +284,6 @@ class ModernApp(tk.Tk):
             fg="#0078D7",
         )
         label.place(relx=0.5, rely=0.1, anchor="center")
-
-        self.selected_domain = tk.StringVar()
 
         # Create domain selection dropdown
         self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
@@ -316,7 +317,7 @@ class ModernApp(tk.Tk):
 
         # Call the visualization function and handle results or errors
         try:
-            VisController.run(self.domain_file, self.problem_file, parse, plan_file)
+            VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file)
 
             # Display a success message
             result_label = tk.Label(

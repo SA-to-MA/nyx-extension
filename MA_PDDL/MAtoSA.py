@@ -3,6 +3,7 @@ import subprocess
 from itertools import product
 import re
 import os
+import glob
 
 
 class MAtoSA:
@@ -364,26 +365,42 @@ class SolveController:
         """
         send a new problem to nyx and return the path to it
         """
+        # Get the directory where the problem file is located
+        problem_dir = os.path.dirname(os.path.abspath(new_problem))
+        # Dynamically define the expected output directory
+        output_dir = os.path.join(problem_dir, "plans")
+        # Ensure the output directory exists before execution
+        os.makedirs(output_dir, exist_ok=True)
+        # Construct the Nyx command using absolute paths
         command = [
             'python',
-            '../nyx.py',
-            new_domain,
-            new_problem,
+            os.path.abspath("../nyx.py"),  # Assuming nyx.py is at the same relative location
+            os.path.abspath(new_domain),  # Convert domain file to absolute path
+            os.path.abspath(new_problem),  # Convert problem file to absolute path
             flags
         ]
         command = " ".join(command)
         subprocess.run(command, text=True, capture_output=True)
-        return r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
+        # Find the most recent plan file in the dynamically determined output directory
+        plan_files = glob.glob(os.path.join(output_dir, "*.pddl"))  # Find all PDDL plan files
+        if not plan_files:
+            raise FileNotFoundError(f"No plan files found in {output_dir} after running Nyx.")
+        # Get the latest plan file based on modification time
+        latest_plan = max(plan_files, key=os.path.getmtime)
+        return latest_plan  # Return the correct dynamically found plan file
 
     def solve(self):
         """
         solves the problem using nyx and saves the solution path
         """
-        satoma = MAtoSA(self.domain, self.problem)
-        new_domain = "../MA_PDDL/outputs/domain.pddl"
-        new_problem = "../MA_PDDL/outputs/problem.pddl"
-        satoma.generate(new_domain, new_problem)
-        self.plan = self.sendToNyx(new_domain, new_problem)
+        if self.domain_name == "Blocks":
+            satoma = MAtoSA(self.domain, self.problem)
+            new_domain = "../MA_PDDL/outputs/domain.pddl"
+            new_problem = "../MA_PDDL/outputs/problem.pddl"
+            satoma.generate(new_domain, new_problem)
+            self.plan = self.sendToNyx(new_domain, new_problem)
+        else:
+            self.plan = self.sendToNyx(self.domain, self.problem)
         return self.plan
 
     def getPlanFile(self):

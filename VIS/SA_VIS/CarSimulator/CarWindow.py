@@ -13,17 +13,17 @@ class CarWindow:
 
         # Load and resize resources into a dictionary
         self.images = {
-            "car": pygame.transform.scale(pygame.image.load("resources/car.png"), (250, 107)),
-            "goal_reached": pygame.transform.scale(pygame.image.load("resources/goal.png"), (120, 120)),
-            "background": pygame.transform.scale(pygame.image.load("resources/road.jpg"), self.window.get_size()),
-            "wind_resistance": pygame.transform.scale(pygame.image.load("resources/wind.png"), (70, 70)),
-            "engine_blow": pygame.transform.scale(pygame.image.load("resources/engine_blow.png"), (150, 150)),
+            "car": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/car.png"), (250, 107)),
+            "goal_reached": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/goal.png"), (120, 120)),
+            "background": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/road.jpg"), self.window.get_size()),
+            "wind_resistance": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/wind.png"), (70, 70)),
+            "engine_blow": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/engine_blow.png"), (150, 150)),
         }
 
         # Store positions for various elements
         window_width, window_height = self.window.get_size()
         self.positions = {
-            "car": [window_width * 0.01, window_height * 0.6],  # 5% from the left, 85% from the top
+            "car": [window_width * 0.01, window_height * 0.75],  # 5% from the left, 85% from the top
             "goal": [window_width * 0.4, window_height * 0.4],
             "wind_resistance": (window_width * 0.8, window_height * 0.6),  # 10% from left, 75% from top
             "engine_blow": (window_width * 0.15, window_height * 0.85),  # 15% from left, 85% from top
@@ -92,7 +92,7 @@ class CarWindow:
         box_width = max(title_width, stats_width) + 2 * padding
         box_height = title_height + stats_height + 3 * padding  # Extra padding for spacing between title and stats
         x_pos = (self.window.get_width() - box_width) // 2
-        y_pos = self.window.get_height() - box_height - 50  # Adjusted height for placement
+        y_pos = self.window.get_height() // 8  # Adjusted height for placement
 
         # Draw the white box with a border
         pygame.draw.rect(self.window, (255, 255, 255), (x_pos, y_pos, box_width, box_height))  # White box

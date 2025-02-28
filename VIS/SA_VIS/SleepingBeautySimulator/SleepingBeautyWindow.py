@@ -28,21 +28,21 @@ class SleepingBeautyWindow:
         }
         # load raw resources and store them in a dictionary
         images = {
-            "window_closed": pygame.image.load("resources/window-closed.png"),
-            "window_open": pygame.image.load("resources/window-open.png"),
-            "asleep": pygame.image.load("resources/asleep.png"),
-            "awake": pygame.image.load("resources/awake.png"),
-            "almost_awake": pygame.image.load("resources/almost-awake.png"),
-            "alarm_enabled": pygame.image.load("resources/alarm-enabled.png"),
-            "alarm_disabled": pygame.image.load("resources/alarm-disabled.png"),
-            "alarm_ringing": pygame.image.load("resources/alarm-ringing.png"),
-            "kiss": pygame.image.load("resources/kiss.png"),
-            "magnet": pygame.image.load("resources/magnet.png"),
-            "open_circuit" : pygame.image.load("resources/open-circut.png"),
-            "close_circuit": pygame.image.load("resources/closed-circut.png"),
-            "dresser": pygame.image.load("resources/dresser.png"),
-            "bedroom": pygame.image.load("resources/bedroom-cropped.jpg"),
-            "chest": pygame.image.load("resources/chest.png"),
+            "window_closed": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/window-closed.png"),
+            "window_open": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/window-open.png"),
+            "asleep": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/asleep.png"),
+            "awake": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/awake.png"),
+            "almost_awake": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/almost-awake.png"),
+            "alarm_enabled": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/alarm-enabled.png"),
+            "alarm_disabled": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/alarm-disabled.png"),
+            "alarm_ringing": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/alarm-ringing.png"),
+            "kiss": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/kiss.png"),
+            "magnet": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/magnet.png"),
+            "open_circuit" : pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/open-circut.png"),
+            "close_circuit": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/closed-circut.png"),
+            "dresser": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/dresser.png"),
+            "bedroom": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/bedroom-cropped.jpg"),
+            "chest": pygame.image.load("../VIS/SA_VIS/SleepingBeautySimulator/resources/chest.png"),
         }
 
         # Scale resources proportionally

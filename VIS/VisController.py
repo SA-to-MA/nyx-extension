@@ -2,7 +2,7 @@ from MA_PDDL import MAtoSA
 import subprocess
 from VIS.InitParser import InitState
 from VIS.MA_VIS.BlocksSimulator.BlocksWindow import Agent, main
-
+from VIS.SA_VIS import SA_Simulator
 
 
 class Parser:
@@ -53,35 +53,53 @@ def simulate_agents(parser):
             action = agent.get_next_action()
             print(f"  {agent.name} -> {action}")
 
-def run(domain_path, problem_path, parse=False, plan_file=""):
-    # parse domain and problem, and create multiagent files
-    satoma = MAtoSA.MAtoSA(domain_path, problem_path)
-    new_domain = "../MA_PDDL/outputs/domain.pddl"
-    new_problem = "../MA_PDDL/outputs/problem.pddl"
-    satoma.generate(new_domain, new_problem)
-    # get all agents and blocks
-    agents = satoma.agents['agent']
-    blocks = satoma.objects['block']
-    # parse init state
-    parser = InitState(new_problem, agents, blocks)
-    object_dict = parser.parse_pddl_init()
-    # create parser for plan
-    actions = {'no-op_agent': ['agent'], 'stack': ['agent','block', 'block'], 'unstack': ['agent','block', 'block'], 'pick-up': ['agent','block'], 'put-down': ['agent','block']}
-    parser = Parser(agents, actions)
-    # get plan from nyx
-    if parse:
-        command = [
-            'python',
-            '../nyx.py',
-            new_domain,
-            new_problem,
-            '-t:1'
-        ]
-        command = " ".join(command)
-        subprocess.run(command, text=True, capture_output=True)
-        plan_file = r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
-    parser.parse(plan_file)
-    main(parser.agents, object_dict)
+def run(selected_domain, domain_path, problem_path, parse=False, plan_file=""):
+    if selected_domain == "Blocks":
+        # parse domain and problem, and create multiagent files
+        satoma = MAtoSA.MAtoSA(domain_path, problem_path)
+        new_domain = "../MA_PDDL/outputs/domain.pddl"
+        new_problem = "../MA_PDDL/outputs/problem.pddl"
+        satoma.generate(new_domain, new_problem)
+        # get all agents and blocks
+        agents = satoma.agents['agent']
+        blocks = satoma.objects['block']
+        # parse init state
+        parser = InitState(new_problem, agents, blocks)
+        object_dict = parser.parse_pddl_init()
+        # create parser for plan
+        actions = {'no-op_agent': ['agent'], 'stack': ['agent','block', 'block'], 'unstack': ['agent','block', 'block'], 'pick-up': ['agent','block'], 'put-down': ['agent','block']}
+        parser = Parser(agents, actions)
+        # get plan from nyx
+        if parse:
+            command = [
+                'python',
+                '../nyx.py',
+                new_domain,
+                new_problem,
+                '-t:1'
+            ]
+            command = " ".join(command)
+            subprocess.run(command, text=True, capture_output=True)
+            plan_file = r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
+        parser.parse(plan_file)
+        main(parser.agents, object_dict)
+    elif selected_domain == "Other":
+        return
+    else:
+        # get plan from nyx if needed
+        if parse:
+            command = [
+                'python',
+                '../nyx.py',
+                domain_path,
+                problem_path,
+                '-t:1'
+            ]
+            command = " ".join(command)
+            subprocess.run(command, text=True, capture_output=True)
+            plan_file = r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
+        sa_sim = SA_Simulator.GenericSimulator(selected_domain, problem_path, plan_file)
+        sa_sim.simulate()
 
 
 # if __name__ == "__main__":
