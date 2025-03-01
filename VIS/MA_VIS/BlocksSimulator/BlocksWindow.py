@@ -1,5 +1,5 @@
 import random
-
+import os
 import pygame
 import time
 
@@ -31,12 +31,21 @@ class BlocksWindow:
         self.block_size = 50
         self.agent_size = 40
         self.margin = 10
+
+        # Get the absolute path of the current script (BlocksWindow.py)
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+        # Construct the correct absolute paths for images
+        resources_dir = os.path.join(base_path, "resources")  # Now directly in 'resources/'
+        table_image_path = os.path.join(resources_dir, "table.png")
+        hand_image_path = os.path.join(resources_dir, "hand.png")
+
         # Load the table background image
-        self.background_image = pygame.image.load('../VIS/MA_VIS/BlocksSimulator/resources/table.png')  # Replace with your image file
+        self.background_image = pygame.image.load(table_image_path)
         self.background_image = pygame.transform.scale(self.background_image, screen.get_size())  # Scale to screen size
 
         # Load the hand image for agents
-        self.hand_image = pygame.image.load('../VIS/MA_VIS/BlocksSimulator/resources/hand.png')  # Load the hand image
+        self.hand_image = pygame.image.load(hand_image_path)
         self.hand_image = pygame.transform.scale(self.hand_image,(150, 110))
 
     def initializeVisObjects(self, agents, init_obj, dis=150):

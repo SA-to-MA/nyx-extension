@@ -356,8 +356,8 @@ class MAtoSA:
 
 class SolveController:
     def __init__(self, domain_file, problem_file, domain_name="blocks"):
-        self.domain = domain_file
-        self.problem = problem_file
+        self.domain = os.path.abspath(domain_file)
+        self.problem = os.path.abspath(problem_file)
         self.domain_name = domain_name
         self.plan = self.solve()
 
@@ -393,10 +393,17 @@ class SolveController:
         """
         solves the problem using nyx and saves the solution path
         """
+
         if self.domain_name == "Blocks":
             satoma = MAtoSA(self.domain, self.problem)
-            new_domain = "../MA_PDDL/outputs/domain.pddl"
-            new_problem = "../MA_PDDL/outputs/problem.pddl"
+            # Get absolute path for outputs directory
+            output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", "outputs"))
+            os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
+
+            # Define the new output files with correct absolute paths
+            new_domain = os.path.join(output_dir, "domain.pddl")
+            new_problem = os.path.join(output_dir, "problem.pddl")
+
             satoma.generate(new_domain, new_problem)
             self.plan = self.sendToNyx(new_domain, new_problem)
         else:
