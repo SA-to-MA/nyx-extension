@@ -4,6 +4,7 @@ from tkinter import ttk, filedialog
 from MA_PDDL import MAtoSA
 from VIS import VisController
 from PIL import Image, ImageTk
+from pathlib import Path
 
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "Other"]
 
@@ -14,11 +15,11 @@ class ModernApp(tk.Tk):
 
         self.configure(bg="#B3E5FC")  # Set light sky blue background
         # Load icons for buttons
-        self.solve_icon = self.load_image("img/solve-icon.png", (30, 30))  # Size 30x30
-        self.visualize_icon = self.load_image("img/visualize-icon.png", (30, 30))  # Size 30x30
-        self.plan_icon = self.load_image("img/plan-icon.png", (30, 30))  # Size 30x30
-        self.go_icon = self.load_image("img/go-icon.png", (30, 30))  # Size 30x30
-        self.home_icon = self.load_image("img/home-icon.png", (30, 30))  # Size 30x30
+        self.solve_icon = self.load_image("solve-icon.png", (30, 30))  # Size 30x30
+        self.visualize_icon = self.load_image("visualize-icon.png", (30, 30))  # Size 30x30
+        self.plan_icon = self.load_image("plan-icon.png", (30, 30))  # Size 30x30
+        self.go_icon = self.load_image("go-icon.png", (30, 30))  # Size 30x30
+        self.home_icon = self.load_image("home-icon.png", (30, 30))  # Size 30x30
 
         self.title("SAtoMA Nyx and Visualization")  # Set window title
         self.geometry("800x600")  # Set window size
@@ -95,9 +96,20 @@ class ModernApp(tk.Tk):
             # Adjust relx to position it closer to the left edge of the button
             icon_label.place(relx=relx+0.05 - (width / 2) - 0.05, rely=y_position, anchor="center")
 
-    def load_image(self, path, size):
+    def load_image(self, filename, size):
         """Loads an image and resizes it to the specified size."""
-        image = Image.open(path)
+        # Get the directory where gui.py is located
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+        # Construct the absolute path to the image inside UI/img/
+        image_path = os.path.join(base_path, "img", filename)  # Use filename directly
+
+        # Ensure the file exists before opening
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image not found: {image_path}")
+
+        # Open, resize, and convert to Tkinter PhotoImage
+        image = Image.open(image_path)
         image = image.resize(size, Image.Resampling.LANCZOS)
         return ImageTk.PhotoImage(image)
 
