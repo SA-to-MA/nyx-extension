@@ -1,88 +1,67 @@
-# Nyx - a new PDDL+ planner written in Python
+# Nyx Extension - Support also Multi-Agent files and visualization
 
-Nyx is a PDDL+ parser and planner written in python with a focus on simplicity. It is a discretization-based planner that approximates the continuous system dynamics using uniform time steps (Δt) and step functions.
+The original nyx repository: https://gitlab.com/wmgp9/nyx/-/tree/main?ref_type=headse=heads
 
-
-This work was initially based on the classical parser and planner written by PUCRS (https://github.com/pucrs-automated-planning/pddl-parser).
-
-## Source
-- [nyx.py](nyx.py): Main Runner
-- [planner.py](planner.py): main planning loop and associated functions
-- [PDDL.py](PDDL.py): PDDL parser
-- [heuristic_functions.py](heuristic_functions.py): heuristic function definitions used in GBFS and A* Searches
-- [simulator.py](simulator.py): (Work in Progress) PDDL+ plan simulator
-- [semantic_attachments](semantic_attachments/):
-  - [semantic_attachment.py](semantic_attachments/semantic_attachment.py): implementation of  semantic attachments (external functions)
-- [syntax](syntax/) folder with PDDL object classes and supporting elements:
-  - [action.py](syntax/action.py) 
-  - [event.py](syntax/event.py) 
-  - [process.py](syntax/process.py)
-  - [state.py](syntax/state.py)
-  - [visited_state.py](syntax/visited_state.py)
-  - [constants.py](syntax/constants.py)
-  - [plan.py](syntax/plan.py)
-  - [trace.py](syntax/trace.py)
-- [compiler](compiler/) folder with JIT compiler classes:
-  - [JIT.py](compiler/JIT.py)
-  - [HappeningMixin.py](compiler/HappeningMixin.py)
-  - [preconditions_tree.py](compiler/preconditions_tree.py)
-- [ex](ex/) folder with PDDL domains:
-  - [Car](ex/car)
-  - [Sleeping Beauty](ex/sleeping_beauty/)
-  - [Cartpole](ex/cartpole/)
-  - [Vending Machine](ex/vending_machine/)
-  - [Powered Descent](ex/1D-powered-descent/)
-  - [Convoys](ex/convoys_mt/)
-  - [Linear Generator](ex/linear-generator/)
-  - [Non-Linear Generator](ex/non-linear-generator/)
-  - [Linear Generator (with processes)](ex/lg_process/)
-  - [Solar Rover](ex/solar-rover/)
-  - [Non-Linear Solar Rover](ex/non-linear-solar-rover/)
-  - [Planetary Lander](ex/planetary/)
-  - [Angry/Science Birds](ex/sb/)
-  - [Non-Temporal](ex/non-temporal/) folder with non-temporal PDDL domains:
-	  - [Dinner](ex/non-temporal/dinner/)
-	  - [Blocks World](ex/non-temporal/blocksworld/)
-	  - [Dock Worker Robot](ex/non-temporal/dwr/)
-	  - [Travelling Salesman Problem](ex/non-temporal/tsp/)
-    - [Driving](ex/non-temporal/driving/)
-    - [Minecraft](ex/non-temporal/minecraft/)
-
-## Planner execution
+## **What do you need for start**
+* Python less than 3.13 (version 3.11 is good enough)
+* Install the requirements of the project:
 ```Shell
-python -B nyx.py ex/car/domain.pddl ex/car/pb01.pddl -t:1
+python3 -m pip install -r requirements.txt 
 ```
 
-Planner options can also be stored in a config file.
+## **Project Structure**
+
+### **1. [MA_PDDL](MA_PDDL) - Multi-Agent PDDL Components**
+- **[examples](MA_PDDL/examples/)**  
+  - **[Blocks](MA_PDDL/examples/Blocks/)**: Contains 4 domains and 4 problems for multi-agent planning.
+- **[outputs](MA_PDDL/outputs/)**: Stores MA plans processed by Nyx.
+- **[MAtoSA.py](MA_PDDL/MAtoSA.py)**: Converts Multi-Agent PDDL files into Single-Agent PDDL files.
+
+---
+
+### **2. [UI](UI) - Graphical User Interface**
+- **[img](UI/img/)**: Stores images used in the GUI (e.g., icons, backgrounds).
+- **[gui.py](UI/gui.py)**: Main GUI runner.
+
+---
+
+### **3. [VIS](VIS) - Visualization Components**
+
+- **[ActionsParser.py](VIS/SA_VIS/ActionsParser.py)**  
+  - Parses actions in single-agent simulations.
+- **[SA_Simulator.py](VIS/SA_VIS/SA_Simulator.py)**  
+  - Generic simulator for single-agent planning.
+- **[InitParser.py](VIS/SA_VIS/InitParser.py)**  
+  - Parses initial state configurations.
+- **[VisController.py](VIS/SA_VIS/VisController.py)**  
+  - Manages visualization controls for SA and MA simulations.
+
+#### **📌 Single-Agent Visualization ([SA_VIS](VIS/SA_VIS/))**
+- **[CarSimulator](VIS/SA_VIS/CarSimulator/)**  
+  - **[resources](VIS/SA_VIS/CarSimulator/resources/)**: Stores assets for the car simulator.
+  - **[Car.py](VIS/SA_VIS/CarSimulator/Car.py)**: Defines car object properties and behavior.
+  - **[CarSimulator.py](VIS/SA_VIS/CarSimulator/CarSimulator.py)**: Manages the car simulation process.
+  - **[CarWindow.py](VIS/SA_VIS/CarSimulator/CarWindow.py)**: Handles the visualization for car simulation.
+
+- **[SleepingBeautySimulator](VIS/SA_VIS/SleepingBeautySimulator/)**  
+  - **[resources](VIS/SA_VIS/SleepingBeautySimulator/resources/)**: Stores assets for the Sleeping Beauty simulator.
+  - **[SleepingBeauty.py](VIS/SA_VIS/SleepingBeautySimulator/SleepingBeauty.py)**: Defines Sleeping Beauty domain logic.
+  - **[SleepingBeautySimulator.py](VIS/SA_VIS/SleepingBeautySimulator/SleepingBeautySimulator.py)**: Manages the Sleeping Beauty simulation.
+  - **[SleepingBeautyWindow.py](VIS/SA_VIS/SleepingBeautySimulator/SleepingBeautyWindow.py)**: Handles the visualization for the Sleeping Beauty simulation.
+
+#### **📌 Multi-Agent Visualization ([MA_VIS](VIS/MA_VIS/))**
+- **[BlocksSimulator](VIS/MA_VIS/BlocksSimulator/)**  
+  - **[resources](VIS/MA_VIS/BlocksSimulator/resources/)**: Stores assets (e.g., `table.png`, `hand.png`).
+  - **[BlocksWindow.py](VIS/MA_VIS/BlocksSimulator/BlocksWindow.py)**: Manages the Blocks Simulation visualization.
+
+
+## **How to run**
+### By shell:
+* You have to be on the root folder [nyx-extenstion](nyx-extension)
+* Run the following command:
 ```Shell
-python -B nyx.py ex/car/domain.pddl ex/car/pb01.pddl -config:"ex/car/car.config"
+python3 -m UI.gui
 ```
+### Optional:
+  * You can also run the [gui.py](gui.py) file manually in your IDE.
 
-use flag ```-h``` for usage and planner option information.
-
-
-## Custom heuristics and semantic attachments
-To use custom heuristics, fill in the body of the heuristic_function method inside [heuristic_functions.py](heuristic_functions.py), assigning it an index, and running the planner with the '-custom_h:...' flag with the corresponding heuristic index. 
-An example heuristic implementation and usage from the [cartpole](ex/cartpole/) domain: 
-
-```
-def heuristic_function(state):
-    if constants.CUSTOM_HEURISTIC_ID == 1:
-      h_val = math.sqrt(math.pow(state.state_vars["['x']"], 2) + math.pow(state.state_vars["['theta']"], 2) + \
-                        math.pow(state.state_vars["['theta_dot']"], 2) + math.pow(state.state_vars["['x_dot']"], 2) + \
-                        math.pow(state.state_vars["['theta_ddot']"], 2) + math.pow(state.state_vars["['x_ddot']"], 2)) * \
-                        (state.state_vars["['time_limit']"] - state.state_vars["['elapsed_time']"])
-      return h_val
-```
-
-```Shell
-python -B nyx.py ex/cartpole/cartpole.pddl ex/cartpole/pb01.pddl -t:0.02 -dblevent -search:gbfs -custom_h:1
-```
-
-Semantic attachments can be used in the same manner as custom heuristics. Fill in the body of the external_function method in[semantic_attachment.py](semantic_attachments/semantic_attachment.py). When running the planner use flag '-sa:...' to specify which semantic attachment to activate. 
-
-## Dependencies
-- numba
-
-## Current limitations of our planner
-- No support for object subtypes
