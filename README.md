@@ -9,6 +9,16 @@ The original nyx repository: https://gitlab.com/wmgp9/nyx/-/tree/main?ref_type=h
 python3 -m pip install -r requirements.txt 
 ```
 
+## **How to run**
+### By shell:
+* You have to be on the root folder [nyx-extenstion](nyx-extension)
+* Run the following command:
+```Shell
+python3 -m UI.gui
+```
+### Optional:
+  * You can also run the [gui.py](gui.py) file manually in your IDE.
+
 ## **Project Structure**
 
 ### **1. [MA_PDDL](MA_PDDL) - Multi-Agent PDDL Components**
@@ -53,15 +63,3 @@ python3 -m pip install -r requirements.txt
 - **[BlocksSimulator](VIS/MA_VIS/BlocksSimulator/)**  
   - **[resources](VIS/MA_VIS/BlocksSimulator/resources/)**: Stores assets (e.g., `table.png`, `hand.png`).
   - **[BlocksWindow.py](VIS/MA_VIS/BlocksSimulator/BlocksWindow.py)**: Manages the Blocks Simulation visualization.
-
-
-## **How to run**
-### By shell:
-* You have to be on the root folder [nyx-extenstion](nyx-extension)
-* Run the following command:
-```Shell
-python3 -m UI.gui
-```
-### Optional:
-  * You can also run the [gui.py](gui.py) file manually in your IDE.
-
