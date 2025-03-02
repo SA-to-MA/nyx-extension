@@ -1,5 +1,5 @@
 import pygame
-
+import os
 
 class CarWindow:
     def __init__(self, window, car):
@@ -11,14 +11,37 @@ class CarWindow:
         self.window = window
         self.font = pygame.font.Font(None, 30)
 
+        # Get the absolute path to the resources directory
+        base_dir = os.path.abspath(os.path.dirname(__file__))
+        resources_dir = os.path.join(base_dir, "resources")
+
         # Load and resize resources into a dictionary
         self.images = {
-            "car": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/car.png"), (250, 107)),
-            "goal_reached": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/goal.png"), (120, 120)),
-            "background": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/road.jpg"), self.window.get_size()),
-            "wind_resistance": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/wind.png"), (70, 70)),
-            "engine_blow": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/engine_blow.png"), (150, 150)),
+            "car": pygame.transform.scale(
+                pygame.image.load(os.path.join(resources_dir, "car.png")), (250, 107)
+            ),
+            "goal_reached": pygame.transform.scale(
+                pygame.image.load(os.path.join(resources_dir, "goal.png")), (120, 120)
+            ),
+            "background": pygame.transform.scale(
+                pygame.image.load(os.path.join(resources_dir, "road.jpg")), self.window.get_size()
+            ),
+            "wind_resistance": pygame.transform.scale(
+                pygame.image.load(os.path.join(resources_dir, "wind.png")), (70, 70)
+            ),
+            "engine_blow": pygame.transform.scale(
+                pygame.image.load(os.path.join(resources_dir, "engine_blow.png")), (150, 150)
+            ),
         }
+
+        # Load and resize resources into a dictionary - Old
+        # self.images = {
+        #     "car": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/car.png"), (250, 107)),
+        #     "goal_reached": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/goal.png"), (120, 120)),
+        #     "background": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/road.jpg"), self.window.get_size()),
+        #     "wind_resistance": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/wind.png"), (70, 70)),
+        #     "engine_blow": pygame.transform.scale(pygame.image.load("../VIS/SA_VIS/CarSimulator/resources/engine_blow.png"), (150, 150)),
+        # }
 
         # Store positions for various elements
         window_width, window_height = self.window.get_size()
