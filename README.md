@@ -1,8 +1,18 @@
-# Nyx Extension - Support also Multi-Agent files and visualization
+# Nyx MA Extension - Support of Multi-Agent PDDL files and visualization
 
-The original nyx repository: https://gitlab.com/wmgp9/nyx/-/tree/main?ref_type=headse=heads
+## **Motivation for Research**
+We aim to solve multi-agent planning problems in a PDDL+ domain, which includes:
 
-## **What do you need for start**
+* Numeric variables
+* Temporal actions
+* Durative actions
+
+To address these challenges, we use Nyx, a planner that supports solving such problems.
+With minor modifications to the code, our framework can also support other planners that handle subsets of these features, such as Metric-FF, which solves problems in PDDL 2.1.
+
+You can find the original Nyx code [here](https://gitlab.com/wmgp9/nyx/-/tree/main?ref_type=headse=heads).
+
+## **System requirements**
 * Python less than 3.13 (version 3.11 is good enough)
 * Install the requirements of the project:
 ```Shell
@@ -19,11 +29,19 @@ python3 -m UI.gui
 ### Optional:
   * You can also run the [gui.py](gui.py) file manually in your IDE.
 
+## **PDDL+ files structure:**
+  * Supports all the functionality NYX is supporting.
+  * Agents should be defined under private section of objects.
+  * You can look for examples [here](MA_PDDL/examples/).
+
+
 ## **Project Structure**
 
 ### **1. [MA_PDDL](MA_PDDL) - Multi-Agent PDDL Components**
-- **[examples](MA_PDDL/examples/)**  
-  - **[Blocks](MA_PDDL/examples/Blocks/)**: Contains 4 domains and 4 problems for multi-agent planning.
+- **[examples](MA_PDDL/examples/)**: Contains examples of multiple domain, problem and config files.
+  - **[Blocks](MA_PDDL/examples/Blocks/)**
+  - **[Car](MA_PDDL/examples/Car/)**
+  - **[Minecraft](MA_PDDL/examples/Minecraft/)**
 - **[outputs](MA_PDDL/outputs/)**: Stores MA plans processed by Nyx.
 - **[MAtoSA.py](MA_PDDL/MAtoSA.py)**: Converts Multi-Agent PDDL files into Single-Agent PDDL files.
 

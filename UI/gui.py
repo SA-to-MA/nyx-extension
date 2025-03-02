@@ -62,12 +62,14 @@ class ModernApp(tk.Tk):
         self.problem_file = ""
         self.domain_file = ""
         self.plan_file = ""
+        self.config_file = ""
         self.controller = None
         self.selected_domain = tk.StringVar()
 
         self.domain_label_var = tk.StringVar(value="No file selected")  # Initialize with default text
         self.problem_label_var = tk.StringVar(value="No file selected")
         self.plan_label_var = tk.StringVar(value="No file selected")
+        self.config_label_var = tk.StringVar(value="No file selected")
 
     def create_dropdown_input(self, label_text, y_position, options, variable):
         """Create a dropdown input field that matches the file input fields in position and width."""
@@ -191,6 +193,15 @@ class ModernApp(tk.Tk):
             file_name = os.path.basename(file_path)  # Extract file name only
             self.plan_label_var.set(f"Selected: {file_name}")  # Update label
 
+    def select_config_file(self):
+        """Open a file dialog to select the config file."""
+        file_path = filedialog.askopenfilename(title="Select Config File",
+                                               filetypes=[("TXT Files", "*.txt"), ("All Files", "*.*")])
+        if file_path:
+            self.config_file = file_path
+            file_name = os.path.basename(file_path)  # Extract file name only
+            self.config_label_var.set(f"Selected: {file_name}")  # Update label
+
     def handle_solve(self):
         # Check if both domain and problem files are selected
         if not self.domain_file or not self.problem_file:
@@ -199,7 +210,7 @@ class ModernApp(tk.Tk):
 
         # Call the solve function and save the result
         try:
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get())
+            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(), self.config_file)
             self.plan_file = self.controller.getPlanFile()  # Save the plan result
             self.switch_page("PlanResults")  # Switch to the PlanResults page
         except Exception as e:
@@ -279,8 +290,9 @@ class ModernApp(tk.Tk):
         # Create input fields
         self.create_file_input("Domain Input:", 0.35, self.select_domain_file, self.domain_label_var)
         self.create_file_input("Problem Input:", 0.5, self.select_problem_file, self.problem_label_var)
+        self.create_file_input("Configuration (optional):", 0.65, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Plan", y_position=0.7,  command=self.handle_solve, icon=self.plan_icon, relx=0.54) # Plan button
+        self.create_button_with_icon(text="Plan", y_position=0.8,  command=self.handle_solve, icon=self.plan_icon, relx=0.54) # Plan button
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")

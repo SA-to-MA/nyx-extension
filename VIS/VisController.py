@@ -63,8 +63,8 @@ def run(selected_domain, domain_path, problem_path, parse=False, plan_file=""):
         satoma = MAtoSA.MAtoSA(domain_path, problem_path)
 
         # Define new domain and problem output paths
-        new_domain = os.path.join(output_dir, "domain.pddl")
-        new_problem = os.path.join(output_dir, "problem.pddl")
+        new_domain = os.path.join(output_dir, "domain-a1.pddl")
+        new_problem = os.path.join(output_dir, "problem-a1.pddl")
 
         satoma.generate(new_domain, new_problem)
         # get all agents and blocks

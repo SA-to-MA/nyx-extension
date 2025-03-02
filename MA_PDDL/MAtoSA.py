@@ -355,13 +355,28 @@ class MAtoSA:
             file.write(')')
 
 class SolveController:
-    def __init__(self, domain_file, problem_file, domain_name="blocks"):
+    def __init__(self, domain_file, problem_file, domain_name, flags):
         self.domain = os.path.abspath(domain_file)
         self.problem = os.path.abspath(problem_file)
         self.domain_name = domain_name
+        self.flags = self.process_flags(flags)
         self.plan = self.solve()
 
-    def sendToNyx(self, new_domain, new_problem, flags="-t:1 -pt"):
+    def process_flags(self, flags):
+        """Checks if flags is a file, reads its content if so, otherwise returns the default flags."""
+        # if no flags, return default
+        if len(flags) == 0:
+            return "-t:1 -pt"
+        elif os.path.isfile(flags):  # Check if flags is a path to a file
+            try:
+                with open(flags, 'r') as file:
+                    return file.read().strip()  # Read and clean up whitespace
+            except Exception as e:
+                print(f"Error reading flags file: {e}")
+                return "-t:1 -pt"  # Return default if file read fails
+        return flags  # Return flags as is if not a file
+
+    def sendToNyx(self, new_domain, new_problem):
         """
         send a new problem to nyx and return the path to it
         """
@@ -377,7 +392,7 @@ class SolveController:
             os.path.abspath("../nyx.py"),  # Assuming nyx.py is at the same relative location
             os.path.abspath(new_domain),  # Convert domain file to absolute path
             os.path.abspath(new_problem),  # Convert problem file to absolute path
-            flags
+            self.flags
         ]
         command = " ".join(command)
         subprocess.run(command, text=True, capture_output=True)
@@ -394,7 +409,7 @@ class SolveController:
         solves the problem using nyx and saves the solution path
         """
 
-        if self.domain_name == "Blocks":
+        if self.domain_name == "Blocks" or self.domain_name == "Car":
             satoma = MAtoSA(self.domain, self.problem)
             # Get absolute path for outputs directory
             output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", "outputs"))
@@ -424,7 +439,7 @@ class SolveController:
             # Read the solution from the saved plan result
             with open(self.plan, "r") as file:
                 plan_text = file.read()
-                if self.domain_name == "blocks": # if domain is blocks
+                if self.domain_name == "Blocks": # if domain is blocks
                     action_mapping = {'no-op_agent': ['agent'], 'stack': ['agent', 'block', 'block'],
                                'unstack': ['agent', 'block', 'block'], 'pick-up': ['agent', 'block'],
                                'put-down': ['agent', 'block']}
@@ -455,5 +470,5 @@ class SolveController:
 
 # EXAMPLE OF USAGE
 # if __name__ == "__main__":
-#     solve = SolveController("examples/Car/domain.pddl", "../MA_PDDL/examples/Car/problem.pddl")
+#     solve = SolveController("examples/Car/domain.pddl", "examples/Car/problem.pddl", "Car", "examples/Car/config.pddl")
 #     solve.solve()
