@@ -4,6 +4,7 @@ from itertools import product
 import re
 import os
 import glob
+import shlex
 
 
 class MAtoSA:
@@ -376,34 +377,6 @@ class SolveController:
                 return "-t:1 -pt"  # Return default if file read fails
         return flags  # Return flags as is if not a file
 
-    def sendToNyx(self, new_domain, new_problem):
-        """
-        send a new problem to nyx and return the path to it
-        """
-        # Get the directory where the problem file is located
-        problem_dir = os.path.dirname(os.path.abspath(new_problem))
-        # Dynamically define the expected output directory
-        output_dir = os.path.join(problem_dir, "plans")
-        # Ensure the output directory exists before execution
-        os.makedirs(output_dir, exist_ok=True)
-        # Construct the Nyx command using absolute paths
-        command = [
-            'python',
-            os.path.abspath("../nyx.py"),  # Assuming nyx.py is at the same relative location
-            os.path.abspath(new_domain),  # Convert domain file to absolute path
-            os.path.abspath(new_problem),  # Convert problem file to absolute path
-            self.flags
-        ]
-        command = " ".join(command)
-        subprocess.run(command, text=True, capture_output=True)
-        # Find the most recent plan file in the dynamically determined output directory
-        plan_files = glob.glob(os.path.join(output_dir, "*.pddl"))  # Find all PDDL plan files
-        if not plan_files:
-            raise FileNotFoundError(f"No plan files found in {output_dir} after running Nyx.")
-        # Get the latest plan file based on modification time
-        latest_plan = max(plan_files, key=os.path.getmtime)
-        return latest_plan  # Return the correct dynamically found plan file
-
     def solve(self):
         """
         solves the problem using nyx and saves the solution path
@@ -420,9 +393,9 @@ class SolveController:
             new_problem = os.path.join(output_dir, "problem.pddl")
 
             satoma.generate(new_domain, new_problem)
-            self.plan = self.sendToNyx(new_domain, new_problem)
+            self.plan = run_nyx(new_domain, new_problem, self.flags)
         else:
-            self.plan = self.sendToNyx(self.domain, self.problem)
+            self.plan = run_nyx(self.domain, self.problem, self.flags)
         return self.plan
 
     def getPlanFile(self):
@@ -466,6 +439,33 @@ class SolveController:
                 return "\n".join(parsed_lines)
         except:
             return "Solution not found"
+
+def run_nyx(domain, problem, flags):
+    """Run the Nyx planner and generate a plan."""
+    flags_list = shlex.split(flags)
+    command = [
+        "python",
+        os.path.abspath("../nyx.py"),
+        os.path.abspath(domain),
+        os.path.abspath(problem),
+    ] + flags_list
+    print(f"Executing command: {' '.join(command)}")  # Debugging print
+    result = subprocess.run(command, text=True, capture_output=True)
+    print("STDOUT:", result.stdout)
+    print("STDERR:", result.stderr)
+    # Get the directory where the problem file is located
+    problem_dir = os.path.dirname(os.path.abspath(problem))
+    # Dynamically define the expected output directory
+    output_dir = os.path.join(problem_dir, "plans")
+    # Ensure the output directory exists before execution
+    os.makedirs(output_dir, exist_ok=True)
+    # Find the most recent plan file in the dynamically determined output directory
+    plan_files = glob.glob(os.path.join(output_dir, "*.pddl"))  # Find all PDDL plan files
+    if not plan_files:
+        raise FileNotFoundError(f"No plan files found in {output_dir} after running Nyx.")
+    # Get the latest plan file based on modification time
+    latest_plan = max(plan_files, key=os.path.getmtime)
+    return latest_plan  # Return the correct dynamically found plan file
 
 
 # EXAMPLE OF USAGE

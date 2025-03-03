@@ -1,9 +1,10 @@
-from MA_PDDL import MAtoSA
-import subprocess
-from VIS.InitParser import InitState
+from pathlib import Path
+from MA_PDDL.MAtoSA import MAtoSA, run_nyx
+from VIS.MA_VIS.BlocksSimulator.BlocksInitParser import InitState
 from VIS.MA_VIS.BlocksSimulator.BlocksWindow import Agent, main
-from VIS.SA_VIS import SA_Simulator
+from VIS.SA_VIS.SA_Simulator import GenericSimulator
 import os
+import shlex
 
 class Parser:
     def __init__(self, _agents, _actions):
@@ -53,71 +54,56 @@ def simulate_agents(parser):
             action = agent.get_next_action()
             print(f"  {agent.name} -> {action}")
 
-def run(selected_domain, domain_path, problem_path, parse=False, plan_file=""):
-    # Construct absolute path to the outputs directory
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", "outputs"))
-    os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
+def ensure_directory_exists(directory):
+    """Ensure the given directory exists."""
+    os.makedirs(directory, exist_ok=True)
+    return directory
 
+def get_absolute_path(*path_parts):
+    """Construct and return an absolute path from the given parts."""
+    return str(Path(__file__).resolve().parent.parent.joinpath(*path_parts))
+
+def process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_file, flags):
+    """Process the 'Blocks' domain by parsing and simulating it."""
+    satoma = MAtoSA(domain_path, problem_path)
+    new_domain = os.path.join(output_dir, "domain.pddl")
+    new_problem = os.path.join(output_dir, "problem.pddl")
+    satoma.generate(new_domain, new_problem)
+
+    agents, blocks = satoma.agents["agent"], satoma.objects["block"]
+    object_dict = InitState(new_problem, agents, blocks).parse_pddl_init()
+
+    if parse:
+        run_nyx(new_domain, new_problem, flags)
+
+    parser = Parser(agents, {
+        'no-op_agent': ['agent'],
+        'stack': ['agent', 'block', 'block'],
+        'unstack': ['agent', 'block', 'block'],
+        'pick-up': ['agent', 'block'],
+        'put-down': ['agent', 'block']
+    })
+    parser.parse(plan_file)
+    main(parser.agents, object_dict)
+
+def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", flags=""):
+    """Run the selected domain simulation."""
+    # if no flags, set default flags
+    if len(flags) == 0:
+        flags = "-t:1 -pt"
+    # if domain is MA, needs to convert to SA
     if selected_domain == "Blocks":
-        # parse domain and problem, and create multiagent files
-        satoma = MAtoSA.MAtoSA(domain_path, problem_path)
-
-        # Define new domain and problem output paths
-        new_domain = os.path.join(output_dir, "domain-a1.pddl")
-        new_problem = os.path.join(output_dir, "problem-a1.pddl")
-
-        satoma.generate(new_domain, new_problem)
-        # get all agents and blocks
-        agents = satoma.agents['agent']
-        blocks = satoma.objects['block']
-        # parse init state
-        parser = InitState(new_problem, agents, blocks)
-        object_dict = parser.parse_pddl_init()
-        # create parser for plan
-        actions = {'no-op_agent': ['agent'], 'stack': ['agent','block', 'block'], 'unstack': ['agent','block', 'block'], 'pick-up': ['agent','block'], 'put-down': ['agent','block']}
-        parser = Parser(agents, actions)
-
-        # Construct plan file path
-        plan_output_dir = os.path.join(output_dir, "plans")
-        os.makedirs(plan_output_dir, exist_ok=True)  # Ensure the plans directory exists
-        plan_file = os.path.join(plan_output_dir, "plan1_problem.pddl")
-
-        # Get plan from Nyx
-        if parse:
-            command = [
-                'python',
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "nyx.py")),
-                new_domain,
-                new_problem,
-                '-t:1'
-            ]
-            print(f"Executing command: {' '.join(command)}")  # Debugging print
-            subprocess.run(command, text=True, capture_output=True)
-
-        parser.parse(plan_file)
-        main(parser.agents, object_dict)
-    elif selected_domain == "Other":
-        return
+        # get output directory if runs with conversion to SA
+        output_dir = ensure_directory_exists(get_absolute_path("MA_PDDL", "outputs"))
+        # send to processing
+        process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_file, flags)
+    elif selected_domain == "Other": # if other domain, it's not supported in visualization
+        return "Not supported"
     else:
-        # Construct plan file path
-        plan_output_dir = os.path.join(output_dir, "plans")
-        os.makedirs(plan_output_dir, exist_ok=True)
-
-        plan_file = os.path.join(plan_output_dir, "plan1_problem.pddl")
-
-        # Get plan from Nyx if needed
-        if parse:
-            command = [
-                'python',
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "nyx.py")),
-                domain_path,
-                problem_path,
-                '-t:1'
-            ]
-            subprocess.run(command, text=True, capture_output=True)
-
-        sa_sim = SA_Simulator.GenericSimulator(selected_domain, problem_path, plan_file)
-        sa_sim.simulate()
+        if parse: # if no plan file, run and get plan
+            plan_file = run_nyx(domain_path, problem_path, flags)
+        # run domain problem and plan in simulator
+        GenericSimulator(selected_domain, problem_path, plan_file).simulate()
 
 
 # if __name__ == "__main__":

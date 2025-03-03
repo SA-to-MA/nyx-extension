@@ -25,7 +25,7 @@ class CarSimulator:
         """
         print("Starting the simulation...")
         self.window.draw()  # Draw initial state
-        time.sleep(7)
+        time.sleep(2)
 
         while self.total_time < self.max_time and not self.car.goal_reached:
             # Check if there are actions for the current timestamp
@@ -47,7 +47,7 @@ class CarSimulator:
             time.sleep(1)
 
         # Wait a few seconds before closing the simulation
-        time.sleep(5)
+        time.sleep(3)
         print(
             f"Simulation complete. Car {'reached the goal' if self.car.goal_reached else 'did not reach the goal'} after {self.total_time} time units.")
 

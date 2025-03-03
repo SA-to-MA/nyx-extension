@@ -93,7 +93,7 @@ class InitState:
 
 
 # Example usage
-# file_path = "../MA_PDDL/examples/Blocks/problem-a1.pddl"  # Replace with your file path
+# file_path = "../MA_PDDL/examples/Blocks/problem.pddl"  # Replace with your file path
 # try:
 #     parser = InitState(file_path,['a1', 'a2'], ['a', 'b', 'c'])
 #     object_dict = parser.parse_pddl_init()

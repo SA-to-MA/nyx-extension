@@ -26,7 +26,7 @@ class SleepingBeautySimulator:
         print("Starting the simulation...")
         # Draw the initial state of the window
         self.window.draw()
-        time.sleep(3)
+        time.sleep(2)
 
         while self.total_time < self.max_time and not self.sleeping_beauty.awake:
             # Check if there are actions for the current timestamp
@@ -48,7 +48,7 @@ class SleepingBeautySimulator:
             time.sleep(1)
 
         # Wait a few seconds before closing the simulation
-        time.sleep(5)
+        time.sleep(3)
         print(
             f"Simulation complete. Sleeping Beauty is {'awake' if self.sleeping_beauty.awake else 'still asleep'} after {self.total_time} time units.")
 
