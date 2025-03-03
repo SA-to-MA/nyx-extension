@@ -332,7 +332,7 @@ class ModernApp(tk.Tk):
         self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         # Check if a plan file exists
-        if hasattr(self, 'plan_file'):
+        if len(self.plan_file) != 0:
             plan_file = self.plan_file
             parse = False  # No parsing needed because a plan file exists
         else:
