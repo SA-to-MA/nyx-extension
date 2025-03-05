@@ -2,22 +2,8 @@ import random
 import os
 import pygame
 import time
+from VIS.MA_VIS.Agent import Agent
 
-class Agent:
-    def __init__(self, _name, _actions):
-        self.actions = _actions
-        self.name = _name
-
-    def add_action(self, _action):
-        self.actions.append(_action)
-
-    def get_next_action(self):
-        if self.actions:
-            return self.actions.pop(0)
-        return "Done"
-
-    def execute(self, _action, blocks, screen):
-        pass
 
 class BlocksWindow:
     def __init__(self, screen, agents, blocks):
@@ -32,7 +18,7 @@ class BlocksWindow:
         self.agent_size = 40
         self.margin = 10
 
-        # Get the absolute path of the current script (BlocksWindow.py)
+        # Get the absolute path of the current script (BlocksSimulation.py)
         base_path = os.path.dirname(os.path.abspath(__file__))
 
         # Construct the correct absolute paths for images
@@ -200,8 +186,9 @@ class BlockAgent(Agent):
 
 
 class BlocksSimulator:
-    def __init__(self, window):
+    def __init__(self, window, t_value=1):
         self.window = window
+        self.t = t_value
 
     def run(self):
         print("Starting simulation...")
@@ -216,24 +203,6 @@ class BlocksSimulator:
                     action = agent.actions.pop(0)  # Get the next action
                     agent.execute(action, self.window.blocks, self.window.screen)  # Execute the action
                     self.window.draw()  # Update visualization
-            time.sleep(1)  # Pause for visualization
+            time.sleep(self.t)  # Pause for visualization
         print("Simulation complete.")
-
-def main(agents, init_obj):
-    # Initialize Pygame
-    pygame.init()
-    info = pygame.display.Info()
-    window_height = int((3 / 4) * info.current_h)
-    window_width = int((5 / 4) * window_height)
-    screen = pygame.display.set_mode((window_width, window_height))
-    pygame.display.set_caption("Blocks Simulator")
-    # Create visualization window
-    blocks_window = BlocksWindow(screen, agents, init_obj)
-    # Create simulator
-    simulator = BlocksSimulator(blocks_window)
-    # Run simulation
-    simulator.run()
-    # Wait before closing
-    time.sleep(5)
-    pygame.quit()
 

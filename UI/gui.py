@@ -316,8 +316,9 @@ class ModernApp(tk.Tk):
         self.create_file_input("Domain Input:", 0.35, self.select_domain_file, self.domain_label_var)
         self.create_file_input("Problem Input:", 0.45, self.select_problem_file, self.problem_label_var)
         self.create_file_input("Plan Input (optional):", 0.55, self.select_plan_file, self.plan_label_var)
+        self.create_file_input("Configuration (optional):", 0.65, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Go!", y_position=0.7,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.54)  # Plan button
+        self.create_button_with_icon(text="Go!", y_position=0.8,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.54)  # Plan button
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
@@ -341,7 +342,7 @@ class ModernApp(tk.Tk):
 
         # Call the visualization function and handle results or errors
         try:
-            VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file)
+            VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file, self.config_file)
 
             # Display a success message
             result_label = tk.Label(

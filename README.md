@@ -80,4 +80,4 @@ python3 -m UI.gui
 #### **📌 Multi-Agent Visualization ([MA_VIS](VIS/MA_VIS/))**
 - **[BlocksSimulator](VIS/MA_VIS/BlocksSimulator/)**  
   - **[resources](VIS/MA_VIS/BlocksSimulator/resources/)**: Stores assets (e.g., `table.png`, `hand.png`).
-  - **[BlocksWindow.py](VIS/MA_VIS/BlocksSimulator/BlocksWindow.py)**: Manages the Blocks Simulation visualization.
+  - **[BlocksWindow.py](VIS/MA_VIS/BlocksSimulator/BlocksSimulation.py)**: Manages the Blocks Simulation visualization.
