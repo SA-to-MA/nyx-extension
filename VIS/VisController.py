@@ -166,7 +166,7 @@ def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", f
     else:
         # if domain is MA, needs to convert to SA
         # get output directory if runs with conversion to SA
-        output_dir = ensure_directory_exists(get_absolute_path("MA_PDDL", "outputs"))
+        output_dir = ensure_directory_exists(get_absolute_path("MA_PDDL", f"outputs/{selected_domain}"))
         if selected_domain == "Blocks":
             # if blocks, send to processing
             process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)

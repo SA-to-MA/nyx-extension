@@ -385,7 +385,7 @@ class SolveController:
         if self.domain_name == "Blocks" or self.domain_name == "Car":
             satoma = MAtoSA(self.domain, self.problem)
             # Get absolute path for outputs directory
-            output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", "outputs"))
+            output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", f"outputs/{self.domain_name}"))
             os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
 
             # Define the new output files with correct absolute paths
