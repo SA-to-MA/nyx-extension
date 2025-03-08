@@ -17,6 +17,8 @@ class Car:
     def moving(self, time_elapsed=1):
         if self.running:
             self.v += self.a * time_elapsed
+            if self.v < 0:
+                self.v = 0
             self.d += self.v * time_elapsed
             self.running_time += time_elapsed
 
