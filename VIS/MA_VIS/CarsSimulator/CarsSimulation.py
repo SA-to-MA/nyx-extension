@@ -18,11 +18,6 @@ class CarAgent(Agent):
             self.car.decelerate()
         elif action[0] == "stop":
             self.car.stop()
-        # check processes
-        self.car.moving()
-        self.car.wind_resistance()
-        self.car.engine_explode()
-        self.car.stop()
 
 class CarWindow:
     def __init__(self, screen, agents, car_pred):
@@ -34,7 +29,7 @@ class CarWindow:
             agents (dict): Dictionary of car agent objects.
         """
         self.screen = screen
-        self.cars = self.initialize_cars(agents, car_pred)  # Now storing actual Car objects
+        self.cars = self.initialize_cars(agents, car_pred)  # initialize initial state
 
         # Define car sizes
         self.car_width = 150
@@ -45,14 +40,13 @@ class CarWindow:
         resources_dir = os.path.join(base_path, "resources")
 
         # Load background road image
-        self.background_image = pygame.image.load(os.path.join(resources_dir, "road.jpg"))
+        self.background_image = pygame.image.load(os.path.join(resources_dir, "road-2.jpg"))
         self.background_image = pygame.transform.scale(self.background_image, screen.get_size())
 
         # Load car image
         self.car_image = pygame.image.load(os.path.join(resources_dir, "car.png"))
         self.car_image = pygame.transform.scale(self.car_image, (self.car_width, self.car_height))
 
-        # initialize initial state
         # Set initial positions for cars
         self.positions = self.initialize_positions()
 
@@ -94,7 +88,7 @@ class CarWindow:
         """
         screen_width, screen_height = self.screen.get_size()
         start_x = int(screen_width * 0.05)  # 5% from the left
-        start_y = int(screen_height * 0.6)  # 60% from the top
+        start_y = int(screen_height * 0.75)  # 75% from the top
 
         positions = {}
         for i, car_name in enumerate(self.cars.keys()):
@@ -105,14 +99,14 @@ class CarWindow:
         """
         Updates car positions based on their distance traveled, but slows down the movement.
         """
-        speed_factor = 10
+        speed_factor = 2
 
         for car_name, car_agent in self.cars.items():
             car = car_agent.car  # Access the actual Car object
 
             if car.running:
                 # Move the car **more slowly** based on its distance (`d`)
-                self.positions[car_name][0] = int(50 + (car.d * 2) / speed_factor)
+                self.positions[car_name][0] = int(50 + (car.d * 5) / speed_factor)
 
     def draw(self):
         """
@@ -139,6 +133,12 @@ class CarWindow:
                 explosion_label = explosion_font.render("💥 Engine Blown!", True, (255, 0, 0))
                 self.screen.blit(explosion_label, (x + 10, y - 50))
 
+            # if goal reached, draw goal reached sign
+            if car.goal_reached:
+                goal_font = pygame.font.SysFont(None, 30)
+                goal_label = goal_font.render("Goal Reached!", True, (0, 255, 0))  # Green text
+                self.screen.blit(goal_label, (x + 160, y))  # Place above the car
+
         pygame.display.flip()
 
 
@@ -150,44 +150,59 @@ class CarSimulator:
         self.window = window
         self.t = t_value
 
+    def execute_next_action(self):
+        for car_name, car_agent in self.window.cars.items():
+            if car_agent.actions:
+                action = car_agent.actions.pop(0)
+                car_agent.execute(action, {}, self.window.screen)
+
     def run(self):
         """
-        Runs the simulation, executing car processes and updating visuals in parallel.
+        Runs the simulation continuously, executing actions every `t` seconds while updating physics in real-time.
         """
-        print("Starting car simulation...")
-        self.window.draw()
-        running = True
+        print(f"Starting car simulation with action interval: {self.t}s")
+
+        # first of all, execute the first action right away
         time.sleep(1)
+        self.execute_next_action()
+
+        clock = pygame.time.Clock()  # Controls frame rate for smooth updates
+        last_action_time = pygame.time.get_ticks()  # Track last action execution time
+
+        running = True
 
         while running:
-            running = False  # Assume no actions remain
+            dt = clock.tick(60) / 1000.0  # Convert elapsed time to seconds
 
-            # **Step 1: Pop the next action for each car (simultaneously)**
-            car_actions = {}  # Stores the current action for each car
+            running = False  # Assume all cars are stopped
+
+            now = pygame.time.get_ticks()
+            elapsed_since_action = (now - last_action_time) / 1000.0  # Time since last action
+
+            # **Step 1: Execute actions every `t` seconds**
+            if elapsed_since_action >= self.t:
+                last_action_time = now  # Reset action timer
+
+                self.execute_next_action()
+
+            # **Step 2: Update continuous processes**
             for car_name, car_agent in self.window.cars.items():
-                # if car reached goals, continue
-                if car_agent.car.goal_reached:
-                    continue
-                if car_agent.actions:  # Only pop if there are remaining actions
-                    car_actions[car_name] = car_agent.actions.pop(0)
+                car = car_agent.car  # Extract Car object
 
-            # **Step 2: Execute all actions in parallel for t time steps**
-            for _ in range(int(self.t)):
-                for car_name, car_agent in self.window.cars.items():
-                    car = car_agent.car  # Extract Car object
+                if len(car_agent.actions) > 0:
+                    running = True  # Keep simulation running if at least one car is active
+                # Continuous updates (independent of actions)
+                car.moving(time_elapsed=dt)  # Movement updates in real-time
+                car.wind_resistance(time_elapsed=dt)
+                car.engine_explode()
+                car.stop()
 
-                    if car.running:
-                        running = True  # Keep simulation running if at least one car is active
-
-                        # Execute the previously popped action
-                        if car_name in car_actions:
-                            car_agent.execute(car_actions[car_name], {}, self.window.screen)
-
-                self.window.update_positions()  # Move cars visually
-                self.window.draw()  # Redraw screen
-                time.sleep(1)  # Pause before next time step
+            # **Step 3: Update display and positions**
+            self.window.update_positions()
+            self.window.draw()
 
         print("Simulation complete.")
+
 
 
 

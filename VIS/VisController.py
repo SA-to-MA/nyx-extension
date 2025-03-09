@@ -79,7 +79,7 @@ def process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_fil
     object_dict = InitState(new_problem, agents, blocks).parse_pddl_init()
 
     if parse:
-        run_nyx(new_domain, new_problem, flags)
+        plan_file = run_nyx(new_domain, new_problem, flags)
 
     parser = Parser(agents, {
         'no-op_agent': ['agent'],
@@ -102,7 +102,7 @@ def process_car_domain(domain_path, problem_path, output_dir, parse, plan_file, 
     object_dict = InitStateCar(new_problem, agents).parse_pddl_init()  # Use InitStateCar
 
     if parse:
-        run_nyx(new_domain, new_problem, flags)  # Run Nyx planner
+        plan_file = run_nyx(new_domain, new_problem, flags)  # Run Nyx planner
 
     parser = Parser(agents, {
         'no-op_agent': ['agent'],
@@ -149,12 +149,14 @@ def extract_t_value(flags_path, default_t=1.0):
         return float(match.group(1))  # Extract and return as float
     return default_t  # Return default if not found
 
-def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", flags=""):
+def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", flags_path=""):
     """Run the selected domain simulation."""
     # if no flags, set default flags
-    if len(flags) == 0:
+    if len(flags_path) == 0:
         flags = "-t:1 -pt"
-    t_value = extract_t_value(flags)
+    else: # if flags file is valid, read flags
+        flags = read_flags_file(flags_path)
+    t_value = extract_t_value(flags_path) # get t value from flags
     # if sa domain of sleeping beauty, run it
     if selected_domain == "Sleeping Beauty":
         if parse: # if no plan file, run and get plan
