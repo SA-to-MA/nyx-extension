@@ -445,8 +445,12 @@ def extract_variable_values(plan_f, var_list, csv_f=None):
 # -----------------------------------------------
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3 or '-h' in sys.argv:
-        print(constants.HELP_TEXT)
-        exit(1)
-
-    runner(sys.argv[1], sys.argv[2], sys.argv[3:])
+    domain = r'C:\Users\Lior\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\domain.pddl'
+    problem =r'C:\Users\Lior\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\problem.pddl'
+    flags = ['-t:10.0', '-search:bfs','-timeout:30']
+    runner(domain, problem, flags)
+    # if len(sys.argv) < 3 or '-h' in sys.argv:
+    #     print(constants.HELP_TEXT)
+    #     exit(1)
+    #
+    # runner(sys.argv[1], sys.argv[2], sys.argv[3:])

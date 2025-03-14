@@ -3,15 +3,20 @@
 import bisect
 import collections
 from hmac import new
-
 import heuristic_functions as heuristic_functions
 from PDDL import PDDL_Parser
 import syntax.constants as constants
 import time, copy, sys
+
+from syntax.state_node import StateNode
 from syntax.visited_state import VisitedState
 from syntax.state import State
 
 import semantic_attachments.semantic_attachment as semantic_attachment
+
+import dill as pickle
+import os
+from collections import deque
 
 class Planner:
 
@@ -34,6 +39,34 @@ class Planner:
         self.queue = collections.deque()
         self.visited_hashmap = {}
         self.total_goals_found = 0
+
+    def save_tree_in_chunks(self, root, folder="VIS/Search_VIS/search_tree", chunk_size=50):
+        """Save a large tree into multiple pickle files, each containing chunk_size nodes."""
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        queue = deque([root])  # BFS traversal
+        chunk = []
+        chunk_index = 0
+        total_nodes = 0
+
+        while queue:
+            node = queue.popleft()
+            chunk.append(node)
+            total_nodes += 1
+            queue.extend(node.children)
+
+            if len(chunk) >= chunk_size:
+                with open(f"{folder}/tree_chunk_{chunk_index}.pkl", "wb") as file:
+                    pickle.dump(chunk, file)  # Use dill for serialization
+                chunk.clear()
+                chunk_index += 1
+
+        if chunk:
+            with open(f"{folder}/tree_chunk_{chunk_index}.pkl", "wb") as file:
+                pickle.dump(chunk, file)
+
+        print(f"Tree saved in {chunk_index + 1} chunks ({total_nodes} nodes in total).")
 
 
     def solve(self, domain, problem):
@@ -59,9 +92,10 @@ class Planner:
 
         # Search
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
-        self.queue = collections.deque([state])
+        root_node = StateNode(state)  # Root of the tree
+        self.queue = collections.deque([(state, root_node)])  # Store state with tree node
         while self.queue:
-            state = self.queue.popleft()
+            state, state_node = self.queue.popleft() # pop state and state node
 
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
@@ -73,6 +107,7 @@ class Planner:
                     state.metric = grounded_instance.metric(state, constants)
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
+                    self.save_tree_in_chunks(root_node)
                     return self.reached_goal_states
 
             if VisitedState(state) in self.reached_goal_states:
@@ -170,7 +205,8 @@ class Planner:
                         (constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[new_state_hash].state.metric) or \
                             (not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[new_state_hash].state.metric):
                         self.visited_hashmap[new_state_hash] = VisitedState(new_state)
-                        self.enqueue_state(new_state)
+                        new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
+                        self.queue.append((new_state, new_node))  # Store new state with its tree node
 
                 if self.explored_states % constants.PRINT_INFO == 0:
                     print_q = []
@@ -194,10 +230,11 @@ class Planner:
                         sys.stdout.write(print_q[i] + "\n")  # reprint the lines
 
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
+                self.save_tree_in_chunks(root_node)
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
-
+        self.save_tree_in_chunks(root_node)
         return None
 
 
@@ -224,9 +261,10 @@ class Planner:
 
         # Search
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
-        self.queue = collections.deque([state])
+        root_node = StateNode(state)  # Root of the tree
+        self.queue = collections.deque([(state, root_node)])  # Store state with tree node
         while self.queue:
-            state = self.queue.popleft()
+            state, state_node = self.queue.popleft()  # Get state and its tree node
 
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
@@ -238,6 +276,7 @@ class Planner:
                     state.metric = grounded_instance.metric(state, constants)
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
+                    self.save_tree_in_chunks(root_node)
                     return self.reached_goal_states
 
             if VisitedState(state) in self.reached_goal_states:
@@ -326,7 +365,9 @@ class Planner:
                         (new_state_hash in self.visited_hashmap and constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[new_state_hash].state.metric) or \
                             (new_state_hash in self.visited_hashmap and not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[new_state_hash].state.metric):
                         self.visited_hashmap[new_state_hash] = VisitedState(new_state)
-                        self.enqueue_state(new_state)
+                        new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
+                        self.queue.append((new_state, new_node))  # Store new state with its tree node
+
 
                 if self.explored_states % constants.PRINT_INFO == 0:
                     print_q = []
@@ -353,10 +394,11 @@ class Planner:
                         sys.stdout.write(print_q[i] + "\n")  # reprint the lines
 
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
+                self.save_tree_in_chunks(root_node)
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
-
+        self.save_tree_in_chunks(root_node)
         return None
 
 
