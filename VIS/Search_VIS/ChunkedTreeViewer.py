@@ -8,7 +8,7 @@ from tkinter import messagebox
 pygame.init()
 info = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
-WIDTH, HEIGHT = int(SCREEN_WIDTH * 1.2), int(SCREEN_HEIGHT * 1.2)
+WIDTH, HEIGHT = int(SCREEN_WIDTH * 0.9), int(SCREEN_HEIGHT * 0.9)
 NODE_RADIUS = 25
 BACKGROUND_COLOR = (255, 255, 255)
 NODE_COLOR = (173, 216, 230)
@@ -76,7 +76,7 @@ def compute_node_positions(nodes):
 
     return node_positions, missing_parents
 
-
+##TODO: implement visualization for state
 def show_node_info(node):
     """Display node state information in a popup."""
     root = tk.Tk()
