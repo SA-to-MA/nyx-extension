@@ -5,7 +5,8 @@ import pygame
 import ast
 
 # TODO: generic way for all domains
-DOMAIN = "blocks"
+DOMAIN = "car"
+# DOMAIN = "blocks"
 
 # Constants
 pygame.init()
@@ -44,6 +45,10 @@ def preload_parent_references():
 
 def load_chunk(filename):
     """Load a specific chunk."""
+    file_path = os.path.join(directory, filename)
+
+    # Print file path and size for debugging
+    print(f"📂 Trying to open file: {file_path}")
     with open(os.path.join(directory, filename), "rb") as file:
         return pickle.load(file)
 

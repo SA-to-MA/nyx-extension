@@ -445,8 +445,8 @@ def extract_variable_values(plan_f, var_list, csv_f=None):
 # -----------------------------------------------
 if __name__ == '__main__':
 
-    domain = r'MA_PDDL\outputs\domain.pddl'
-    problem =r'MA_PDDL\outputs\problem.pddl'
+    domain = r'MA_PDDL\outputs\Car\domain.pddl'
+    problem =r'MA_PDDL\outputs\Car\problem.pddl'
     flags = ['-t:10.0', '-search:bfs','-timeout:30']
     runner(domain, problem, flags)
     # if len(sys.argv) < 3 or '-h' in sys.argv:
