@@ -1,139 +1,69 @@
-(define (domain car)
-(:requirements :typing :fluents :time :negative-preconditions )
-(:types agent - object )
-(:predicates (running ?a - agent )(engineblown ?a - agent )(transmission_fine ?a - agent )(goal_reached ?a - agent )(dif_agent ?ob1 - agent ?ob2 - agent ))
-(:functions (d ?a - agent )(v ?a - agent )(a ?a - agent )(up_limit ?a - agent )(down_limit ?a - agent )(running_time ?a - agent ))
-(:process moving :parameters (?a - agent ):precondition (and (running ?a )):effect (and (increase (v ?a )(* #t (a ?a )))(increase (d ?a )(* #t (v ?a )))(increase (running_time ?a )(* #t 1 ))))
-(:process windresistance :parameters (?a - agent ):precondition (and (running ?a )(>= (v ?a )50 )):effect (decrease (v ?a )(* #t (* 0.1 (* (- (v ?a )50 )(- (v ?a )50 ))))))
-(:event engineexplode :parameters (?a - agent ):precondition (and (running ?a )(>= (a ?a )1 )(>= (v ?a )100 )):effect (and (not (running ?a ))(engineblown ?a )(assign (a ?a )0 )))
-(:action no-op_agent&no-op_agent
-:parameters (?a1 - agent ?a2 - agent)
+(define (domain blocks)
+(:requirements :typing )
+(:types agent block - object )
+(:predicates (on ?x - block ?y - block )(ontable ?x - block )(clear ?x - block )(holding ?agent - agent ?x - block )(handempty ?agent - agent )(dif_agent ?ob1 - agent ?ob2 - agent )(dif_block ?ob1 - block ?ob2 - block ))
+(:action stack
+:parameters (?a1 - agent ?x1 - block ?y1 - block)
 :precondition (and
-(dif_agent ?a1 ?a2 )
+(holding ?a1 ?x1 )
+(clear ?y1 )
+(dif_block ?x1 ?y1 )
 )
 :effect (and
+(not (holding ?a1 ?x1 ))
+(not (clear ?y1 ))
+(clear ?x1 )
+(handempty ?a1 )
+(on ?x1 ?y1 )
 )
 )
-(:action accelerate&no-op_agent
-:parameters (?a1 - agent ?a2 - agent)
+(:action put-down
+:parameters (?a1 - agent ?x1 - block)
 :precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(dif_agent ?a1 ?a2 )
+(holding ?a1 ?x1 )
 )
 :effect (and
-(increase (a ?a1 )1 )
+(not (holding ?a1 ?x1 ))
+(clear ?x1 )
+(handempty ?a1 )
+(ontable ?x1 )
 )
 )
-(:action decelerate&no-op_agent
-:parameters (?a1 - agent ?a2 - agent)
+(:action unstack
+:parameters (?a1 - agent ?x1 - block ?y1 - block)
 :precondition (and
-(running ?a1 )
-(> (a ?a1 )(down_limit ?a1 ))
-(dif_agent ?a1 ?a2 )
+(on ?x1 ?y1 )
+(clear ?x1 )
+(handempty ?a1 )
+(dif_block ?x1 ?y1 )
 )
 :effect (and
-(decrease (a ?a1 )1 )
+(holding ?a1 ?x1 )
+(clear ?y1 )
+(not (clear ?x1 ))
+(not (handempty ?a1 ))
+(not (on ?x1 ?y1 ))
 )
 )
-(:action accelerate&accelerate
-:parameters (?a1 - agent ?a2 - agent)
+(:action pick-up
+:parameters (?a1 - agent ?x1 - block)
 :precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(running ?a2 )
-(< (a ?a2 )(up_limit ?a2 ))
-(dif_agent ?a1 ?a2 )
+(clear ?x1 )
+(ontable ?x1 )
+(handempty ?a1 )
 )
 :effect (and
-(increase (a ?a1 )1 )
-(increase (a ?a2 )1 )
+(not (ontable ?x1 ))
+(not (clear ?x1 ))
+(not (handempty ?a1 ))
+(holding ?a1 ?x1 )
 )
 )
-(:action no-op_agent&stop
-:parameters (?a1 - agent ?a2 - agent)
+(:action no-op_agent
+:parameters (?a1 - agent)
 :precondition (and
-(= (v ?a2 )0 )
-(>= (d ?a2 )30 )
-(not (engineblown ?a2 ))
-(dif_agent ?a1 ?a2 )
 )
 :effect (and
-(goal_reached ?a2 )
-)
-)
-(:action stop&stop
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(= (v ?a1 )0 )
-(>= (d ?a1 )30 )
-(not (engineblown ?a1 ))
-(= (v ?a2 )0 )
-(>= (d ?a2 )30 )
-(not (engineblown ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(goal_reached ?a1 )
-(goal_reached ?a2 )
-)
-)
-(:action accelerate&stop
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(= (v ?a2 )0 )
-(>= (d ?a2 )30 )
-(not (engineblown ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(increase (a ?a1 )1 )
-(goal_reached ?a2 )
-)
-)
-(:action decelerate&stop
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(> (a ?a1 )(down_limit ?a1 ))
-(= (v ?a2 )0 )
-(>= (d ?a2 )30 )
-(not (engineblown ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (a ?a1 )1 )
-(goal_reached ?a2 )
-)
-)
-(:action accelerate&decelerate
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(running ?a2 )
-(> (a ?a2 )(down_limit ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(increase (a ?a1 )1 )
-(decrease (a ?a2 )1 )
-)
-)
-(:action decelerate&decelerate
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(> (a ?a1 )(down_limit ?a1 ))
-(running ?a2 )
-(> (a ?a2 )(down_limit ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (a ?a1 )1 )
-(decrease (a ?a2 )1 )
 )
 )
 )

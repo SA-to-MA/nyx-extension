@@ -1,9 +1,10 @@
-(define (problem multi-car-problem )
-(:domain car )
-(:requirements :typing :fluents :time )
-(:objects car1 - agent
-car2 - agent
+(define (problem blocks-4-0 )
+(:domain blocks )
+(:objects a1 - agent
+a - block
+c - block
+b - block
 )
-(:init (running car1 )(transmission_fine car1 )(= (running_time car1 )0 )(= (d car1 )0 )(= (v car1 )0 )(= (a car1 )0 )(= (up_limit car1 )10 )(= (down_limit car1 )-1 )(running car2 )(transmission_fine car2 )(= (running_time car2 )0 )(= (d car2 )0 )(= (v car2 )0 )(= (a car2 )0 )(= (up_limit car2 )12 )(= (down_limit car2 )-2 )(dif_agent car1 car2 )(dif_agent car2 car1 ))
-(:goal (and (goal_reached car1 )(not (engineblown car1 ))(<= (running_time car1 )50 )(transmission_fine car1 )(goal_reached car2 )(not (engineblown car2 ))(<= (running_time car2 )50 )(transmission_fine car2 )))
+(:init (handempty a1 )(handempty a2 )(clear c )(clear a )(ontable a )(ontable b )(on c b )(dif_block a c )(dif_block a b )(dif_block c a )(dif_block c b )(dif_block b a )(dif_block b c ))
+(:goal (and (on c b )(on b a )))
 )
