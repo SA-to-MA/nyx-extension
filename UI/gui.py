@@ -59,6 +59,9 @@ class ModernApp(tk.Tk):
             "Visualize": self.create_vis_page,
             "PlanResults": self.create_plan_result_page,
             "VisResults": self.create_vis_results_page,
+            "show_solution": self.show_solution,
+            "STResults": self.create_ST_results_page,
+            "STVisualize": self.create_ST_Visualize_page,
         }
 
         self.current_frame = None
@@ -235,7 +238,7 @@ class ModernApp(tk.Tk):
 
     def create_home_page(self):
         """Create the Home page with a welcome message and buttons to navigate to other pages."""
-        self.create_page_title_and_background("NyxMAZE")
+        self.create_page_title_and_background("MA-PlanX")
         subtitle = ttk.Label(
             self.current_frame,
             text="A Multi-Agent Planning and Visualization framework based on NYX,\n"
@@ -279,17 +282,12 @@ class ModernApp(tk.Tk):
             self.current_frame, text=self.plan_file, style="Custom.TLabel", wraplength=300, justify="center")
         path_label.place(relx=0.5, rely=0.33, anchor="center")
         # Add a button to show the solution
-        show_button = ttk.Button(
-            self.current_frame,
-            text="Show Solution",
-            style="Custom.TButton",
-            command=lambda: self.show_solution()  # Display the solution
-        )
-        show_button.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4)
+
+        self.create_button_with_icon(text="Show Solution", y_position=0.5, command=lambda: self.show_solution(), icon=self.solve_icon)
 
         # Add a back button to return to the previous page using "add_back_button" method
         self.add_back_button("Solve")
-        self.create_button_with_icon(text="Home", y_position=0.7, command=lambda: self.switch_page("home"), icon=self.home_icon)
+        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("home"), icon=self.home_icon)
 
     def show_solution(self):
         try:
@@ -310,13 +308,15 @@ class ModernApp(tk.Tk):
                 wraplength=800,
                 justify="left"
             )
-            solution_label.place(relx=0.5, rely=0.3, anchor="center")
+            solution_label.place(relx=0.5, rely=0.32, anchor="center")
 
             # Add a back button to return to the previous page using "add_back_button" method
             self.add_back_button("PlanResults")
             # add a button to switch to the previous page using "create_button_with_icon" method
-            self.create_button_with_icon(text="Visualize", y_position=0.7, command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
-            self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+            self.create_button_with_icon(text="Visualize", y_position=0.58, command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
+            self.create_button_with_icon(text="Show search tree", y_position=0.7, command=lambda: self.switch_page("STResults"), icon=self.solve_icon)
+
+            self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
 
         except Exception as e:
             print(f"An error occurred while reading the solution: {e}")
@@ -339,7 +339,8 @@ class ModernApp(tk.Tk):
         self.create_file_input("Plan Input (optional):", 0.55, self.select_plan_file, self.plan_label_var)
         self.create_file_input("Configuration (optional):", 0.65, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Go!", y_position=0.8,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.50)  # Plan button
+        self.create_button_with_icon(text="Visualize solution", y_position=0.8,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.50)  # Plan button
+        #self.create_button_with_icon(text="Visualize search tree", y_position=0.92,  command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)  # Plan button
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
@@ -367,6 +368,7 @@ class ModernApp(tk.Tk):
 
             # Display a success message
             self.create_page_title_and_background("Visualization completed successfully!")
+            self.create_button_with_icon(text="Visualize search tree", y_position=0.5,  command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)  # Plan button
 
         except Exception as e:
             # Display an error message if visualization fails
@@ -382,7 +384,19 @@ class ModernApp(tk.Tk):
 
         # Add a button to return to the last page using "add_back_button" method
         self.add_back_button("Visualize")
-        self.create_button_with_icon(text="Home", y_position=0.5, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+
+    def create_ST_results_page(self):
+        self.create_page_title_and_background("show search tree")  # Create the title and background
+
+        self.add_back_button("show_solution")
+        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+
+    def create_ST_Visualize_page(self):
+        self.create_page_title_and_background("Visualize search tree")  # Create the title and background
+
+        self.add_back_button("Visualize")
+        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
 
 
 if __name__ == "__main__":
