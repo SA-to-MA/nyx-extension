@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 from MA_PDDL import MAtoSA
 from VIS import VisController
 from PIL import Image, ImageTk
@@ -13,6 +13,8 @@ class ModernApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.configure(bg="#1E1E1E")  # Set background color
+        # Store the base directory of images once
+        self.image_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "img")
         # Load icons for buttons
         self.solve_icon = self.load_image("solve-icon.png", (30, 30))  # Size 30x30
         self.visualize_icon = self.load_image("visualize-icon.png", (30, 30))  # Size 30x30
@@ -120,18 +122,12 @@ class ModernApp(tk.Tk):
             icon_label.place(relx=relx - 0.18, rely=y_position, anchor="center")
 
     def load_image(self, filename, size):
-        """Loads an image and resizes it to the specified size."""
-        # Get the directory where gui.py is located
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        """Load and resize an image from the app's image directory."""
+        image_path = os.path.join(self.image_dir, filename)
 
-        # Construct the absolute path to the image inside UI/img/
-        image_path = os.path.join(base_path, "img", filename)  # Use filename directly
-
-        # Ensure the file exists before opening
         if not os.path.exists(image_path):
             raise FileNotFoundError(f"Image not found: {image_path}")
 
-        # Open, resize, and convert to Tkinter PhotoImage
         image = Image.open(image_path)
         image = image.resize(size, Image.Resampling.LANCZOS)
         return ImageTk.PhotoImage(image)
@@ -211,6 +207,24 @@ class ModernApp(tk.Tk):
             file_name = os.path.basename(file_path)  # Extract file name only
             self.config_label_var.set(f"Selected: {file_name}")  # Update label
 
+    def validate_input_files(self, next_page):
+        """Validate input files"""
+        if not self.domain_file or not self.problem_file:
+            messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
+            return
+        try:
+            self.controller = MAtoSA.SolveController(
+                self.domain_file,
+                self.problem_file,
+                self.selected_domain.get(),
+                self.config_file
+            )
+            self.plan_file = self.controller.getPlanFile()
+            self.switch_page(next_page)
+
+        except Exception as e:
+            messagebox.showerror("Invalid Input", f"One or more selected files cannot be processed. Please upload valid PDDL files.")
+
     def create_frame(self, y_position, height=40, width=0.97, bg="#1E1E1E"):
         """Create a reusable frame at a specific vertical position for layout alignment."""
         frame = tk.Frame(self.current_frame, bg=bg)
@@ -251,35 +265,23 @@ class ModernApp(tk.Tk):
         self.create_file_input("Problem Input:", 0.49, self.select_problem_file, self.problem_label_var)
         self.create_file_input("Configuration (optional):", 0.61, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Plan", y_position=0.8, command=lambda: self.switch_page("PlanResults"),
+        self.create_button_with_icon(text="Plan", y_position=0.8, command=lambda: self.validate_input_files("PlanResults"),
                                      icon=self.plan_icon, relx=0.50)
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
 
     def create_plan_result_page(self):
-        """Run the planning process and display the result or error."""
-        self.current_frame = tk.Frame(self, bg="#1E1E1E")
-        self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+        """Display the result after successful planning."""
+        self.create_page_title_and_background("Plan saved to:")
 
-        try:
-            self.controller = MAtoSA.SolveController(
-                    self.domain_file, self.problem_file, self.selected_domain.get(), self.config_file)
-            self.plan_file = self.controller.getPlanFile()
-            self.create_page_title_and_background("Plan saved to:")  # Create the title and background
-            path_label = ttk.Label(
-                    self.current_frame, text=self.plan_file, style="Custom.TLabel", wraplength=300, justify="center")
-            path_label.place(relx=0.5, rely=0.33, anchor="center")
+        path_label = ttk.Label(
+                self.current_frame, text=self.plan_file, style="Custom.TLabel", wraplength=300, justify="center")
+        path_label.place(relx=0.5, rely=0.33, anchor="center")
 
-            # Add a button to show the solution
-            self.create_button_with_icon(text="Show Solution", y_position=0.68, command=lambda: self.show_solution(),
-                                         icon=self.solve_icon)
-
-        except Exception as e:
-            error_label = tk.Label(self.current_frame, text=f"An error occurred while planning:\n{e}",
-                font=("Roboto", 14), bg="#1E1E1E", fg="#FF0000", wraplength=500)
-            error_label.place(relx=0.5, rely=0.4, anchor="center")
-
+        # Add a button to show the solution
+        self.create_button_with_icon(text="Show Solution", y_position=0.68, command=lambda: self.show_solution(),
+                                     icon=self.solve_icon)
         self.add_back_button("Solve")
         self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
                                      icon=self.home_icon)
@@ -287,16 +289,8 @@ class ModernApp(tk.Tk):
     def show_solution(self):
         """Display the parsed plan solution after successful solving."""
         try:
-            solution = self.controller.getParsedPlan()
-
-            # Clear the previous frame and create a new one
-            self.current_frame.destroy()
-            self.current_frame = tk.Frame(self, bg="#1E1E1E")
-            self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-            # Page title and background
+            solution = self.controller.getParsedPlan()  # Retrieve the parsed plan from the controller
             self.create_page_title_and_background("The solution:")
-
             # Display the solution text
             solution_label = ttk.Label(self.current_frame, text=solution, font=("Roboto", 16), background="#1E1E1E",
                                        foreground="#E0E0E0", wraplength=800, justify="left")
@@ -312,7 +306,7 @@ class ModernApp(tk.Tk):
                                          icon=self.home_icon)
 
         except Exception as e:
-            print(f"An error occurred while reading the solution: {e}")
+            messagebox.showerror("Solution Error", f"An error occurred while reading the solution:\n{e}")
 
     def create_vis_page(self):
         """Create the 'Visualize' page where the user selects input files and initiates the visualization process."""
@@ -334,32 +328,24 @@ class ModernApp(tk.Tk):
 
         # Action button
         self.create_button_with_icon(text="Visualize solution", y_position=0.8,
-                                     command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.50)
-
+                                     command=lambda: self.validate_input_files("VisResults"), icon=self.go_icon, relx=0.50)
         # Navigation
         self.add_back_button("Home")
 
     def create_vis_results_page(self):
         """Run the visualization and display a result message or error."""
-        if self.current_frame is not None:
-            self.current_frame.destroy()
-        self.current_frame = tk.Frame(self, bg="#1E1E1E")
-        self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-
+        # Determine if we should parse or use an existing plan file
         plan_file = self.plan_file if self.plan_file else ""
         parse = not bool(self.plan_file)
 
         try:
             VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
-                              self.config_file)
+                              self.config_file)  # Run the visualization with the selected inputs
             self.create_page_title_and_background("Visualization completed successfully!")
             self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
                                          command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)
-
         except Exception as e:
-            error_label = tk.Label(self.current_frame, text=f"An error occurred:\n{e}", font=("Comic Sans MS", 14),
-                                   bg="#1E1E1E", fg="#FF0000", wraplength=400)
-            error_label.place(relx=0.5, rely=0.3, anchor="center")
+            messagebox.showerror("Visualization Error", f"An error occurred while visualizing:\n{e}")
 
         self.add_back_button("Visualize")
         self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
