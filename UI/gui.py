@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from MA_PDDL import MAtoSA
-from VIS import VisController
+from VIS.VisController import run
 from PIL import Image, ImageTk
 from pathlib import Path
 
@@ -339,7 +339,7 @@ class ModernApp(tk.Tk):
         parse = not bool(self.plan_file)
 
         try:
-            VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
+            run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
                               self.config_file)  # Run the visualization with the selected inputs
             self.create_page_title_and_background("Visualization completed successfully!")
             self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
