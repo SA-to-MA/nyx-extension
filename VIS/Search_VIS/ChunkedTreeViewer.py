@@ -4,9 +4,8 @@ import random
 import pygame
 import ast
 
-# TODO: generic way for all domains
+# TODO: leave empty
 DOMAIN = "car"
-# DOMAIN = "blocks"
 
 # Constants
 pygame.init()
@@ -300,7 +299,9 @@ def draw_tree(screen, nodes, selected_node, node_positions, missing_parents):
         screen.blit(text, (x - NODE_RADIUS // 2, y - NODE_RADIUS // 2))
 
 
-def main():
+def main(domain_name):
+    global DOMAIN
+    DOMAIN = domain_name
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pygame Search Tree Viewer")
