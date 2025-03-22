@@ -40,7 +40,7 @@ class Planner:
         self.visited_hashmap = {}
         self.total_goals_found = 0
 
-    def save_tree_in_chunks(self, root, folder="VIS/Search_VIS/search_tree", chunk_size=50):
+    def save_tree_in_chunks(self, root, folder="VIS/Search_VIS/search_tree", chunk_size=100):
         """Save a large tree into multiple pickle files, each containing chunk_size nodes."""
         if not os.path.exists(folder):
             os.makedirs(folder)
