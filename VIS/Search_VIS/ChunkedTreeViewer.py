@@ -45,10 +45,6 @@ def preload_parent_references():
 
 def load_chunk(filename):
     """Load a specific chunk."""
-    file_path = os.path.join(directory, filename)
-
-    # Print file path and size for debugging
-    print(f"📂 Trying to open file: {file_path}")
     with open(os.path.join(directory, filename), "rb") as file:
         return pickle.load(file)
 
@@ -84,7 +80,6 @@ def compute_node_positions(nodes):
 
     return node_positions, missing_parents
 
-# TODO: implement visualization for state
 
 def parse_block_state(state_vars):
     """Parses block state where conditions are in nested lists and extracts only TRUE conditions."""
@@ -119,36 +114,51 @@ def parse_block_state(state_vars):
 
     return parsed_state
 
+
 def parse_car_state(state_vars):
-    """Parses car state where conditions are in nested lists and extracts numeric and boolean values."""
-    parsed_state = {
-        "velocity": "Unknown",
-        "acceleration": "Unknown",
-        "distance": "Unknown",
-        "engine_blown": False,
-        "running": False,
-        "transmission_fine": True,
-        "goal_reached": False
-    }
+    """
+    Parses all agent-specific car state variables from stringified keys.
 
-    for condition in state_vars:
-        try:
-            parsed_condition = ast.literal_eval(condition)  # Convert string to list
-            if isinstance(parsed_condition, list) and len(parsed_condition) == 2:
-                key, value = parsed_condition
+    Args:
+        state_vars (dict): Dict with keys like "['v', 'car1']" and float/bool values.
 
-                # Convert value to appropriate type
-                if isinstance(value, str) and value.lower() in ["true", "false"]:
-                    value = value.lower() == "true"
-                elif isinstance(value, (int, float)):
-                    value = float(value)
+    Returns:
+        dict: Per-agent state dictionary.
+    """
+    agents = {}
 
-                if key in parsed_state:
-                    parsed_state[key] = value
-        except (ValueError, SyntaxError):
-            continue  # Skip invalid entries
+    for raw_key, value in state_vars.items():
+        key_parts = ast.literal_eval(raw_key)  # convert string to list
+        if isinstance(key_parts, (list, tuple)) and len(key_parts) == 2:
+            predicate, agent = key_parts
 
-    return parsed_state
+            if agent not in agents:
+                agents[agent] = {
+                    "velocity": 0.0,
+                    "acceleration": 0.0,
+                    "distance": 0.0,
+                    "running": False,
+                    "engine_blown": False,
+                    "goal_reached": False,
+                    "running_time": 0.0
+                }
+
+            if predicate == "v":
+                agents[agent]["velocity"] = value
+            elif predicate == "a":
+                agents[agent]["acceleration"] = value
+            elif predicate == "d":
+                agents[agent]["distance"] = value
+            elif predicate == "running":
+                agents[agent]["running"] = value
+            elif predicate == "engineblown":
+                agents[agent]["engine_blown"] = value
+            elif predicate == "goal_reached":
+                agents[agent]["goal_reached"] = value
+            elif predicate == "running_time":
+                agents[agent]["running_time"] = value
+
+    return agents
 
 def random_color():
     """Generate a random RGB color."""
@@ -166,69 +176,98 @@ def show_node_info(node):
     RESOURCES_DIR = os.path.join(BASE_DIR, "resources")
 
     if DOMAIN == "blocks":
-        state_vars = getattr(node.state, "state_vars", [])
-        parsed_state = parse_block_state(state_vars)
-
-        # Load the table as the full background
-        table_img = pygame.image.load(os.path.join(RESOURCES_DIR, "table.png"))
-        table_img = pygame.transform.scale(table_img, (info_width, info_height))  # Full size background
-
-        # Load the hand image
-        hand_img = pygame.image.load(os.path.join(RESOURCES_DIR, "hand.png"))
-        hand_img = pygame.transform.scale(hand_img, (80, 80))  # Adjust hand size
-
-        # Set the table as the background
-        info_surface.blit(table_img, (0, 0))
-
-        block_positions = {}
-        x_pos = 50
-        y_pos = info_height - 120  # Blocks above the table
-
-        # Position blocks on the table
-        for block in parsed_state["ontable"]:
-            block_positions[block] = (x_pos, y_pos)
-            x_pos += 60  # Better spacing
-
-        # Position stacked blocks
-        for top, bottom in parsed_state["on"].items():
-            if bottom in block_positions:
-                block_positions[top] = (block_positions[bottom][0], block_positions[bottom][1] - 60)
-
-        # Draw blocks
-        for block, (x, y) in block_positions.items():
-            pygame.draw.rect(info_surface, random_color(), (x, y, 50, 50))
-            text_surface = font.render(block, True, (255, 255, 255))
-            info_surface.blit(text_surface, (x + 10, y + 10))
-
-        # Hand Placement Logic (Show All Agents)
-        agents = []
-        # Process holding agents
-        if "holding" in parsed_state:
-            for agent, held_block in parsed_state["holding"].items():  # Iterate over key-value pairs
-                held_block = held_block.strip() if held_block != "False" else None
-                agents.append((agent.strip(), held_block))  # Ensure clean formatting
-
-        # Process hand-empty agents
-        if "handempty" in parsed_state:
-            for agent in parsed_state["handempty"]:  # Iterate over agents with empty hands
-                agents.append((agent.strip(), None))  # Append agent with no block held
-
-        # Show hands for every agent
-        hand_x = 200  # Start position for agents
-        for agent, held_block in agents:
-            hand_y = 50  # Position hands at the top
-            info_surface.blit(hand_img, (hand_x, hand_y))  # Place hand image
-            text_surface = font.render(agent, True, (255, 255, 255))
-            info_surface.blit(text_surface, (hand_x + 20, hand_y - 10))  # Label the agent
-
-            if held_block:
-                pygame.draw.rect(info_surface, random_color(), (hand_x + 10, hand_y + 40, 40, 40))  # Draw block
-                text_surface = font.render(held_block, True, (255, 255, 255))
-                info_surface.blit(text_surface, (hand_x + 20, hand_y + 50))
-
-            hand_x += 100  # Space hands evenly
+        render_blocks_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
+    elif DOMAIN == "car":
+        render_car_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
 
     return info_surface  # Return the surface to be drawn
+
+def render_car_domain(node, surface, font, res_dir, width, height):
+    # Load images
+    road_img = pygame.image.load(os.path.join(res_dir, "road-2.jpg"))
+    road_img = pygame.transform.scale(road_img, (width, height))
+    car_img = pygame.image.load(os.path.join(res_dir, "car.png"))
+    car_img = pygame.transform.scale(car_img, (150, 60))
+
+    surface.blit(road_img, (0, 0))  # draw background
+
+    # Parse the car states for all agents
+    state_vars = getattr(node.state, "state_vars", [])
+    car_states = parse_car_state(state_vars)
+
+    max_distance = 1000  # adjust based on your domain scale
+
+    for i, (agent, state) in enumerate(car_states.items()):
+        distance = state.get("distance", 0.0)
+        x_pos = int((distance / max_distance) * (width - 200))
+
+        # Updated: align cars to road lanes at the bottom half
+        lane_y_start = height * 0.55  # start of road area
+        lane_spacing = 80  # vertical space between lanes
+        y_pos = int(lane_y_start + i * lane_spacing)
+
+        surface.blit(car_img, (x_pos, y_pos))
+
+        # Draw agent name
+        label = font.render(agent, True, (255, 255, 255))
+        surface.blit(label, (x_pos + 10, y_pos - 20))
+
+        # Draw status: velocity & acceleration
+        status = f"v: {state['velocity']:.1f}, a: {state['acceleration']:.1f}"
+        status_text = font.render(status, True, (255, 255, 0))
+        surface.blit(status_text, (x_pos + 160, y_pos + 20))
+
+
+def render_blocks_domain(node, surface, font, res_dir, width, height):
+    state_vars = getattr(node.state, "state_vars", [])
+    parsed_state = parse_block_state(state_vars)
+
+    table_img = pygame.image.load(os.path.join(res_dir, "table.png"))
+    table_img = pygame.transform.scale(table_img, (width, height))
+    surface.blit(table_img, (0, 0))
+
+    hand_img = pygame.image.load(os.path.join(res_dir, "hand.png"))
+    hand_img = pygame.transform.scale(hand_img, (80, 80))
+
+    block_positions = {}
+    x_pos = 50
+    y_pos = height - 120
+
+    for block in parsed_state.get("ontable", []):
+        block_positions[block] = (x_pos, y_pos)
+        x_pos += 60
+
+    for top, bottom in parsed_state.get("on", {}).items():
+        if bottom in block_positions:
+            block_positions[top] = (block_positions[bottom][0], block_positions[bottom][1] - 60)
+
+    for block, (x, y) in block_positions.items():
+        pygame.draw.rect(surface, random_color(), (x, y, 50, 50))
+        text_surface = font.render(block, True, (255, 255, 255))
+        surface.blit(text_surface, (x + 10, y + 10))
+
+    # Agent hands logic
+    agents = []
+    for agent, held_block in parsed_state.get("holding", {}).items():
+        held_block = held_block.strip() if held_block != "False" else None
+        agents.append((agent.strip(), held_block))
+
+    for agent in parsed_state.get("handempty", []):
+        agents.append((agent.strip(), None))
+
+    hand_x = 200
+    for agent, held_block in agents:
+        hand_y = 50
+        surface.blit(hand_img, (hand_x, hand_y))
+        text_surface = font.render(agent, True, (255, 255, 255))
+        surface.blit(text_surface, (hand_x + 20, hand_y - 10))
+
+        if held_block:
+            pygame.draw.rect(surface, random_color(), (hand_x + 10, hand_y + 40, 40, 40))
+            text_surface = font.render(held_block, True, (255, 255, 255))
+            surface.blit(text_surface, (hand_x + 20, hand_y + 50))
+
+        hand_x += 100
 
 
 def draw_buttons(screen):
