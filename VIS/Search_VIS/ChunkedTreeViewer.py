@@ -5,7 +5,7 @@ import pygame
 import ast
 
 # TODO: leave empty
-DOMAIN = "car"
+DOMAIN = ""
 
 # Constants
 pygame.init()
@@ -166,7 +166,7 @@ def random_color():
 def show_node_info(node):
     """Generate an overlay with structured state information, keeping the table as the background."""
 
-    info_width, info_height = WIDTH + 50, HEIGHT * 0.5
+    info_width, info_height = WIDTH + 25, HEIGHT * 0.3
     info_surface = pygame.Surface((info_width, info_height))
     info_surface.fill((200, 200, 200))  # Default background in case image fails
     font = pygame.font.Font(None, 24)
@@ -201,7 +201,7 @@ def render_car_domain(node, surface, font, res_dir, width, height):
         x_pos = int((distance / max_distance) * (width - 200))
 
         # Updated: align cars to road lanes at the bottom half
-        lane_y_start = height * 0.55  # start of road area
+        lane_y_start = height * 0.5  # start of road area
         lane_spacing = 80  # vertical space between lanes
         y_pos = int(lane_y_start + i * lane_spacing)
 
@@ -229,7 +229,7 @@ def render_blocks_domain(node, surface, font, res_dir, width, height):
     hand_img = pygame.transform.scale(hand_img, (80, 80))
 
     block_positions = {}
-    x_pos = 50
+    x_pos = 40
     y_pos = height - 120
 
     for block in parsed_state.get("ontable", []):
@@ -238,10 +238,10 @@ def render_blocks_domain(node, surface, font, res_dir, width, height):
 
     for top, bottom in parsed_state.get("on", {}).items():
         if bottom in block_positions:
-            block_positions[top] = (block_positions[bottom][0], block_positions[bottom][1] - 60)
+            block_positions[top] = (block_positions[bottom][0], block_positions[bottom][1] - 40)
 
     for block, (x, y) in block_positions.items():
-        pygame.draw.rect(surface, random_color(), (x, y, 50, 50))
+        pygame.draw.rect(surface, random_color(), (x, y, 40, 40))
         text_surface = font.render(block, True, (255, 255, 255))
         surface.blit(text_surface, (x + 10, y + 10))
 
@@ -365,4 +365,4 @@ def main(domain_name):
 
 
 if __name__ == "__main__":
-    main()
+    main("blocks")
