@@ -12,7 +12,7 @@ pygame.init()
 info = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
 WIDTH, HEIGHT = int(SCREEN_WIDTH * 0.9), int(SCREEN_HEIGHT * 0.9)
-NODE_RADIUS = 25
+NODE_RADIUS = 15
 BACKGROUND_COLOR = (255, 255, 255)
 NODE_COLOR = (173, 216, 230)
 EDGE_COLOR = (0, 0, 0)
@@ -361,7 +361,6 @@ def main(domain_name):
         clock.tick(30)
 
     pygame.quit()
-
 
 
 if __name__ == "__main__":

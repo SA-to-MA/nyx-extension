@@ -21,6 +21,14 @@
 (goal_reached ?a2 )
 )
 )
+(:action no-op_agent&no-op_agent
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+)
+)
 (:action decelerate&decelerate
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -32,79 +40,6 @@
 )
 :effect (and
 (decrease (a ?a1 )1 )
-(decrease (a ?a2 )1 )
-)
-)
-(:action no-op_agent&no-op_agent
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-)
-)
-(:action accelerate&accelerate
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(running ?a2 )
-(< (a ?a2 )(up_limit ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(increase (a ?a1 )1 )
-(increase (a ?a2 )1 )
-)
-)
-(:action decelerate&no-op_agent
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(> (a ?a1 )(down_limit ?a1 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (a ?a1 )1 )
-)
-)
-(:action decelerate&stop
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(> (a ?a1 )(down_limit ?a1 ))
-(= (v ?a2 )0 )
-(>= (d ?a2 )30 )
-(not (engineblown ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (a ?a1 )1 )
-(goal_reached ?a2 )
-)
-)
-(:action accelerate&no-op_agent
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(increase (a ?a1 )1 )
-)
-)
-(:action accelerate&decelerate
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(running ?a1 )
-(< (a ?a1 )(up_limit ?a1 ))
-(running ?a2 )
-(> (a ?a2 )(down_limit ?a2 ))
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(increase (a ?a1 )1 )
 (decrease (a ?a2 )1 )
 )
 )
@@ -124,6 +59,46 @@
 (goal_reached ?a2 )
 )
 )
+(:action accelerate&no-op_agent
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(running ?a1 )
+(< (a ?a1 )(up_limit ?a1 ))
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(increase (a ?a1 )1 )
+)
+)
+(:action decelerate&stop
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(running ?a1 )
+(> (a ?a1 )(down_limit ?a1 ))
+(= (v ?a2 )0 )
+(>= (d ?a2 )30 )
+(not (engineblown ?a2 ))
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (a ?a1 )1 )
+(goal_reached ?a2 )
+)
+)
+(:action accelerate&accelerate
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(running ?a1 )
+(< (a ?a1 )(up_limit ?a1 ))
+(running ?a2 )
+(< (a ?a2 )(up_limit ?a2 ))
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(increase (a ?a1 )1 )
+(increase (a ?a2 )1 )
+)
+)
 (:action no-op_agent&stop
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -134,6 +109,31 @@
 )
 :effect (and
 (goal_reached ?a2 )
+)
+)
+(:action accelerate&decelerate
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(running ?a1 )
+(< (a ?a1 )(up_limit ?a1 ))
+(running ?a2 )
+(> (a ?a2 )(down_limit ?a2 ))
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(increase (a ?a1 )1 )
+(decrease (a ?a2 )1 )
+)
+)
+(:action decelerate&no-op_agent
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(running ?a1 )
+(> (a ?a1 )(down_limit ?a1 ))
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (a ?a1 )1 )
 )
 )
 )
