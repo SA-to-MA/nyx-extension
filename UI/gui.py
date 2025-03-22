@@ -4,6 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from MA_PDDL import MAtoSA
 from VIS.VisController import run
 from PIL import Image, ImageTk
+from VIS.Search_VIS.ChunkedTreeViewer import main as show_search_tree
 from pathlib import Path
 
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "Other"]
@@ -301,7 +302,7 @@ class ModernApp(tk.Tk):
             self.create_button_with_icon(text="Visualize", y_position=0.56,
                                          command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
             self.create_button_with_icon(text="Show search tree", y_position=0.68,
-                                         command=lambda: self.switch_page("STResults"), icon=self.solve_icon)
+                                         command=lambda: show_search_tree("blocks"), icon=self.solve_icon)
             self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
                                          icon=self.home_icon)
 
@@ -342,8 +343,8 @@ class ModernApp(tk.Tk):
             run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
                               self.config_file)  # Run the visualization with the selected inputs
             self.create_page_title_and_background("Visualization completed successfully!")
-            self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
-                                         command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)
+            #self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
+            #                             command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)
         except Exception as e:
             messagebox.showerror("Visualization Error", f"An error occurred while visualizing:\n{e}")
 

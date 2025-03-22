@@ -1,0 +1,5 @@
+; Config for running NYX with search tree saving
+-t:1
+-pt
+--save-tree
+--save-search-tree-path VIS/Search_VIS/search_tree

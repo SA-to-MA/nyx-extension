@@ -21,7 +21,7 @@ SELECTED_COLOR = (255, 165, 0)
 FONT_SIZE = 16
 CHUNK_SIZE = 100  # Increase chunk size to 100 nodes
 
-directory = "search_tree"
+directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "search_tree")
 parent_references = {}  # Stores references for all parent-child relationships across chunks
 
 
