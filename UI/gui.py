@@ -213,6 +213,11 @@ class ModernApp(tk.Tk):
         if not self.domain_file or not self.problem_file:
             messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
             return
+        print("DOMAIN FILE:", self.domain_file)
+        print("PROBLEM FILE:", self.problem_file)
+        print("CONFIG FILE:", self.config_file)
+        print("SELECTED DOMAIN:", self.selected_domain.get())
+
         try:
             self.controller = MAtoSA.SolveController(
                 self.domain_file,
@@ -222,9 +227,10 @@ class ModernApp(tk.Tk):
             )
             self.plan_file = self.controller.getPlanFile()
             self.switch_page(next_page)
-
         except Exception as e:
-            messagebox.showerror("Invalid Input", f"One or more selected files cannot be processed. Please upload valid PDDL files.")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Invalid Input", f"Error:\n{e}")
 
     def create_frame(self, y_position, height=40, width=0.97, bg="#1E1E1E"):
         """Create a reusable frame at a specific vertical position for layout alignment."""
@@ -302,7 +308,8 @@ class ModernApp(tk.Tk):
             self.create_button_with_icon(text="Visualize", y_position=0.56,
                                          command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
             self.create_button_with_icon(text="Show search tree", y_position=0.68,
-                                         command=lambda: show_search_tree("blocks"), icon=self.solve_icon)
+                                         command=lambda: show_search_tree(self.selected_domain.get().lower())
+                                            , icon=self.solve_icon)
             self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
                                          icon=self.home_icon)
 
