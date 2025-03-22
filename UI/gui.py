@@ -78,21 +78,18 @@ class ModernApp(tk.Tk):
         self.plan_label_var = tk.StringVar(value="No file selected")
         self.config_label_var = tk.StringVar(value="No file selected")
 
-    def create_file_input(self, label_text, y_position, button_command, variable):  # Create a file input field
+    def create_file_input(self, label_text, y_position, button_command, variable):
+        """Create a labeled file input field with a selection button and a file name preview."""
 
-        # Label for input
+        # Label for the input type (e.g. "Domain Input")
         label = ttk.Label(self.current_frame, text=label_text, style="Custom.TLabel")
         label.place(relx=0.15, rely=y_position, anchor="center")
 
-        # Button for file selection
-        button = ttk.Button(
-            self.current_frame,
-            text=f"Choose {label_text.split()[0]} File",
-            command=button_command
-        )
+        # Button to open file dialog
+        button = ttk.Button(self.current_frame, text=f"Choose {label_text.split()[0]} File", command=button_command)
         button.place(relx=0.5, rely=y_position, anchor="center", relwidth=0.4)
 
-        # Display selected file name
+        # Label to display the selected file name
         file_label = ttk.Label(self.current_frame, textvariable=variable, style="TLabel")
         file_label.place(relx=0.5, rely=y_position + 0.05, anchor="center")
 
@@ -147,8 +144,6 @@ class ModernApp(tk.Tk):
         back_label.place(relx=0.02, rely=0.02, anchor="nw")  # Position in the top-left corner
         back_label.bind("<Button-1>", lambda e: self.switch_page(target_page))  # Bind left-click to switch page
 
-
-
     def switch_page(self, page_name):
         """Switch to a different page by destroying the current frame and creating a new one."""
         if self.current_frame is not None:
@@ -161,7 +156,7 @@ class ModernApp(tk.Tk):
         self.pages[page_name]()
 
     def create_page_title_and_background(self, title_text, y_position=0.10):
-        """Create a standardized background, title and subtitle for all pages."""
+        """Create a standardized background,  and title for all pages."""
         bg_image = tk.PhotoImage(file="img/background.png")  # Load the background image
         bg_label = tk.Label(self.current_frame, image=bg_image)
         bg_label.image = bg_image  # Keep a reference to prevent garbage collection
@@ -216,44 +211,31 @@ class ModernApp(tk.Tk):
             file_name = os.path.basename(file_path)  # Extract file name only
             self.config_label_var.set(f"Selected: {file_name}")  # Update label
 
-    def handle_solve(self):
-        # Check if both domain and problem files are selected
-        if not self.domain_file or not self.problem_file:
-            print("Error: Please select both domain and problem files before planning.")
-            return
-
-        # Call the solve function and save the result
-        try:
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(), self.config_file)
-            self.plan_file = self.controller.getPlanFile()  # Save the plan result
-            self.switch_page("PlanResults")  # Switch to the PlanResults page
-        except Exception as e:
-            print(f"An error occurred while planning: {e}")
-
-    def create_frame(self, y_position, height=40, width=0.9, bg="#1E1E1E"):
-        """Create a standard frame with consistent styling."""
+    def create_frame(self, y_position, height=40, width=0.97, bg="#1E1E1E"):
+        """Create a reusable frame at a specific vertical position for layout alignment."""
         frame = tk.Frame(self.current_frame, bg=bg)
         frame.place(relx=0.5, rely=y_position, anchor="center", relwidth=width, height=height)
-        return frame  # Return the frame for further customization
+        return frame
 
     def create_home_page(self):
-        """Create the Home page with a welcome message and buttons to navigate to other pages."""
-        self.create_page_title_and_background("MA-PlanX")
+        """Create the Home page with project introduction and main navigation buttons."""
+        self.create_page_title_and_background("MA-PlanX")  # Set page title and background
+
         subtitle = ttk.Label(
             self.current_frame,
             text="A Multi-Agent Planning and Visualization framework based on NYX,\n"
-                               "designed for solving PDDL+ domains with numeric and durative actions",
+                 "designed for solving PDDL+ domains with numeric and durative actions",
             style="Custom.TLabel"
         )
         subtitle.place(relx=0.5, rely=0.25, anchor="center")
+
         self.create_button_with_icon(text="Solve", y_position=0.45, command=lambda: self.switch_page("Solve"), relx=0.5,
                                      icon=self.solve_icon)
-        self.create_button_with_icon(text="Visualize", y_position=0.58, command=lambda: self.switch_page("Visualize"), relx=0.5,
-                                     icon=self.visualize_icon)
+        self.create_button_with_icon(text="Visualize", y_position=0.58, command=lambda: self.switch_page("Visualize"),
+                                     relx=0.5, icon=self.visualize_icon)
 
     def create_solve_page(self):
         """Create the Solve page where the user can select input files and start the solving process."""
-
         self.create_page_title_and_background("Solve Problem")  # Create the title and background
 
         self.create_frame(0.25)
@@ -269,134 +251,133 @@ class ModernApp(tk.Tk):
         self.create_file_input("Problem Input:", 0.49, self.select_problem_file, self.problem_label_var)
         self.create_file_input("Configuration (optional):", 0.61, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Plan", y_position=0.8, command=self.handle_solve, icon=self.plan_icon,
-                                     relx=0.50)  # Plan button
+        self.create_button_with_icon(text="Plan", y_position=0.8, command=lambda: self.switch_page("PlanResults"),
+                                     icon=self.plan_icon, relx=0.50)
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
 
     def create_plan_result_page(self):
+        """Run the planning process and display the result or error."""
+        self.current_frame = tk.Frame(self, bg="#1E1E1E")
+        self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-        self.create_page_title_and_background("Plan saved to:")  # Create the title and background
-        path_label = ttk.Label(
-            self.current_frame, text=self.plan_file, style="Custom.TLabel", wraplength=300, justify="center")
-        path_label.place(relx=0.5, rely=0.33, anchor="center")
-        # Add a button to show the solution
+        try:
+            self.controller = MAtoSA.SolveController(
+                    self.domain_file, self.problem_file, self.selected_domain.get(), self.config_file)
+            self.plan_file = self.controller.getPlanFile()
+            self.create_page_title_and_background("Plan saved to:")  # Create the title and background
+            path_label = ttk.Label(
+                    self.current_frame, text=self.plan_file, style="Custom.TLabel", wraplength=300, justify="center")
+            path_label.place(relx=0.5, rely=0.33, anchor="center")
 
-        self.create_button_with_icon(text="Show Solution", y_position=0.5, command=lambda: self.show_solution(), icon=self.solve_icon)
+            # Add a button to show the solution
+            self.create_button_with_icon(text="Show Solution", y_position=0.68, command=lambda: self.show_solution(),
+                                         icon=self.solve_icon)
 
-        # Add a back button to return to the previous page using "add_back_button" method
+        except Exception as e:
+            error_label = tk.Label(self.current_frame, text=f"An error occurred while planning:\n{e}",
+                font=("Roboto", 14), bg="#1E1E1E", fg="#FF0000", wraplength=500)
+            error_label.place(relx=0.5, rely=0.4, anchor="center")
+
         self.add_back_button("Solve")
-        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("home"), icon=self.home_icon)
+        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+                                     icon=self.home_icon)
 
     def show_solution(self):
+        """Display the parsed plan solution after successful solving."""
         try:
             solution = self.controller.getParsedPlan()
 
-            # Create a new page to display the solution
+            # Clear the previous frame and create a new one
             self.current_frame.destroy()
             self.current_frame = tk.Frame(self, bg="#1E1E1E")
             self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-            self.create_page_title_and_background("The solution:")  # Create the title and background
-            solution_label = ttk.Label(
-                self.current_frame,
-                text=solution,
-                font=("Roboto", 16),
-                background="#1E1E1E",
-                foreground="#E0E0E0",
-                wraplength=800,
-                justify="left"
-            )
+            # Page title and background
+            self.create_page_title_and_background("The solution:")
+
+            # Display the solution text
+            solution_label = ttk.Label(self.current_frame, text=solution, font=("Roboto", 16), background="#1E1E1E",
+                                       foreground="#E0E0E0", wraplength=800, justify="left")
             solution_label.place(relx=0.5, rely=0.32, anchor="center")
 
-            # Add a back button to return to the previous page using "add_back_button" method
+            # Navigation buttons
             self.add_back_button("PlanResults")
-            # add a button to switch to the previous page using "create_button_with_icon" method
-            self.create_button_with_icon(text="Visualize", y_position=0.58, command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
-            self.create_button_with_icon(text="Show search tree", y_position=0.7, command=lambda: self.switch_page("STResults"), icon=self.solve_icon)
-
-            self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+            self.create_button_with_icon(text="Visualize", y_position=0.56,
+                                         command=lambda: self.switch_page("VisResults"), icon=self.visualize_icon)
+            self.create_button_with_icon(text="Show search tree", y_position=0.68,
+                                         command=lambda: self.switch_page("STResults"), icon=self.solve_icon)
+            self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+                                         icon=self.home_icon)
 
         except Exception as e:
             print(f"An error occurred while reading the solution: {e}")
 
     def create_vis_page(self):
-        """Create the Visualize page where the user can select input files for visualization."""
-        self.create_page_title_and_background("Visualize")  # Create the title and background
+        """Create the 'Visualize' page where the user selects input files and initiates the visualization process."""
+        self.create_page_title_and_background("Visualize")  # Set title and background
 
-        self.create_frame(0.25)  # Create a frame for the dropdown
-        self.create_frame(0.35)
-        self.create_frame(0.45)
-        self.create_frame(0.55)
-        self.create_frame(0.65)
+        # Layout placeholders for input sections
+        self.create_frame(0.25)  # Dropdown
+        self.create_frame(0.35)  # Domain file
+        self.create_frame(0.45)  # Problem file
+        self.create_frame(0.55)  # Plan file (optional)
+        self.create_frame(0.65)  # Config file (optional)
 
-        # Create domain selection dropdown
+        # Input fields
         self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
-        # Create input fields
         self.create_file_input("Domain Input:", 0.35, self.select_domain_file, self.domain_label_var)
         self.create_file_input("Problem Input:", 0.45, self.select_problem_file, self.problem_label_var)
         self.create_file_input("Plan Input (optional):", 0.55, self.select_plan_file, self.plan_label_var)
         self.create_file_input("Configuration (optional):", 0.65, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Visualize solution", y_position=0.8,  command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.50)  # Plan button
-        #self.create_button_with_icon(text="Visualize search tree", y_position=0.92,  command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)  # Plan button
+        # Action button
+        self.create_button_with_icon(text="Visualize solution", y_position=0.8,
+                                     command=lambda: self.switch_page("VisResults"), icon=self.go_icon, relx=0.50)
 
-        # Add a back button to return to the Home page
+        # Navigation
         self.add_back_button("Home")
 
     def create_vis_results_page(self):
-        """Create the Visualization Results page to display the outcome of the visualization."""
-        # Destroy the current frame if it exists
+        """Run the visualization and display a result message or error."""
         if self.current_frame is not None:
             self.current_frame.destroy()
-
-        self.current_frame = tk.Frame(self, bg="#1E1E1E") # Create a new frame
+        self.current_frame = tk.Frame(self, bg="#1E1E1E")
         self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-        # Check if a plan file exists
-        if len(self.plan_file) != 0:
-            plan_file = self.plan_file
-            parse = False  # No parsing needed because a plan file exists
-        else:
-            plan_file = ""
-            parse = True  # Parsing is needed because no plan file exists
+        plan_file = self.plan_file if self.plan_file else ""
+        parse = not bool(self.plan_file)
 
-        # Call the visualization function and handle results or errors
         try:
-            VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file, self.config_file)
-
-            # Display a success message
+            VisController.run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
+                              self.config_file)
             self.create_page_title_and_background("Visualization completed successfully!")
-            self.create_button_with_icon(text="Visualize search tree", y_position=0.5,  command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)  # Plan button
+            self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
+                                         command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)
 
         except Exception as e:
-            # Display an error message if visualization fails
-            error_label = tk.Label(
-                self.current_frame,
-                text=f"An error occurred:\n{e}",
-                font=("Comic Sans MS", 14),
-                bg="#1E1E1E",
-                fg="#FF0000",
-                wraplength=400,
-            )
+            error_label = tk.Label(self.current_frame, text=f"An error occurred:\n{e}", font=("Comic Sans MS", 14),
+                                   bg="#1E1E1E", fg="#FF0000", wraplength=400)
             error_label.place(relx=0.5, rely=0.3, anchor="center")
 
-        # Add a button to return to the last page using "add_back_button" method
         self.add_back_button("Visualize")
-        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+                                     icon=self.home_icon)
 
     def create_ST_results_page(self):
-        self.create_page_title_and_background("show search tree")  # Create the title and background
-
+        """Display the results of the search tree visualization."""
+        self.create_page_title_and_background("Show search tree")
         self.add_back_button("show_solution")
-        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+                                     icon=self.home_icon)
 
     def create_ST_Visualize_page(self):
-        self.create_page_title_and_background("Visualize search tree")  # Create the title and background
-
+        """Page for initiating search tree visualization."""
+        self.create_page_title_and_background("Visualize search tree")
         self.add_back_button("Visualize")
-        self.create_button_with_icon(text="Home", y_position=0.9, command=lambda: self.switch_page("Home"), icon=self.home_icon)
+        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+                                     icon=self.home_icon)
 
 
 if __name__ == "__main__":
