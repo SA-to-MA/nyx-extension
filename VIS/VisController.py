@@ -154,12 +154,12 @@ def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", f
     # if no flags, set default flags
     if len(flags_path) == 0:
         flags = "-t:1 -pt"
-    else: # if flags file is valid, read flags
+    else:  # if flags file is valid, read flags
         flags = read_flags_file(flags_path)
     t_value = extract_t_value(flags_path) # get t value from flags
     # if sa domain of sleeping beauty, run it
     if selected_domain == "Sleeping Beauty":
-        if parse: # if no plan file, run and get plan
+        if parse:  # if no plan file, run and get plan
             plan_file = run_nyx(domain_path, problem_path, flags)
         # run domain problem and plan in simulator
         GenericSimulator(selected_domain, problem_path, plan_file).simulate()
