@@ -21,12 +21,19 @@ SELECTED_COLOR = (255, 165, 0)
 FONT_SIZE = 16
 CHUNK_SIZE = 100  # Increase chunk size to 100 nodes
 
-directory = "search_tree"
 parent_references = {}  # Stores references for all parent-child relationships across chunks
 
+from pathlib import Path
+import subprocess
+
+# Get the Git repo root directory
+def get_repo_root() -> Path:
+    return Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).decode().strip())
 
 def get_chunk_files():
     """Retrieve and sort the chunk files."""
+    repo_root = get_repo_root()
+    directory = repo_root / "VIS/Search_VIS/search_tree"  # Always under root/logs
     files = [f for f in os.listdir(directory) if f.startswith("tree_chunk_") and f.endswith(".pkl")]
     return sorted(files, key=lambda x: int(x.split("_")[-1].split(".")[0]))
 
@@ -44,6 +51,8 @@ def preload_parent_references():
 
 def load_chunk(filename):
     """Load a specific chunk."""
+    repo_root = get_repo_root()
+    directory = repo_root / "VIS/Search_VIS/search_tree"  # Always under root/logs
     with open(os.path.join(directory, filename), "rb") as file:
         return pickle.load(file)
 

@@ -2,7 +2,10 @@
 # Four spaces as indentation [no tabs]
 import bisect
 import collections
+import subprocess
 from hmac import new
+from pathlib import Path
+
 import heuristic_functions as heuristic_functions
 from PDDL import PDDL_Parser
 import syntax.constants as constants
@@ -17,6 +20,9 @@ import semantic_attachments.semantic_attachment as semantic_attachment
 import dill as pickle
 import os
 from collections import deque
+
+def get_repo_root() -> Path:
+    return Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).decode().strip())
 
 class Planner:
 
@@ -40,10 +46,10 @@ class Planner:
         self.visited_hashmap = {}
         self.total_goals_found = 0
 
-    def save_tree_in_chunks(self, root, folder="VIS/Search_VIS/search_tree", chunk_size=100):
+    def save_tree_in_chunks(self, root, chunk_size=100):
         """Save a large tree into multiple pickle files, each containing chunk_size nodes."""
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        repo_root = get_repo_root()
+        folder = repo_root / "VIS/Search_VIS/search_tree"
 
         queue = deque([root])  # BFS traversal
         chunk = []
