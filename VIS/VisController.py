@@ -191,8 +191,8 @@ def main(agents, init_obj, domain, t_value):
     # Initialize Pygame
     pygame.init()
     info = pygame.display.Info()
-    window_height = int((3 / 4) * info.current_h)
-    window_width = int((5 / 4) * window_height)
+    window_height = int(info.current_h * 0.9)
+    window_width = int(info.current_w * 0.9)
     screen = pygame.display.set_mode((window_width, window_height))
 
     pygame.display.set_caption(f"{domain} Simulator")  # Dynamic title
@@ -216,7 +216,7 @@ def main(agents, init_obj, domain, t_value):
     simulator.run()
 
     # Wait before closing
-    time.sleep(5)
+    time.sleep(2)
     pygame.quit()
 
 # if __name__ == "__main__":
