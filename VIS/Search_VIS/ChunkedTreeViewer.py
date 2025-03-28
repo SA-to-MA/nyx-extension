@@ -12,14 +12,15 @@ pygame.init()
 info = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
 WIDTH, HEIGHT = int(SCREEN_WIDTH * 0.9), int(SCREEN_HEIGHT * 0.9)
-NODE_RADIUS = 15
+NODE_RADIUS = 20
 BACKGROUND_COLOR = (255, 255, 255)
 NODE_COLOR = (173, 216, 230)
 EDGE_COLOR = (0, 0, 0)
 TEXT_COLOR = (0, 0, 0)
 SELECTED_COLOR = (255, 165, 0)
 FONT_SIZE = 16
-CHUNK_SIZE = 100  # Increase chunk size to 100 nodes
+CHUNK_SIZE = 200  # Increase chunk size to 100 nodes
+EXPANDABLE_COLOR = (100, 200, 255)  # Light blue
 
 parent_references = {}  # Stores references for all parent-child relationships across chunks
 
@@ -80,7 +81,7 @@ def compute_node_positions(nodes):
         for i, (idx, node) in enumerate(level_nodes):
             x = (i + 1) * x_spacing
             y = (depth + 1) * y_spacing
-            node_positions[node] = (x, y, idx)
+            node_positions[node] = (x, y, node.original_idx)  # Use permanent index
 
     for node in nodes:
         if node.parent and node.parent not in node_positions:
@@ -288,8 +289,20 @@ def draw_buttons(screen):
     screen.blit(font.render("Back", True, (0, 0, 0)), (WIDTH - 215, HEIGHT - 40))
     return next_button, back_button
 
+def draw_button(screen, rect, label, disabled=False):
+    font = pygame.font.Font(None, 24)
+    color = (200, 200, 200) if disabled else (150, 150, 150)
+    text_color = (180, 180, 180) if disabled else (0, 0, 0)
 
-def draw_tree(screen, nodes, selected_node, node_positions, missing_parents):
+    pygame.draw.rect(screen, color, rect)
+    pygame.draw.rect(screen, (100, 100, 100), rect, 2)
+
+    text_surface = font.render(label, True, text_color)
+    text_rect = text_surface.get_rect(center=rect.center)
+    screen.blit(text_surface, text_rect)
+
+
+def draw_tree(screen, nodes, selected_node, node_positions, missing_parents, solution_node=None):
     screen.fill(BACKGROUND_COLOR)
     font = pygame.font.Font(None, FONT_SIZE)
 
@@ -301,11 +314,57 @@ def draw_tree(screen, nodes, selected_node, node_positions, missing_parents):
             pygame.draw.line(screen, EDGE_COLOR, (x, y - NODE_RADIUS), (x, 50), 2)  # Placeholder for external parent
 
     for node, (x, y, idx) in node_positions.items():
-        color = SELECTED_COLOR if node == selected_node else NODE_COLOR
+        if node == solution_node:
+            color = (0, 200, 0)  # Green for solution
+        elif node == selected_node:
+            color = SELECTED_COLOR
+        elif node.children and any(child not in node_positions for child in node.children):
+            color = EXPANDABLE_COLOR  # Node has hidden children → can be expanded
+        else:
+            color = NODE_COLOR  # Leaf or fully expanded
+
         pygame.draw.circle(screen, color, (x, y), NODE_RADIUS)
         pygame.draw.circle(screen, EDGE_COLOR, (x, y), NODE_RADIUS, 2)
+
         text = font.render(str(idx), True, TEXT_COLOR)
         screen.blit(text, (x - NODE_RADIUS // 2, y - NODE_RADIUS // 2))
+
+
+def get_visible_nodes(root_nodes, expanded_nodes):
+    visible = set()
+
+    def dfs(node):
+        if node in visible:
+            return
+        visible.add(node)
+        if node in expanded_nodes:
+            for child in node.children:
+                dfs(child)
+
+    for root in root_nodes:
+        dfs(root)
+
+    return list(visible)
+
+def setup_new_nodes(new_nodes, loaded_nodes, seen_indices):
+    for node in new_nodes:
+        if not hasattr(node, "index"):
+            node.index = len(seen_indices)
+
+        if node.index not in seen_indices:
+            node.original_idx = node.index
+            node.children = []
+            loaded_nodes.append(node)
+            seen_indices.add(node.index)
+
+def link_parents(loaded_nodes, index_to_node):
+    for node in loaded_nodes:
+        if node.parent and hasattr(node.parent, "index"):
+            parent_index = node.parent.index
+            if parent_index in index_to_node:
+                parent_node = index_to_node[parent_index]
+                if node not in parent_node.children:
+                    parent_node.children.append(node)
 
 
 def main(domain_name):
@@ -316,61 +375,120 @@ def main(domain_name):
     pygame.display.set_caption("Pygame Search Tree Viewer")
     clock = pygame.time.Clock()
 
-    preload_parent_references()  # Load all parent relationships
+    preload_parent_references()
     chunks = get_chunk_files()
-    if not chunks:
-        print("No chunks found.")
-        return
-
     current_chunk_index = 0
-    nodes = load_chunk(chunks[current_chunk_index])[:CHUNK_SIZE]  # Load up to CHUNK_SIZE nodes
-    node_positions, missing_parents = compute_node_positions(nodes)
-    selected_node = None
-    node_info_surface = None  # Holds the state info overlay
-    state_window_position = (WIDTH - 520, 50)  # Move state overlay to the right
+
+    loaded_nodes = []
+    seen_indices = set()
+    index_to_node = {}
+    visible_chunks = set()
+
+    # Load only the first chunk initially
+    new_nodes = load_chunk(chunks[0])
+    setup_new_nodes(new_nodes, loaded_nodes, seen_indices)
+    index_to_node.update({node.index: node for node in new_nodes})
+    link_parents(loaded_nodes, index_to_node)
+    visible_chunks.add(0)
+
+    root_nodes = [node for node in loaded_nodes if node.parent is None]
+    expanded_nodes = set()
+    visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
+    node_positions, missing_parents = compute_node_positions(visible_nodes)
+
+    # solution_node = next(
+    #     (n for n in loaded_nodes if hasattr(n, "state") and getattr(n.state, "goal_reached", False)),
+    #     None
+    # )
+    #
+    # if solution_node:
+    #     node = solution_node
+    #     while node:
+    #         expanded_nodes.add(node)
+    #         node = node.parent if hasattr(node, "parent") else None
+
+    selected_node = root_nodes[0] if root_nodes else None
+    if selected_node:
+        expanded_nodes.add(selected_node)
+        visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
+        node_positions, missing_parents = compute_node_positions(visible_nodes)
+
+    node_info_surface = None
+    state_window_position = (WIDTH - 520, 50)
 
     running = True
     while running:
         screen.fill(BACKGROUND_COLOR)
-        draw_tree(screen, nodes, selected_node, node_positions, missing_parents)
-        next_button, back_button = draw_buttons(screen)
+        draw_tree(screen, visible_nodes, selected_node, node_positions, missing_parents)
 
-        # If a node is selected, display its info at the correct position
+        next_button, back_button = draw_buttons(screen)
+        draw_button(screen, next_button, "Next", disabled=current_chunk_index >= len(chunks) - 1)
+        draw_button(screen, back_button, "Back", disabled=current_chunk_index == 0)
+
         if selected_node:
             if node_info_surface is None:
-                node_info_surface = show_node_info(selected_node)  # Generate info overlay
-            screen.blit(node_info_surface, state_window_position)  # Draw overlay at correct position
+                node_info_surface = show_node_info(selected_node)
+            screen.blit(node_info_surface, state_window_position)
 
         pygame.display.flip()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = pygame.mouse.get_pos()
+
                 if next_button.collidepoint(mx, my) and current_chunk_index < len(chunks) - 1:
                     current_chunk_index += 1
-                    nodes = load_chunk(chunks[current_chunk_index])[:CHUNK_SIZE]
-                    node_positions, missing_parents = compute_node_positions(nodes)
-                    selected_node = None
-                    node_info_surface = None  # Reset state window
+                    visible_chunks.add(current_chunk_index)
+                    new_nodes = load_chunk(chunks[current_chunk_index])
+                    setup_new_nodes(new_nodes, loaded_nodes, seen_indices)
+                    index_to_node.update({node.index: node for node in new_nodes})
+                    link_parents(loaded_nodes, index_to_node)
+
+                    root_nodes = [node for node in loaded_nodes if node.parent is None]
+
+                    visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
+                    node_positions, missing_parents = compute_node_positions(visible_nodes)
+                    node_info_surface = None
+
                 elif back_button.collidepoint(mx, my) and current_chunk_index > 0:
+                    visible_chunks.remove(current_chunk_index)
                     current_chunk_index -= 1
-                    nodes = load_chunk(chunks[current_chunk_index])[:CHUNK_SIZE]
-                    node_positions, missing_parents = compute_node_positions(nodes)
+
+                    loaded_nodes = []
+                    seen_indices = set()
+                    index_to_node = {}
+                    for i in sorted(visible_chunks):
+                        chunk_nodes = load_chunk(chunks[i])
+                        setup_new_nodes(chunk_nodes, loaded_nodes, seen_indices)
+                        index_to_node.update({node.index: node for node in chunk_nodes})
+                    link_parents(loaded_nodes, index_to_node)
+
+                    root_nodes = [node for node in loaded_nodes if node.parent is None]
+                    visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
+                    node_positions, missing_parents = compute_node_positions(visible_nodes)
                     selected_node = None
-                    node_info_surface = None  # Reset state window
+                    node_info_surface = None
+
                 else:
                     for node, (x, y, idx) in node_positions.items():
                         if (x - mx) ** 2 + (y - my) ** 2 <= NODE_RADIUS ** 2:
+                            if node in expanded_nodes:
+                                expanded_nodes.remove(node)
+                            else:
+                                expanded_nodes.add(node)
+
                             selected_node = node
-                            node_info_surface = show_node_info(selected_node)  # Generate new overlay
+                            visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
+                            node_positions, missing_parents = compute_node_positions(visible_nodes)
+                            node_info_surface = show_node_info(selected_node)
                             break
 
         clock.tick(30)
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main("blocks")
