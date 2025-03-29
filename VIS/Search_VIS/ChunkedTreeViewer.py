@@ -38,6 +38,25 @@ def get_chunk_files():
     files = [f for f in os.listdir(directory) if f.startswith("tree_chunk_") and f.endswith(".pkl")]
     return sorted(files, key=lambda x: int(x.split("_")[-1].split(".")[0]))
 
+def delete_all_chunks():
+    """
+    Deletes all chunk files from the search_tree directory.
+    Intended to be called from the GUI when the user exits the program.
+    """
+    try:
+        repo_root = get_repo_root()
+        directory = repo_root / "VIS/Search_VIS/search_tree"
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            if (
+                    filename.startswith("tree_chunk_")
+                    and filename.endswith(".pkl")
+                    and os.path.isfile(file_path)  # ensures no folders touched
+            ):
+                os.remove(file_path)
+        print("All chunk files deleted.")
+    except Exception as e:
+        print(f"Failed to delete chunk files: {e}")
 
 def preload_parent_references():
     """Load all parent-child relationships across chunks to track missing parents."""
@@ -330,7 +349,43 @@ def draw_tree(screen, nodes, selected_node, node_positions, missing_parents, sol
         screen.blit(text, (x - NODE_RADIUS // 2, y - NODE_RADIUS // 2))
 
 
+def show_loading_screen(screen, message="Loading..."):
+    """
+    Displays a loading screen with a background image and animated text.
+
+    Args:
+       screen (pygame.Surface): The surface to draw on.
+       message (str): The message to show (default is "Loading...").
+    """
+    try:
+        background = pygame.image.load("resources/loading_bg.jpg")
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+        screen.blit(background, (0, 0))
+    except Exception:
+        screen.fill((230, 230, 230))  # Fallback light neutral background
+
+    font = pygame.font.SysFont("Segue UI", 48)
+
+    text_surface = font.render(message, True, (255, 255, 255))
+    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 40))
+    screen.blit(text_surface, text_rect)
+
+    pygame.display.flip()
+
+
 def get_visible_nodes(root_nodes, expanded_nodes):
+    """
+    Returns a list of nodes that are currently visible in the tree.
+
+    A node is visible if it's a root or reachable by expanding its parent.
+
+    Args:
+        root_nodes (list): List of root nodes (nodes with no parent).
+        expanded_nodes (set): Set of nodes that have been expanded.
+
+    Returns:
+        list: All currently visible nodes in the tree.
+    """
     visible = set()
 
     def dfs(node):
@@ -347,6 +402,14 @@ def get_visible_nodes(root_nodes, expanded_nodes):
     return list(visible)
 
 def setup_new_nodes(new_nodes, loaded_nodes, seen_indices):
+    """
+    Prepares newly loaded nodes by assigning them unique indices and ensuring no duplicates.
+
+    Args:
+        new_nodes (list): List of newly loaded nodes from a chunk.
+        loaded_nodes (list): The master list of all currently loaded nodes.
+        seen_indices (set): A set of indices already used (for avoiding duplication).
+    """
     for node in new_nodes:
         if not hasattr(node, "index"):
             node.index = len(seen_indices)
@@ -358,6 +421,15 @@ def setup_new_nodes(new_nodes, loaded_nodes, seen_indices):
             seen_indices.add(node.index)
 
 def link_parents(loaded_nodes, index_to_node):
+    """
+    Reconstructs parent-child relationships between nodes after loading.
+
+    Each node’s parent is looked up via its index, and the node is added to that parent’s children list.
+
+    Args:
+        loaded_nodes (list): All currently loaded nodes.
+        index_to_node (dict): Mapping of index -> node object.
+    """
     for node in loaded_nodes:
         if node.parent and hasattr(node.parent, "index"):
             parent_index = node.parent.index
@@ -374,6 +446,8 @@ def main(domain_name):
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pygame Search Tree Viewer")
     clock = pygame.time.Clock()
+
+    show_loading_screen(screen, "Loading search tree...")
 
     preload_parent_references()
     chunks = get_chunk_files()
@@ -395,17 +469,6 @@ def main(domain_name):
     expanded_nodes = set()
     visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
     node_positions, missing_parents = compute_node_positions(visible_nodes)
-
-    # solution_node = next(
-    #     (n for n in loaded_nodes if hasattr(n, "state") and getattr(n.state, "goal_reached", False)),
-    #     None
-    # )
-    #
-    # if solution_node:
-    #     node = solution_node
-    #     while node:
-    #         expanded_nodes.add(node)
-    #         node = node.parent if hasattr(node, "parent") else None
 
     selected_node = root_nodes[0] if root_nodes else None
     if selected_node:
