@@ -382,7 +382,9 @@ class SolveController:
         solves the problem using nyx and saves the solution path
         """
 
-        if self.domain_name == "Blocks" or self.domain_name == "Car":
+        if self.domain_name == "Sleeping Beauty":
+            self.plan = run_nyx(self.domain, self.problem, self.flags)
+        else:
             satoma = MAtoSA(self.domain, self.problem)
             # Get absolute path for outputs directory
             output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", f"outputs/{self.domain_name}"))
@@ -394,8 +396,6 @@ class SolveController:
 
             satoma.generate(new_domain, new_problem)
             self.plan = run_nyx(new_domain, new_problem, self.flags)
-        else:
-            self.plan = run_nyx(self.domain, self.problem, self.flags)
         return self.plan
 
     def getPlanFile(self):
