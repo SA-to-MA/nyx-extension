@@ -212,6 +212,10 @@ class ModernApp(tk.Tk):
         if not self.domain_file or not self.problem_file:
             messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
             return
+        if self.plan_file: # If a plan file is already selected, skip planning
+            print("Using existing plan file:", self.plan_file)
+            self.switch_page(next_page)
+            return
         print("DOMAIN FILE:", self.domain_file)
         print("PROBLEM FILE:", self.problem_file)
         print("CONFIG FILE:", self.config_file)
