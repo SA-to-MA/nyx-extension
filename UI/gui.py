@@ -4,8 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 from MA_PDDL import MAtoSA
 from VIS.VisController import main, run
-from VIS.Search_VIS.ChunkedTreeViewer import main
-
+from VIS.Search_VIS import ChunkedTreeViewer
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "Other"]
 
 
@@ -13,6 +12,7 @@ class ModernApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.configure(bg="#1E1E1E")  # Set background color
+        self.protocol("WM_DELETE_WINDOW", self.on_closing) # Handle window close event
         # Store the base directory of images once
         self.image_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "img")
         # Load icons for buttons
@@ -79,6 +79,15 @@ class ModernApp(tk.Tk):
         self.problem_label_var = tk.StringVar(value="No file selected")
         self.plan_label_var = tk.StringVar(value="No file selected")
         self.config_label_var = tk.StringVar(value="No file selected")
+
+    def on_closing(self):
+        """Handle the window close event."""
+        try:
+            ChunkedTreeViewer.delete_all_chunks()
+        except Exception as e:
+            print("Failed to delete chunks:", e)
+
+        self.destroy()
 
     def create_file_input(self, label_text, y_position, button_command, variable):
         """Create a labeled file input field with a selection button and a file name preview."""
@@ -310,7 +319,7 @@ class ModernApp(tk.Tk):
                                          command=lambda: run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
                               self.config_file), icon=self.visualize_icon)
             self.create_button_with_icon(text="Show search tree", y_position=0.68,
-                                         command=lambda: main(self.selected_domain.get().lower())
+                                         command=lambda: ChunkedTreeViewer.main(self.selected_domain.get().lower())
                                             , icon=self.solve_icon)
             self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
                                          icon=self.home_icon)

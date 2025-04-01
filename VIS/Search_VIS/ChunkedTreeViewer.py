@@ -46,6 +46,7 @@ def delete_all_chunks():
     try:
         repo_root = get_repo_root()
         directory = repo_root / "VIS/Search_VIS/search_tree"
+        deleted_any = False # Track if any files were deleted
         for filename in os.listdir(directory):
             file_path = os.path.join(directory, filename)
             if (
@@ -54,7 +55,13 @@ def delete_all_chunks():
                     and os.path.isfile(file_path)  # ensures no folders touched
             ):
                 os.remove(file_path)
-        print("All chunk files deleted.")
+                deleted_any = True
+                print(f"Deleted: {filename}")  # Log the deleted files
+
+        if not deleted_any:
+            print("...No chunks found to delete.")
+        else:
+            print("All chunk files deleted.")
     except Exception as e:
         print(f"Failed to delete chunk files: {e}")
 
