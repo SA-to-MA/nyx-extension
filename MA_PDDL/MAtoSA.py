@@ -62,7 +62,7 @@ class MAtoSA:
         # return all parsed actions
         return actions
 
-    def generate_action_combinations(self, parsed_actions):
+    def generate_action_combinations(self, parsed_actions, agents_dict):
         """
         Generate all possible combinations of actions based on the number of agents of each type.
 
@@ -71,7 +71,7 @@ class MAtoSA:
         """
         # create dict of agents count of agent type
         agent_type_counts = {}
-        for agent_type, agents in self.agents.items():
+        for agent_type, agents in agents_dict: # Yarin added
             agent_type_counts[agent_type] = len(agents)
         # Step 1: Group actions by agent type
         actions_by_agent_type = {}
@@ -154,13 +154,20 @@ class MAtoSA:
 
     def generate_constraints(self, data):
         # Group objects by type
-        groups = {}
-        for i in range(0, len(data), 3):  # Process every triplet
-            obj = data[i]
-            obj_type = data[i + 2]
-            if obj_type not in groups:
-                groups[obj_type] = []
-            groups[obj_type].append(obj)
+        groups = {} # Yarin added
+        i = 0
+        value = []
+        while i < len(data):
+            if data[i] == "-":
+                current_category = data[i + 1]
+                if current_category not in groups:
+                    groups[current_category] = []
+                groups[current_category] += value
+                value = []
+                i += 1
+            else:
+                value.append(data[i])
+            i += 1
 
         # Generate preconditions
         preconditions = []
@@ -213,9 +220,12 @@ class MAtoSA:
 
     def generate_actions(self, tokens):
         parsed_act = self.parse_actions(tokens)
-        for agent in self.agents.keys():
-            parsed_act[f"no-op_{agent}"] = {'params': ['?a', '-', agent], 'pre': [], 'effects': []}
-        possible_combinations = self.generate_action_combinations(parsed_act)
+        possible_combinations = []
+        for agent_type, agents in self.agents.items():
+            for i in range(1, len(agents) + 1):
+                possible_combinations += self.generate_action_combinations(
+                    parsed_act, {agent_type: agents[:i]}.items()
+                )
         self.actions = self.unify_combinations(possible_combinations)
 
     def process_expression(self, expression):
@@ -471,4 +481,4 @@ def run_nyx(domain, problem, flags):
 # EXAMPLE OF USAGE
 # if __name__ == "__main__":
 #     solve = SolveController("examples/Car/domain.pddl", "examples/Car/problem.pddl", "Car", "examples/Car/config.pddl")
-#     solve.solve()
+    # solve.solve()
