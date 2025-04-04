@@ -450,7 +450,7 @@ def run_nyx(domain, problem, flags):
         os.path.abspath(problem),
     ] + flags_list
     print(f"Executing command: {' '.join(command)}")  # Debugging print
-    result = subprocess.run(command, text=True, capture_output=True)
+    result = subprocess.run(command, text=True, capture_output=True, encoding='utf-8')
     print("STDOUT:", result.stdout)
     print("STDERR:", result.stderr)
     # Get the directory where the problem file is located

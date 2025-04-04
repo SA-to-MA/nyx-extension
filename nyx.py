@@ -447,9 +447,10 @@ if __name__ == '__main__':
 
     # domain = r'MA_PDDL\outputs\Blocks\domain.pddl'
     # problem =r'MA_PDDL\outputs\Blocks\problem.pddl'
-    # flags = ['-t:1.0', '-search:bfs','-timeout:30']
-    # flags = ['-t:10.0', '-search:bfs','-timeout:30']
+    # flags = ['-t:1.0','-search:dfs', '-pt']
     # runner(domain, problem, flags)
+    # flags = ['-t:10.0', '-search:bfs', '-timeout:30']
+
     if len(sys.argv) < 3 or '-h' in sys.argv:
         print(constants.HELP_TEXT)
         exit(1)

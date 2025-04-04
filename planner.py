@@ -11,6 +11,7 @@ from PDDL import PDDL_Parser
 import syntax.constants as constants
 import time, copy, sys
 
+from stats.SearchLogger import SearchLogger
 from syntax.state_node import StateNode
 from syntax.visited_state import VisitedState
 from syntax.state import State
@@ -46,6 +47,11 @@ class Planner:
         self.visited_hashmap = {}
         self.total_goals_found = 0
 
+        # stat trackers for logger
+        self.max_depth = 0
+        self.min_metric = float('inf')
+        self.max_metric = float('-inf')
+
     def save_tree_in_chunks(self, root, chunk_size=100):
         """Save a large tree into multiple pickle files, each containing chunk_size nodes."""
         repo_root = get_repo_root()
@@ -76,6 +82,8 @@ class Planner:
 
 
     def solve(self, domain, problem):
+        # --- Initialize Logger ---
+        logger = SearchLogger(domain, problem, constants)
 
         start_parse_time = time.time()
         # Parser
@@ -90,18 +98,44 @@ class Planner:
             grounded_instance.print_domain_info()
         print('\n=================================================\n\n\n\n\n\n\n')
 
+        # mark when starting to solve and last time stats was printed
         start_solve_time = time.time()
+        last_stats_print_time = start_solve_time
 
         # Do nothing
         if grounded_instance.goals(state, constants):
+            logger.close()
             return []
 
         # Search
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
         root_node = StateNode(state)  # Root of the tree
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
+
         while self.queue:
             state, state_node = self.queue.popleft() # pop state and state node
+
+            self.max_depth = max(self.max_depth, state.depth)
+            if hasattr(state, 'metric'):
+                self.min_metric = min(self.min_metric, state.metric)
+                self.max_metric = max(self.max_metric, state.metric)
+
+            # --- Log stats every ~1 second ---
+            current_time = time.time()
+            if current_time - last_stats_print_time >= 1.0:
+                elapsed = current_time - start_solve_time
+                logger.log_stats(
+                    timestamp=elapsed,
+                    nodes_expanded=self.explored_states,
+                    max_depth=self.max_depth,
+                    queue_size=len(self.queue),
+                    min_metric=self.min_metric,
+                    max_metric=self.max_metric,
+                    tracked_goals=len(self.reached_goal_states)
+                )
+                print(f"[{elapsed:.2f}s] Nodes: {self.explored_states}, Max depth: {self.max_depth}, "
+                      f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
+                last_stats_print_time = current_time
 
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
@@ -114,6 +148,7 @@ class Planner:
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
                     self.save_tree_in_chunks(root_node)
+                    logger.close()
                     return self.reached_goal_states
 
             if VisitedState(state) in self.reached_goal_states:
@@ -237,14 +272,18 @@ class Planner:
 
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
                 self.save_tree_in_chunks(root_node)
+                logger.close()
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
         self.save_tree_in_chunks(root_node)
+        logger.close()
         return None
 
 
     def solve_pt(self, domain, problem):
+        # --- Initialize Logger ---
+        logger = SearchLogger(domain, problem, constants)
 
         start_parse_time = time.time()
         # Parser
@@ -260,6 +299,7 @@ class Planner:
         print('\n=================================================\n\n\n\n\n\n\n')
 
         start_solve_time = time.time()
+        last_stats_print_time = start_solve_time
 
         # Do nothing
         if grounded_instance.goals(state, constants):
@@ -269,8 +309,31 @@ class Planner:
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
         root_node = StateNode(state)  # Root of the tree
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
+
         while self.queue:
             state, state_node = self.queue.popleft()  # Get state and its tree node
+
+            self.max_depth = max(self.max_depth, state.depth)
+            if hasattr(state, 'metric'):
+                self.min_metric = min(self.min_metric, state.metric)
+                self.max_metric = max(self.max_metric, state.metric)
+
+            # --- Log stats every ~1 second ---
+            current_time = time.time()
+            if current_time - last_stats_print_time >= 1:
+                elapsed = current_time - start_solve_time
+                logger.log_stats(
+                    timestamp=elapsed,
+                    nodes_expanded=self.explored_states,
+                    max_depth=self.max_depth,
+                    queue_size=len(self.queue),
+                    min_metric=self.min_metric,
+                    max_metric=self.max_metric,
+                    tracked_goals=len(self.reached_goal_states)
+                )
+                print(f"[{elapsed:.2f}s] Nodes: {self.explored_states}, Max depth: {self.max_depth}, "
+                      f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
+                last_stats_print_time = current_time
 
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
@@ -283,6 +346,7 @@ class Planner:
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
                     self.save_tree_in_chunks(root_node)
+                    logger.close()
                     return self.reached_goal_states
 
             if VisitedState(state) in self.reached_goal_states:
@@ -401,10 +465,12 @@ class Planner:
 
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
                 self.save_tree_in_chunks(root_node)
+                logger.close()
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
         self.save_tree_in_chunks(root_node)
+        logger.close()
         return None
 
 

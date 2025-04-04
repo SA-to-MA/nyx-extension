@@ -1,0 +1,10 @@
+# Domain file:,C:\Users\v-laftabi\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\Blocks\domain.pddl
+# Problem file:,C:\Users\v-laftabi\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\Blocks\problem.pddl
+# Constants.TIMEOUT,1800
+# Constants.DELTA_T,1.0
+# Constants.TIME_HORIZON,3000
+# Constants.DEPTH_LIMIT,3000
+# Constants.METRIC_MINIMIZE,True
+
+timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
+0.5,4466,3,435,inf,inf,0
