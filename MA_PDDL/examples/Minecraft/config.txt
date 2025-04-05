@@ -1,1 +1,1 @@
--pt -search:a_star -timeout:30 -dl:100
+-pt -t:1.0 -search:dfs -timeout:300 -dl:50
