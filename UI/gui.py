@@ -318,7 +318,7 @@ class ModernApp(tk.Tk):
             self.create_button_with_icon(text="Visualize", y_position=0.56,
                                          command=lambda: run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
                               self.config_file), icon=self.visualize_icon)
-            self.create_button_with_icon(text="Show blocks search tree", y_position=0.68,
+            self.create_button_with_icon(text="Show search tree", y_position=0.68,
                                          command=lambda: ChunkedTreeViewer.main(self.selected_domain.get().lower())
                                             , icon=self.solve_icon)
             self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
@@ -361,7 +361,7 @@ class ModernApp(tk.Tk):
             run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
                               self.config_file)  # Run the visualization with the selected inputs
             self.create_page_title_and_background("Visualization completed successfully!")
-            #self.create_button_with_icon(text="Visualize blocks search tree", y_position=0.68,
+            #self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
             #                             command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)
         except Exception as e:
             messagebox.showerror("Visualization Error", f"An error occurred while visualizing:\n{e}")
@@ -371,15 +371,15 @@ class ModernApp(tk.Tk):
                                      icon=self.home_icon)
 
     #def create_ST_results_page(self):
-    #    """Display the results of the blocks search tree visualization."""
-    #    self.create_page_title_and_background("Show blocks search tree")
+    #    """Display the results of the search tree visualization."""
+    #    self.create_page_title_and_background("Show search tree")
     #    self.add_back_button("show_solution")
     #    self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
     #                                 icon=self.home_icon)
 
     #def create_ST_Visualize_page(self):
-        """Page for initiating blocks search tree visualization."""
-    #    self.create_page_title_and_background("Visualize blocks search tree")
+        """Page for initiating search tree visualization."""
+    #    self.create_page_title_and_background("Visualize search tree")
     #    self.add_back_button("Visualize")
     #    self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
     #                                 icon=self.home_icon)
