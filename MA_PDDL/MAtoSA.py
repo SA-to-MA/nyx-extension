@@ -247,23 +247,28 @@ class MAtoSA:
 
         # Iterate through the input list to classify the items
         i = 0
+        current_objects = []
         while i < len(input_list):
-            if isinstance(input_list[i], list) and input_list[i][0] == ':private':
-                private_list = input_list[i]
-                for k in range(1, len(private_list), 3):
-                    item_value = private_list[k]
-                    item_type = private_list[k + 2]
-                    if item_type not in self.agents:
-                        self.agents[item_type] = []
-                    self.agents[item_type].append(item_value)
-                i+=1
+            if isinstance(input_list[i], list) and input_list[i][0] == ':private': # if agents private list, process and add to agents
+                private_list = input_list[i][1:]
+                agents_list = " ".join(private_list)
+                filtered = re.findall(r"([\w\s]+)-\s*([\w]+)", agents_list)
+                for item_value, item_type in filtered:
+                    for value in item_value.strip().split():
+                        if item_type not in self.agents:
+                            self.agents[item_type] = []
+                        self.agents[item_type].append(value)
             else:
-                item_value = input_list[i]
-                item_type = input_list[i + 2]
-                if item_type not in self.objects:
-                    self.objects[item_type] = []
-                self.objects[item_type].append(item_value)
-            i+=3
+                if input_list[i] == "-":
+                    type = input_list[i+1]
+                    if type not in self.objects:
+                        self.objects[type] = []
+                    self.objects[type] += current_objects
+                    current_objects = []
+                    i+=1
+                else:
+                    current_objects.append(input_list[i])
+            i+=1
 
 
 

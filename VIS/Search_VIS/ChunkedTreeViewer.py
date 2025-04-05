@@ -454,7 +454,7 @@ def main(domain_name):
     pygame.display.set_caption("Pygame Search Tree Viewer")
     clock = pygame.time.Clock()
 
-    show_loading_screen(screen, "Loading blocks 3 agents 5 blocks...")
+    show_loading_screen(screen, "Loading search tree...")
 
     preload_parent_references()
     chunks = get_chunk_files()
@@ -560,5 +560,5 @@ def main(domain_name):
 
     pygame.quit()
 
-if __name__ == "__main__":
-    main("blocks")
+# if __name__ == "__main__":
+#     main("blocks")
