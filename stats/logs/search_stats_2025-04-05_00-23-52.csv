@@ -1,0 +1,38 @@
+# Domain file:,C:\Users\v-laftabi\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\Car\domain.pddl
+# Problem file:,C:\Users\v-laftabi\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\Car\problem.pddl
+# Constants.TIMEOUT,30.0
+# Constants.DELTA_T,10.0
+# Constants.TIME_HORIZON,3000
+# Constants.DEPTH_LIMIT,20.0
+# Constants.METRIC_MINIMIZE,True
+
+timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
+1.0,44814,4,5733,inf,inf,0
+2.0,94382,4,12141,inf,inf,0
+3.0,142504,4,18338,inf,inf,0
+4.0,193651,4,25007,inf,inf,0
+5.0,234348,4,31303,inf,inf,0
+6.0,283157,5,38449,inf,inf,0
+7.0,330672,5,44225,inf,inf,0
+8.0,376321,5,50005,inf,inf,0
+9.0,422978,5,56392,inf,inf,0
+10.0,479571,5,65046,inf,inf,0
+11.01,519654,5,70572,inf,inf,0
+12.01,537678,5,72778,inf,inf,0
+13.01,571106,5,76857,inf,inf,0
+14.01,630587,5,85507,inf,inf,0
+15.01,689796,5,92917,inf,inf,0
+16.01,734624,5,99511,inf,inf,0
+17.01,789400,5,106366,inf,inf,0
+18.01,847202,5,114454,inf,inf,0
+19.01,903352,5,122290,inf,inf,0
+20.01,951365,5,128774,inf,inf,0
+21.01,1012494,5,136868,inf,inf,0
+22.01,1072657,5,145090,inf,inf,0
+23.01,1133754,5,153472,inf,inf,0
+24.01,1193904,5,161432,inf,inf,0
+25.01,1243237,5,167910,inf,inf,0
+26.01,1301702,5,176008,inf,inf,0
+27.01,1358268,5,183609,inf,inf,0
+28.01,1415702,5,191194,inf,inf,0
+29.01,1472317,5,198585,inf,inf,0

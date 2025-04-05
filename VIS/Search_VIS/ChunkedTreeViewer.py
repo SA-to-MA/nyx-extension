@@ -454,7 +454,7 @@ def main(domain_name):
     pygame.display.set_caption("Pygame Search Tree Viewer")
     clock = pygame.time.Clock()
 
-    show_loading_screen(screen, "Loading search tree...")
+    show_loading_screen(screen, "Loading blocks 3 agents 5 blocks...")
 
     preload_parent_references()
     chunks = get_chunk_files()

@@ -1,1 +1,1 @@
--t:10.0 -search:bfs -timeout:30
+-t:10.0 -search:dfs -timeout:30 -dl:10

@@ -93,7 +93,7 @@ You can simulate and visualize any custom domain by following the steps below. T
 Prepare the following:
 
 - `domain.pddl`: defines predicates and actions for your custom domain.
-- `problem.pddl`: defines `:objects`, the `:init` state, and a `:goal`.
+- `problem.pddl`: defines `:objects` for items and `:private` section for agents, the `:init` state, and a `:goal`.
 
 📁 Recommended file structure:
 ```
@@ -155,6 +155,7 @@ Update `VisController.py`:
         from YourDomainInitParser import InitStateYourDomain
         ...
         object
+- Add calling to the created function in the `run` method of `VisController`.
 
 Updates Required in `gui.py`:
 

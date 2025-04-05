@@ -5,6 +5,7 @@ import re
 import os
 import glob
 import shlex
+from MA_PDDL.DeduplicateFunc import transform_pddl
 
 
 class MAtoSA:
@@ -404,7 +405,11 @@ class SolveController:
             new_domain = os.path.join(output_dir, "domain.pddl")
             new_problem = os.path.join(output_dir, "problem.pddl")
 
+            # generate the combined pddl files
             satoma.generate(new_domain, new_problem)
+            # remove duplicates of functions
+            transform_pddl(new_domain, new_domain)
+            # solve
             self.plan = run_nyx(new_domain, new_problem, self.flags)
         return self.plan
 
