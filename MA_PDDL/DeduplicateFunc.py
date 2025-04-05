@@ -87,7 +87,7 @@ def transform_pddl(
 #
 #     for domain_dir in domain_dir_list:
 #         for problem_id in problem_id_list:
-#             domain = f"{domain_dir}/original_domain.pddl"
+#             domain = f"{domain_dir}/minecraft_domain.pddl"
 #             problem = f"{domain_dir}/original_problem_{problem_id}.pddl"
 #             output_domain_filename = f"{domain_dir}/combined_domain_{problem_id}.pddl"
 #             output_problem_filename = f"{domain_dir}/combined_problem_{problem_id}.pddl"

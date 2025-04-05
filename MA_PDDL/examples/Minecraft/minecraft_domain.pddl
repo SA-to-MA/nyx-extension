@@ -147,7 +147,8 @@
             (decrease (count_planks_in_inventory) 2)
             (decrease (count_stick_in_inventory) 4)
             (decrease
-                (count_sack_polyisoprene_pellets_in_inventory)1)
+                (count_sack_polyisoprene_pellets_in_inventory)
+                1)
             (not (agent_free ?a))
             (agent_craft_pogo_stick ?a)
         )
@@ -187,7 +188,8 @@
             (agent_free ?a)
             (not (agent_get_sack ?a))
             (increase
-                (count_sack_polyisoprene_pellets_in_inventory)1)
+                (count_sack_polyisoprene_pellets_in_inventory)
+                1)
         )
     )
 
