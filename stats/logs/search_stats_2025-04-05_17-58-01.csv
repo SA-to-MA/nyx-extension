@@ -1,0 +1,31 @@
+# Domain file:,C:\Users\noamsh\PycharmProjects\nyx-extension\MA_PDDL\outputs\Other\domain.pddl
+# Problem file:,C:\Users\noamsh\PycharmProjects\nyx-extension\MA_PDDL\outputs\Other\problem.pddl
+# Constants.TIMEOUT,30.0
+# Constants.DELTA_T,0.1
+# Constants.TIME_HORIZON,3000
+# Constants.DEPTH_LIMIT,50.0
+# Constants.METRIC_MINIMIZE,True
+
+timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
+1.0,64156,18,4531,inf,inf,0
+2.0,137537,21,8478,inf,inf,0
+3.0,208374,22,11597,inf,inf,0
+4.0,265838,23,13741,inf,inf,0
+5.0,345345,24,16562,inf,inf,0
+6.0,412080,25,18850,inf,inf,0
+7.0,477078,25,20577,inf,inf,0
+8.0,527276,26,21829,inf,inf,0
+9.0,583768,26,22809,inf,inf,0
+10.0,656243,27,25004,inf,inf,0
+11.0,731030,28,26686,inf,inf,0
+12.01,808031,28,27959,inf,inf,0
+13.01,877797,29,29569,inf,inf,0
+14.01,965095,29,28599,inf,inf,0
+15.01,1052332,30,32464,inf,inf,0
+16.01,1128361,30,38084,inf,inf,0
+17.01,1219511,31,34702,inf,inf,0
+18.01,1314164,31,33165,inf,inf,0
+19.01,1381975,32,36646,inf,inf,0
+20.01,1476061,32,40353,inf,inf,0
+21.01,1565767,33,38563,inf,inf,0
+22.01,1634919,33,39083,inf,inf,0

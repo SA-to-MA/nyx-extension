@@ -7,6 +7,8 @@ from VIS.MA_VIS.Agent import Agent
 from VIS.MA_VIS.BlocksSimulator.BlocksInitParser import InitState
 from VIS.MA_VIS.BlocksSimulator.BlocksSimulation import BlocksWindow, BlocksSimulator
 from VIS.MA_VIS.CarsSimulator.CarsSimulation import CarWindow, CarSimulator
+from VIS.MA_VIS.MinecraftSimulator.MinecraftSimulation import MinecraftWindow, MinecraftSimulator
+from VIS.MA_VIS.MinecraftSimulator.MinecraftInitParser import MinecraftInitState
 from VIS.SA_VIS.SA_Simulator import GenericSimulator
 import os
 from VIS.MA_VIS.CarsSimulator.CarsInitParser import InitStateCar
@@ -115,6 +117,37 @@ def process_car_domain(domain_path, problem_path, output_dir, parse, plan_file, 
     # Pass agents (cars) and their parsed state to the simulator
     main(parser.agents, object_dict, "Car", t_value)
 
+def process_minecraft_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value):
+    # 1. Generate single-agent domain/problem
+    satoma = MAtoSA(domain_path, problem_path)
+    new_domain = os.path.join(output_dir, "domain.pddl")
+    new_problem = os.path.join(output_dir, "problem.pddl")
+    satoma.generate(new_domain, new_problem)
+
+    # 2. Get agents from original domain
+    agents = satoma.agents["agent"]
+
+    # 3. Parse initial state
+    inventory_dict = MinecraftInitState(new_problem, agents).parse_pddl_init()
+
+    # 4. Run planner if needed
+    if parse:
+        plan_file = run_nyx(new_domain, new_problem, flags)
+
+    # 5. Parse plan into per-agent action lists
+    parser = Parser(agents, {
+        'get_log': ['agent'],
+        'craft_plank': ['agent'],
+        'craft_stick': ['agent'],
+        'get_sack': ['agent'],
+        'place_tree_tap': ['agent'],
+        'craft_pogo_stick': ['agent']
+    })
+    parser.parse(plan_file)
+
+    # 6. Run main visual simulation
+    main(parser.agents, inventory_dict, "Minecraft", t_value)
+
 def read_flags_file(flags_path):
     """
     Reads the contents of a flags file.
@@ -174,6 +207,8 @@ def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", f
             process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
         elif selected_domain == "Car":
             process_car_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
+        elif selected_domain == "PolyCraft":
+            process_minecraft_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
         else:
             return "Not supported"
 
@@ -206,6 +241,11 @@ def main(agents, init_obj, domain, t_value):
         # Create Car visualization and simulator
         sim_window = CarWindow(screen, agents, init_obj)  # CarWindow doesn't need init_obj
         simulator = CarSimulator(sim_window, t_value)
+
+    elif domain == "PolyCraft":
+        # Create Car visualization and simulator
+        sim_window = MinecraftWindow(screen, agents)
+        simulator = MinecraftSimulator(sim_window, t_value)
 
     else:
         print("Unsupported domain. Exiting...")
