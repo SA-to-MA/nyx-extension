@@ -7,7 +7,7 @@ class MinecraftInitState:
         self.agents = agents
 
     def parse_pddl_init(self):
-        inventory = defaultdict(lambda: defaultdict(int))
+        inventory = defaultdict(dict)
         env = {}
         inside_init = False
         stack = 0
@@ -30,7 +30,12 @@ class MinecraftInitState:
                         func = func_parts[0]
                         value = int(value)
                         if "inventory" in func or "count_" in func:
-                            inventory["global"][func] += value
+                            # Try to extract the agent (usually second token)
+                            if len(func_parts) > 1 and func_parts[1] in self.agents:
+                                agent = func_parts[1]
+                                inventory[agent][func] += value
+                            else:
+                                inventory["global"][func] += value
                         else:
                             env[func] = value
 

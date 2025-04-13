@@ -32,9 +32,11 @@ class MinecraftWindow:
         x = self.margin
         y = self.margin
 
-        for agent, inv in self.agents.items():
-            self.screen.blit(self.agent_icons[agent], (x, y))
-            label = font.render(agent, True, (255, 255, 255))
+        for agent in self.agents:
+            inv = agent.inventory
+
+            self.screen.blit(self.agent_icons[agent.name], (x, y))
+            label = font.render(agent.name, True, (255, 255, 255))
             self.screen.blit(label, (x, y - 20))
 
             item_y = y + 50
@@ -48,7 +50,7 @@ class MinecraftWindow:
                     self.screen.blit(count_label, (x + 45, item_y + 10))
                     item_y += 50
 
-            x += 150  # move to next agent column
+            x += 150
 
         pygame.display.flip()
 
@@ -74,26 +76,29 @@ class MinecraftAgent(Agent):
                 self.inventory["count_planks_in_inventory"] -= 2
                 self.inventory["count_stick_in_inventory"] = self.inventory.get("count_stick_in_inventory", 0) + 4
 
+        elif action_name == "craft_tree_tap":
+            self.inventory["count_tree_tap_in_inventory"] += 1
+
         elif action_name == "place_tree_tap":
             if self.inventory.get("count_tree_tap_in_inventory", 0) >= 1:
                 self.inventory["count_tree_tap_in_inventory"] -= 1
 
-        elif action_name == "craft_pogo_stick":
-            if (self.inventory.get("count_stick_in_inventory", 0) >= 2 and
-                self.inventory.get("count_sack_polyisoprene_pellets_in_inventory", 0) >= 1):
+        elif action_name in {"return_log", "return_plank", "return_stick", "return_tree_tap", "return_sack","return_wooden_pogo"}:
+            item = "count_" + action_name.replace("return_", "") + "_in_inventory"
+            self.inventory[item] += 1
+
+        elif action_name in {"craft_wooden_pogo", "craft_pogo_stick"}:
+
+            if self.inventory.get("count_stick_in_inventory", 0) >= 2 and self.inventory.get("count_sack_polyisoprene_pellets_in_inventory", 0) >= 1:
                 self.inventory["count_stick_in_inventory"] -= 2
                 self.inventory["count_sack_polyisoprene_pellets_in_inventory"] -= 1
-                self.inventory["count_pogo_stick"] = self.inventory.get("count_pogo_stick", 0) + 1
-
-        # Example use: flash a visual effect
-        if screen:
-            pygame.draw.circle(screen, (255, 255, 0), (50, 50), 10)  # placeholder effect
+                self.inventory["count_pogo_stick"] += 1
 
 
 class MinecraftSimulator:
-    def __init__(self, window, agents_dict, t_value=1):
+    def __init__(self, window, t_value=1):
         self.window = window                      # The visualization window
-        self.agents = agents_dict                 # Dict of MinecraftAgent instances
+        self.agents = window.agents                 # Dict of MinecraftAgent instances
         self.t = t_value                          # Time delay between steps (seconds)
         self.shared_state = {}                    # You can pass global env or trees here
 

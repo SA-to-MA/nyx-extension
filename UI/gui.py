@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from MA_PDDL import MAtoSA
 from VIS.VisController import main, run
 from VIS.Search_VIS import ChunkedTreeViewer
-SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "Other"]
+SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Other"]
 
 
 class ModernApp(tk.Tk):

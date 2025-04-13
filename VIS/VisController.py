@@ -141,12 +141,20 @@ def process_minecraft_domain(domain_path, problem_path, output_dir, parse, plan_
         'craft_stick': ['agent'],
         'get_sack': ['agent'],
         'place_tree_tap': ['agent'],
-        'craft_pogo_stick': ['agent']
+        'craft_pogo_stick': ['agent'],
+        'craft_wooden_pogo': ['agent'],
+        'craft_tree_tap': ['agent'],
+        'return_log': ['agent'],
+        'return_plank': ['agent'],
+        'return_stick': ['agent'],
+        'return_tree_tap': ['agent'],
+        'return_sack': ['agent'],
+        'return_wooden_pogo': ['agent']
     })
     parser.parse(plan_file)
 
     # 6. Run main visual simulation
-    main(parser.agents, inventory_dict, "Minecraft", t_value)
+    main(parser.agents, inventory_dict, "PolyCraft", t_value)
 
 def read_flags_file(flags_path):
     """
@@ -243,7 +251,7 @@ def main(agents, init_obj, domain, t_value):
         simulator = CarSimulator(sim_window, t_value)
 
     elif domain == "PolyCraft":
-        # Create Car visualization and simulator
+        # Create PolyCraft visualization and simulator
         sim_window = MinecraftWindow(screen, agents)
         simulator = MinecraftSimulator(sim_window, t_value)
 
