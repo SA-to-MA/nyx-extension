@@ -205,7 +205,7 @@ def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", f
         # run domain problem and plan in simulator
         GenericSimulator(selected_domain, problem_path, plan_file).simulate()
     elif selected_domain == "Other": # if other domain, it's not supported in visualization
-        return "Not supported"
+        return "Not supported yet - you can complete this section"
     else:
         # if domain is MA, needs to convert to SA
         # get output directory if runs with conversion to SA
@@ -218,7 +218,7 @@ def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", f
         elif selected_domain == "PolyCraft":
             process_minecraft_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
         else:
-            return "Not supported"
+             return "Not supported - please add your custom domain"
 
 
 def main(agents, init_obj, domain, t_value):
