@@ -252,7 +252,7 @@ def main(agents, init_obj, domain, t_value):
 
     elif domain == "PolyCraft":
         # Create PolyCraft visualization and simulator
-        sim_window = MinecraftWindow(screen, agents)
+        sim_window = MinecraftWindow(screen, init_obj, agents)
         simulator = MinecraftSimulator(sim_window, t_value)
 
     else:

@@ -1,5 +1,4 @@
 from collections import defaultdict
-import re
 
 class MinecraftInitState:
     def __init__(self, problem_file, agents):
