@@ -16,13 +16,12 @@
 	(handempty a1)
 	(clear c)
 	(clear d)
-	(clear a)
 	(clear e)
 	(ontable b)
 	(ontable c)
 	(ontable d)
-	(ontable e)
 	(on a b)
+	(on e a)
 )
 (:goal
 	(and
