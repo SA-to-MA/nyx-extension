@@ -1,8 +1,7 @@
 import pickle
 import os
-import random
 import pygame
-import ast
+from VIS.Search_VIS import BlocksTree, CarTree, MinecraftTree
 
 # TODO: leave empty
 DOMAIN = ""
@@ -116,89 +115,6 @@ def compute_node_positions(nodes):
     return node_positions, missing_parents
 
 
-def parse_block_state(state_vars):
-    """Parses block state where conditions are in nested lists and extracts only TRUE conditions."""
-    parsed_state = {
-        "on": {},  # Block relationships (e.g., 'a' is on 'b')
-        "ontable": [],  # Blocks directly on the table
-        "holding": {},  # The block currently being held
-        "handempty": [],  # agents with empty hand
-    }
-
-    for action, val in state_vars.items():
-        if not val:
-            continue
-        try:
-            parsed_condition = ast.literal_eval(action)  # Convert string to list
-            if isinstance(parsed_condition, list) and len(parsed_condition) > 1:
-                key = parsed_condition  # Everything except the last part
-
-                if isinstance(val, bool) and val:  # Keep only True conditions
-                    if key[0] == "on" and len(key) == 3:
-                        _, top, bottom = key
-                        parsed_state["on"][top] = bottom
-                    elif key[0] == "ontable" and len(key) == 2:
-                        parsed_state["ontable"].append(key[1])
-                    elif key[0] == "holding" and len(key) == 3:
-                        _, agent, block = key
-                        parsed_state["holding"][agent] = block
-                    elif key[0] == "handempty":
-                        parsed_state["handempty"].append(key[1])
-        except (ValueError, SyntaxError):
-            continue  # Skip invalid entries
-
-    return parsed_state
-
-
-def parse_car_state(state_vars):
-    """
-    Parses all agent-specific car state variables from stringified keys.
-
-    Args:
-        state_vars (dict): Dict with keys like "['v', 'car1']" and float/bool values.
-
-    Returns:
-        dict: Per-agent state dictionary.
-    """
-    agents = {}
-
-    for raw_key, value in state_vars.items():
-        key_parts = ast.literal_eval(raw_key)  # convert string to list
-        if isinstance(key_parts, (list, tuple)) and len(key_parts) == 2:
-            predicate, agent = key_parts
-
-            if agent not in agents:
-                agents[agent] = {
-                    "velocity": 0.0,
-                    "acceleration": 0.0,
-                    "distance": 0.0,
-                    "running": False,
-                    "engine_blown": False,
-                    "goal_reached": False,
-                    "running_time": 0.0
-                }
-
-            if predicate == "v":
-                agents[agent]["velocity"] = value
-            elif predicate == "a":
-                agents[agent]["acceleration"] = value
-            elif predicate == "d":
-                agents[agent]["distance"] = value
-            elif predicate == "running":
-                agents[agent]["running"] = value
-            elif predicate == "engineblown":
-                agents[agent]["engine_blown"] = value
-            elif predicate == "goal_reached":
-                agents[agent]["goal_reached"] = value
-            elif predicate == "running_time":
-                agents[agent]["running_time"] = value
-
-    return agents
-
-def random_color():
-    """Generate a random RGB color."""
-    return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-
 def show_node_info(node):
     """Generate an overlay with structured state information, keeping the table as the background."""
 
@@ -211,98 +127,13 @@ def show_node_info(node):
     RESOURCES_DIR = os.path.join(BASE_DIR, "resources")
 
     if DOMAIN == "blocks":
-        render_blocks_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
+        BlocksTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
     elif DOMAIN == "car":
-        render_car_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
+        CarTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
+    elif DOMAIN == "polycraft":
+        MinecraftTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
 
     return info_surface  # Return the surface to be drawn
-
-def render_car_domain(node, surface, font, res_dir, width, height):
-    # Load images
-    road_img = pygame.image.load(os.path.join(res_dir, "road-2.jpg"))
-    road_img = pygame.transform.scale(road_img, (width, height))
-    car_img = pygame.image.load(os.path.join(res_dir, "car.png"))
-    car_img = pygame.transform.scale(car_img, (150, 60))
-
-    surface.blit(road_img, (0, 0))  # draw background
-
-    # Parse the car states for all agents
-    state_vars = getattr(node.state, "state_vars", [])
-    car_states = parse_car_state(state_vars)
-
-    max_distance = 1000  # adjust based on your domain scale
-
-    for i, (agent, state) in enumerate(car_states.items()):
-        distance = state.get("distance", 0.0)
-        x_pos = int((distance / max_distance) * (width - 200))
-
-        # Updated: align cars to road lanes at the bottom half
-        lane_y_start = height * 0.5  # start of road area
-        lane_spacing = 80  # vertical space between lanes
-        y_pos = int(lane_y_start + i * lane_spacing)
-
-        surface.blit(car_img, (x_pos, y_pos))
-
-        # Draw agent name
-        label = font.render(agent, True, (255, 255, 255))
-        surface.blit(label, (x_pos + 10, y_pos - 20))
-
-        # Draw status: velocity & acceleration
-        status = f"v: {state['velocity']:.1f}, a: {state['acceleration']:.1f}"
-        status_text = font.render(status, True, (255, 255, 0))
-        surface.blit(status_text, (x_pos + 160, y_pos + 20))
-
-
-def render_blocks_domain(node, surface, font, res_dir, width, height):
-    state_vars = getattr(node.state, "state_vars", [])
-    parsed_state = parse_block_state(state_vars)
-
-    table_img = pygame.image.load(os.path.join(res_dir, "table.png"))
-    table_img = pygame.transform.scale(table_img, (width, height))
-    surface.blit(table_img, (0, 0))
-
-    hand_img = pygame.image.load(os.path.join(res_dir, "hand.png"))
-    hand_img = pygame.transform.scale(hand_img, (80, 80))
-
-    block_positions = {}
-    x_pos = 40
-    y_pos = height - 120
-
-    for block in parsed_state.get("ontable", []):
-        block_positions[block] = (x_pos, y_pos)
-        x_pos += 60
-
-    for top, bottom in parsed_state.get("on", {}).items():
-        if bottom in block_positions:
-            block_positions[top] = (block_positions[bottom][0], block_positions[bottom][1] - 40)
-
-    for block, (x, y) in block_positions.items():
-        pygame.draw.rect(surface, random_color(), (x, y, 40, 40))
-        text_surface = font.render(block, True, (255, 255, 255))
-        surface.blit(text_surface, (x + 10, y + 10))
-
-    # Agent hands logic
-    agents = []
-    for agent, held_block in parsed_state.get("holding", {}).items():
-        held_block = held_block.strip() if held_block != "False" else None
-        agents.append((agent.strip(), held_block))
-
-    for agent in parsed_state.get("handempty", []):
-        agents.append((agent.strip(), None))
-
-    hand_x = 200
-    for agent, held_block in agents:
-        hand_y = 50
-        surface.blit(hand_img, (hand_x, hand_y))
-        text_surface = font.render(agent, True, (255, 255, 255))
-        surface.blit(text_surface, (hand_x + 20, hand_y - 10))
-
-        if held_block:
-            pygame.draw.rect(surface, random_color(), (hand_x + 10, hand_y + 40, 40, 40))
-            text_surface = font.render(held_block, True, (255, 255, 255))
-            surface.blit(text_surface, (hand_x + 20, hand_y + 50))
-
-        hand_x += 100
 
 
 def draw_buttons(screen):
@@ -365,7 +196,11 @@ def show_loading_screen(screen, message="Loading..."):
        message (str): The message to show (default is "Loading...").
     """
     try:
-        background = pygame.image.load("resources/loading_bg.jpg")
+        base_path = os.path.dirname(os.path.abspath(__file__))  # Path to current file
+        resources_dir = os.path.join(base_path, "resources")
+        background_path = os.path.join(resources_dir, "loading_bg.jpg")
+
+        background = pygame.image.load(background_path)
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except Exception:
@@ -560,5 +395,5 @@ def main(domain_name):
 
     pygame.quit()
 
-# if __name__ == "__main__":
-#     main("blocks")
+if __name__ == "__main__":
+    main("car")
