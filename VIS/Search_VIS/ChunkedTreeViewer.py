@@ -396,4 +396,4 @@ def main(domain_name):
     pygame.quit()
 
 if __name__ == "__main__":
-    main("car")
+    main("polycraft")
