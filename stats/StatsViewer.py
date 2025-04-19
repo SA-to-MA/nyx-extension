@@ -2,12 +2,13 @@ import os
 import pandas as pd
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
 
 class StatsViewer:
     def __init__(self, log_dir="logs"):
         self.log_dir = os.path.abspath(log_dir)
         self.latest_log_path = self.get_latest_log_file()
+        self.df = None
+        self.tree = None
 
     def get_latest_log_file(self):
         files = [f for f in os.listdir(self.log_dir) if f.endswith(".csv")]
@@ -28,68 +29,110 @@ class StatsViewer:
                     break
                 metadata.append(line.strip())
 
-        df = pd.read_csv(self.latest_log_path, skiprows=data_start)
-        return metadata, df
+        self.df = pd.read_csv(self.latest_log_path, skiprows=data_start)
+        return metadata, self.df
 
     def launch(self):
         metadata, df = self.read_log_data()
 
         root = tk.Tk()
-        root.title("Search Stats Viewer")
-
-        # Get screen dimensions
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-
-        # Calculate 3/4 size
-        window_width = int(screen_width * 0.75)
-        window_height = int(screen_height * 0.75)
-
-        # Center the window
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
+        root.title("📊 Search Stats Viewer")
+        screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight()
+        window_width, window_height = int(screen_width * 0.75), int(screen_height * 0.75)
+        x, y = (screen_width - window_width) // 2, (screen_height - window_height) // 2
         root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
-        # Metadata panel
-        metadata_text = tk.Text(root, height=6)
+        # 🖤 Use default theme (clam overrides foreground)
+        style = ttk.Style(root)
+        root.configure(bg="#1e1e1e")
+        style.theme_use("default")  # <- default instead of clam
+
+        style.configure("Treeview",
+                        background="#2e2e2e",
+                        foreground="#ffffff",  # <- white text
+                        rowheight=25,
+                        fieldbackground="#2e2e2e",
+                        bordercolor="#444444")
+        style.configure("Treeview.Heading",
+                        background="#3e3e3e",
+                        foreground="#ffffff",
+                        font=("Segoe UI", 10, "bold"))
+        style.configure("TLabel", background="#1e1e1e", foreground="#ffffff")
+        style.configure("TButton", background="#333333", foreground="#ffffff")
+        style.map("TButton", background=[("active", "#444444")])
+
+        # 📋 Metadata
+        metadata_text = tk.Text(root, height=6, bg="#2e2e2e", fg="#f0f0f0", font=("Segoe UI", 10), bd=0, padx=10, pady=10)
         metadata_text.insert("1.0", "\n".join(metadata))
         metadata_text.config(state="disabled")
         metadata_text.pack(fill="x", padx=10, pady=5)
 
-        # Table Frame
+        # 🔍 Search bar
+        search_frame = ttk.Frame(root)
+        search_frame.pack(fill="x", padx=10, pady=(5, 0))
+
+        ttk.Label(search_frame, text="Search:").pack(side="left")
+
+        search_var = tk.StringVar()
+        search_entry = ttk.Entry(search_frame, textvariable=search_var)
+        search_entry.pack(side="left", fill="x", expand=True, padx=5)
+
+        ttk.Label(search_frame, text="in column:").pack(side="left", padx=(10, 2))
+
+        column_var = tk.StringVar()
+        column_var.set(df.columns[0])
+        column_dropdown = ttk.Combobox(search_frame, textvariable=column_var, values=list(df.columns), state="readonly")
+        column_dropdown.pack(side="left")
+
+        # 📊 Table
         table_frame = ttk.Frame(root)
         table_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        # Treeview (table)
-        columns = list(df.columns)
-        tree = ttk.Treeview(table_frame, columns=columns, show='headings')
-        for col in columns:
-            tree.heading(col, text=col)
-            tree.column(col, anchor="center", stretch=True, width=100)
+        self.tree = ttk.Treeview(table_frame, columns=list(df.columns), show='headings')
+        for col in df.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, anchor="center", width=100)
 
-        # Scrollbars
-        vsb = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
-        hsb = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
-        tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        vsb = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
+        hsb = ttk.Scrollbar(table_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
 
         vsb.pack(side="right", fill="y")
         hsb.pack(side="bottom", fill="x")
-        tree.pack(side="left", fill="both", expand=True)
+        self.tree.pack(side="left", fill="both", expand=True)
 
-        # Insert rows
-        for _, row in df.iterrows():
-            tree.insert("", "end", values=list(row))
+        # ⛳ Tags for consistent text color
+        self.tree.tag_configure("default", foreground="#ffffff")
+        self.tree.tag_configure("max", background="#663399", foreground="#ffffff")
 
-        # Close Button
+        max_queue = df["queue_size"].max() if "queue_size" in df.columns else None
+
+        def insert_rows(filtered_df):
+            self.tree.delete(*self.tree.get_children())
+            for _, row in filtered_df.iterrows():
+                tags = ("max",) if max_queue is not None and row.get("queue_size") == max_queue else ("default",)
+                self.tree.insert("", "end", values=list(row), tags=tags)
+
+        insert_rows(df)
+
+        # 🔍 Search logic
+        def perform_search(*_):
+            query = search_var.get().lower()
+            col = column_var.get()
+            filtered = df[df[col].astype(str).str.lower().str.contains(query)]
+            insert_rows(filtered)
+
+        search_var.trace_add("write", perform_search)
+        column_var.trace_add("write", perform_search)
+
+        # ❌ Close Button
         button_frame = ttk.Frame(root)
         button_frame.pack(fill="x", pady=10)
-
-        close_btn = ttk.Button(button_frame, text="Close", command=root.destroy)
-        close_btn.pack(pady=5)
+        ttk.Button(button_frame, text="Close", command=root.destroy).pack(pady=5)
 
         root.mainloop()
 
-# if __name__ == "__main__":
-#     viewer = StatsViewer()
-#     viewer.launch()
 
+if __name__ == "__main__":
+    viewer = StatsViewer()
+    viewer.launch()
