@@ -5,6 +5,8 @@ from PIL import Image, ImageTk
 from MA_PDDL import MAtoSA
 from VIS.VisController import main, run
 from VIS.Search_VIS import ChunkedTreeViewer
+from stats.StatsViewer import run_stats
+
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Other"]
 
 
@@ -279,7 +281,7 @@ class ModernApp(tk.Tk):
         self.create_file_input("Problem Input:", 0.49, self.select_problem_file, self.problem_label_var)
         self.create_file_input("Configuration (optional):", 0.61, self.select_config_file, self.config_label_var)
 
-        self.create_button_with_icon(text="Plan", y_position=0.8, command=lambda: self.validate_input_files("PlanResults"),
+        self.create_button_with_icon(text="Plan", y_position=0.85, command=lambda: self.validate_input_files("PlanResults"),
                                      icon=self.plan_icon, relx=0.50)
 
         # Add a back button to return to the Home page
@@ -291,13 +293,15 @@ class ModernApp(tk.Tk):
 
         path_label = ttk.Label(
                 self.current_frame, text=self.plan_file, style="Custom.TLabel", wraplength=300, justify="center")
-        path_label.place(relx=0.5, rely=0.33, anchor="center")
+        path_label.place(relx=0.5, rely=0.36, anchor="center")
 
         # Add a button to show the solution
-        self.create_button_with_icon(text="Show Solution", y_position=0.68, command=lambda: self.show_solution(),
+        self.create_button_with_icon(text="Show Solution", y_position=0.61, command=lambda: self.show_solution(),
                                      icon=self.solve_icon)
+        self.create_button_with_icon(text="Show Statistics", y_position=0.73,
+                                    command=lambda: run_stats(os.path.abspath("../stats/logs")),  icon=self.go_icon)
         self.add_back_button("Solve")
-        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+        self.create_button_with_icon(text="Home", y_position=0.85, command=lambda: self.switch_page("Home"),
                                      icon=self.home_icon)
 
     def show_solution(self):
@@ -311,17 +315,17 @@ class ModernApp(tk.Tk):
             # Display the solution text
             solution_label = ttk.Label(self.current_frame, text=solution, font=("Roboto", 16), background="#1E1E1E",
                                        foreground="#E0E0E0", wraplength=800, justify="left")
-            solution_label.place(relx=0.5, rely=0.32, anchor="center")
+            solution_label.place(relx=0.5, rely=0.36, anchor="center")
 
             # Navigation buttons
             self.add_back_button("PlanResults")
-            self.create_button_with_icon(text="Visualize", y_position=0.56,
+            self.create_button_with_icon(text="Visualize", y_position=0.61,
                                          command=lambda: run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
                               self.config_file), icon=self.visualize_icon)
-            self.create_button_with_icon(text="Show search tree", y_position=0.68,
+            self.create_button_with_icon(text="Show search tree", y_position=0.73,
                                          command=lambda: ChunkedTreeViewer.main(self.selected_domain.get().lower())
                                             , icon=self.solve_icon)
-            self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+            self.create_button_with_icon(text="Home", y_position=0.85, command=lambda: self.switch_page("Home"),
                                          icon=self.home_icon)
 
         except Exception as e:
@@ -346,7 +350,7 @@ class ModernApp(tk.Tk):
         self.create_file_input("Configuration (optional):", 0.65, self.select_config_file, self.config_label_var)
 
         # Action button
-        self.create_button_with_icon(text="Visualize solution", y_position=0.8,
+        self.create_button_with_icon(text="Visualize solution", y_position=0.85,
                                      command=lambda: self.validate_input_files("VisResults"), icon=self.go_icon, relx=0.50)
         # Navigation
         self.add_back_button("Home")
@@ -367,22 +371,8 @@ class ModernApp(tk.Tk):
             messagebox.showerror("Visualization Error", f"An error occurred while visualizing:\n{e}")
 
         self.add_back_button("Visualize")
-        self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
+        self.create_button_with_icon(text="Home", y_position=0.85, command=lambda: self.switch_page("Home"),
                                      icon=self.home_icon)
-
-    #def create_ST_results_page(self):
-    #    """Display the results of the search tree visualization."""
-    #    self.create_page_title_and_background("Show search tree")
-    #    self.add_back_button("show_solution")
-    #    self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
-    #                                 icon=self.home_icon)
-
-    #def create_ST_Visualize_page(self):
-        """Page for initiating search tree visualization."""
-    #    self.create_page_title_and_background("Visualize search tree")
-    #    self.add_back_button("Visualize")
-    #    self.create_button_with_icon(text="Home", y_position=0.8, command=lambda: self.switch_page("Home"),
-    #                                 icon=self.home_icon)
 
 
 if __name__ == "__main__":
