@@ -9,6 +9,17 @@ from stats.StatsViewer import run_stats
 
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Other"]
 
+def is_valid_pddl_file(filepath, file_type):
+    """
+    file_type: either 'domain' or 'problem'
+    """
+    try:
+        with open(filepath, 'r') as f:
+            content = f.read().lower()
+            return f"(define ({file_type}" in content
+    except Exception as e:
+        print(f"Failed to read file: {filepath}. Error: {e}")
+        return False
 
 class ModernApp(tk.Tk):
     def __init__(self):
@@ -223,17 +234,31 @@ class ModernApp(tk.Tk):
         if not self.domain_file or not self.problem_file:
             messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
             return
-        if self.plan_file: # If a plan file is already selected, skip planning
+
+        # Validate domain file content
+        if not is_valid_pddl_file(self.domain_file, "domain"):
+            messagebox.showerror("Invalid Domain File",
+                                 "The selected domain file is not valid or missing (define (domain ...) definition.")
+            return
+
+        if not is_valid_pddl_file(self.problem_file, "problem"):
+            messagebox.showerror("Invalid Problem File",
+                                 "The selected problem file is not valid or missing (define (problem ...) definition.")
+            return
+
+        if self.plan_file:  # If a plan file is already selected, skip planning
             print("Using existing plan file:", self.plan_file)
             self.switch_page(next_page)
             return
+
         print("DOMAIN FILE:", self.domain_file)
         print("PROBLEM FILE:", self.problem_file)
         print("CONFIG FILE:", self.config_file)
         print("SELECTED DOMAIN:", self.selected_domain.get())
 
         try:
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(), self.config_file)
+            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(),
+                                                     self.config_file)
             self.plan_file = self.controller.getPlanFile()
             self.switch_page(next_page)
         except Exception as e:
@@ -378,3 +403,5 @@ class ModernApp(tk.Tk):
 if __name__ == "__main__":
     app = ModernApp()
     app.mainloop()
+
+
