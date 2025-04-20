@@ -18,6 +18,7 @@ class BlocksWindow:
         self.agent_size = 40
         self.margin = 10
 
+        self.block_x = 0
         # Get the absolute path of the current script (BlocksSimulation.py)
         base_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -34,30 +35,46 @@ class BlocksWindow:
         self.hand_image = pygame.image.load(hand_image_path)
         self.hand_image = pygame.transform.scale(self.hand_image,(150, 110))
 
+    def increment_x(self, val=50):
+        self.block_x += val
+
+    def get_x(self):
+        return self.block_x
+
     def initializeVisObjects(self, agents, init_obj, dis=150):
         screen_width, screen_height = self.screen.get_size()
         # Define base positions relative to screen size
-        block_x = int(screen_width * 0.3)
+        self.block_x = int(screen_width * 0.3)
         block_y = int(screen_height * 0.7)
         positions = {}
+        visited = set()
+
         # calculate positions of objects recursively
         def calculateBlockPosition(obj):
+            if obj in visited:
+                return positions[obj]  # Already done
+
             properties = init_obj[obj]
+
             if properties.get('on_table', False):
                 # Object is on the table
-                positions[obj] = {'x': block_x, 'y': block_y}
-                return positions[obj]
+                self.increment_x()
+                positions[obj] = {'x': self.get_x(), 'y': block_y}
             elif 'on' in properties and properties['on']:
                 # Object is on another object
                 parent_obj = properties['on']
                 parent_position = calculateBlockPosition(parent_obj)  # Recursively get parent's position
                 positions[obj] = {'x': parent_position['x'], 'y': parent_position['y'] - 50}
-                return positions[obj]
+
+            visited.add(obj)
+            return positions[obj]
+
         for obj in init_obj.keys():
             if obj not in agents:
                 if init_obj[obj].get('on_table', False):
-                    block_x += 50  # Increment base_x for each new table object
+                    self.increment_x()  # Increment base_x for each new table object
                 calculateBlockPosition(obj)
+
         # set blocks properties in blocks dictionary
         for block, pos in positions.items():
             self.blocks[block] = Block(block, pos['x'], pos['y'], init_obj[block]['clear'], init_obj[block]['on_table'], init_obj[block]['in_hand'])
