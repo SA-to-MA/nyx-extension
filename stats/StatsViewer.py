@@ -131,6 +131,18 @@ class StatsViewer:
         ttk.Button(button_frame, text="Close", command=root.destroy).pack(pady=5)
 
         root.mainloop()
+        try:
+            os.remove(self.latest_log_path)
+            print(f"Deleted stats log: {self.latest_log_path}")
+        except Exception as e:
+            print(f"Failed to delete stats log: {e}")
+
+
+def run_stats(log_dir="logs"):
+    # Create a new StatsViewer instance pointing to the specified log directory
+    viewer_ = StatsViewer(log_dir)
+    # Launch the stats viewer GUI
+    viewer_.launch()
 
 
 if __name__ == "__main__":
