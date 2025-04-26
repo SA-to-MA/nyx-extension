@@ -1,9 +1,10 @@
 import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import glob
 import pytest
 from MA_PDDL.MAtoSA import SolveController
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 @pytest.fixture(scope="session")
