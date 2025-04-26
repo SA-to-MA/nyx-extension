@@ -426,29 +426,39 @@ class SolveController:
 
     def getParsedPlan(self):
         """
-        return a parsed solution for display. only used for domains that are supported in visualization.
+        Return a parsed solution for display.
+        Supports visualization for specific domains.
         """
         try:
-            # Read the solution from the saved plan result
             with open(self.plan, "r") as file:
                 plan_text = file.read()
-                if self.domain_name == "Blocks": # if domain is blocks
-                    action_mapping = {'no-op_agent': ['agent'], 'stack': ['agent', 'block', 'block'],
-                               'unstack': ['agent', 'block', 'block'], 'pick-up': ['agent', 'block'],
-                               'put-down': ['agent', 'block']}
-                else: # if no recognized domain, just return available solution from file as is
-                    return plan_text
+
+            # Early check: verify that the plan has time stamps
+            if not re.search(r'^\s*\d+(\.\d+)?:', plan_text, re.MULTILINE):
+                return "Solution not found"
+
+            # ----------------- BLOCKS DOMAIN -----------------
+            if self.domain_name == "Blocks":
+                action_mapping = {
+                    'no-op_agent': ['agent'],
+                    'stack': ['agent', 'block', 'block'],
+                    'unstack': ['agent', 'block', 'block'],
+                    'pick-up': ['agent', 'block'],
+                    'put-down': ['agent', 'block']
+                }
                 parsed_lines = []
-                for line in plan_text.split("\n"):
+                for line in plan_text.strip().split("\n"):
                     if not line.strip():
                         continue
                     parts = re.split(r'\s+', line.strip())
+                    if len(parts) < 3:
+                        continue  # Skip invalid lines
                     time = parts[0].strip(':')
                     actions_combined = parts[1]
-                    arguments = parts[2:-1]  # Exclude the last part (assumed to be not kind of action or argument)
-                    actions = actions_combined.split("&")  # Split multiple actions
+                    arguments = parts[2:-1]  # Exclude cost/metadata
+                    actions = actions_combined.split("&")
                     parsed_action_descriptions = []
-                    arg_index = 0  # Track argument index
+                    arg_index = 0
                     for action in actions:
                         if action in action_mapping:
                             roles = action_mapping[action]
@@ -457,15 +467,52 @@ class SolveController:
                             arg_index += len(roles)
                     parsed_lines.append(f"{time}: " + ", ".join(parsed_action_descriptions))
                 return "\n".join(parsed_lines)
-        except:
+
+            # ----------------- CAR DOMAIN -----------------
+            elif self.domain_name == "Car":
+                from MA_PDDL import MAtoSA  # Ensure import inside method to avoid circular import
+                satoma = MAtoSA(self.domain, self.problem)
+                problem_tokens = satoma.scan_tokens(self.problem)
+                for token in problem_tokens:
+                    if token[0] == ':objects':
+                        satoma.process_objects_and_agents(token[1:])
+                        break
+
+                car_agents = []
+                for agent_type, names in satoma.agents.items():
+                    if agent_type.lower() in ["car", "vehicle"]:
+                        car_agents.extend(names)
+                if not car_agents:
+                    car_agents = ["car1", "car2"]  # Fallback
+
+                parsed_lines = []
+                for line in plan_text.strip().split("\n"):
+                    if not line.strip():
+                        continue
+                    parts = re.split(r'\s+', line.strip())
+                    if len(parts) < 2:
+                        continue  # Skip invalid lines
+                    time = parts[0].strip(':')
+                    actions = parts[1].split("&")
+                    action_texts = [f"{action} - {car}" for action, car in zip(actions, car_agents)]
+                    parsed_lines.append(f"{time}: " + ", ".join(action_texts))
+                return "\n".join(parsed_lines)
+
+            # ----------------- DEFAULT -----------------
+            else:
+                return plan_text
+
+        except Exception as e:
+            print(f"[Error] Failed to parse plan: {e}")
             return "Solution not found"
+
 
 def run_nyx(domain, problem, flags):
     """Run the Nyx planner and generate a plan."""
     flags_list = shlex.split(flags)
     command = [
         "python",
-        os.path.abspath("../nyx.py"),
+        os.path.join(os.path.dirname(__file__), "..", "nyx.py"),
         os.path.abspath(domain),
         os.path.abspath(problem),
     ] + flags_list

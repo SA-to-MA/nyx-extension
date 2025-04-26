@@ -1,0 +1,37 @@
+# Domain file:,C:\Users\97252\Desktop\nyx\nyx-extension\MA_PDDL\outputs\PolyCraft\domain.pddl
+# Problem file:,C:\Users\97252\Desktop\nyx\nyx-extension\MA_PDDL\outputs\PolyCraft\problem.pddl
+# Constants.TIMEOUT,1800
+# Constants.DELTA_T,1.0
+# Constants.TIME_HORIZON,3000
+# Constants.DEPTH_LIMIT,3000
+# Constants.METRIC_MINIMIZE,True
+
+timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
+1.0,30442,10,2163,inf,inf,0
+2.0,71684,11,5241,inf,inf,0
+3.0,110843,12,7211,inf,inf,0
+4.0,150096,12,9886,inf,inf,0
+5.0,193569,12,12834,inf,inf,0
+6.0,231653,13,15332,inf,inf,0
+7.0,274325,13,17064,inf,inf,0
+8.01,317634,13,20353,inf,inf,0
+9.01,362445,13,21153,inf,inf,0
+10.01,402740,14,21382,inf,inf,0
+11.01,444902,14,24825,inf,inf,0
+12.01,488608,14,28724,inf,inf,0
+13.01,533175,14,29722,inf,inf,0
+14.01,579525,14,29959,inf,inf,0
+15.01,618749,14,31801,inf,inf,0
+16.01,660916,14,35897,inf,inf,0
+17.01,704928,14,39230,inf,inf,0
+18.01,746632,15,41580,inf,inf,0
+19.01,786373,15,43173,inf,inf,0
+20.04,823048,15,42847,inf,inf,0
+21.04,866766,15,41904,inf,inf,0
+22.05,909025,15,45082,inf,inf,0
+23.05,950877,15,48368,inf,inf,0
+24.05,993019,15,51811,inf,inf,0
+25.05,1034683,15,54565,inf,inf,0
+26.05,1077674,15,55095,inf,inf,0
+27.05,1120781,15,55513,inf,inf,0
+28.05,1155716,15,55509,inf,inf,0
