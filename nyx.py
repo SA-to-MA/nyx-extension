@@ -89,6 +89,9 @@ def process_arguments(cl_arguments):
         elif arg == 'di' or arg == 'domain_info':
             constants.DOMAIN_INFO = True
             continue
+        elif arg == "dblh" or arg == "double_heuristic":
+            constants.DOUBLE_HEURISTIC = True
+            continue
 
         arg_list = arg.split(':')
         if len(arg_list) == 1:
@@ -445,9 +448,9 @@ def extract_variable_values(plan_f, var_list, csv_f=None):
 # -----------------------------------------------
 if __name__ == '__main__':
 
-    # domain = r'MA_PDDL\outputs\Blocks\domain.pddl'
-    # problem =r'MA_PDDL\outputs\Blocks\problem.pddl'
-    # flags = ['-t:1.0','-search:dfs', '-pt']
+    # domain = r'MA_PDDL\outputs\Car\domain.pddl'
+    # problem =r'MA_PDDL\outputs\Car\problem.pddl'
+    # flags = ['-t:10.0','-search:gbfs', '-pt', '-dblh', '-custom_h:6']
     # runner(domain, problem, flags)
     # flags = ['-t:10.0', '-search:bfs', '-timeout:30']
 

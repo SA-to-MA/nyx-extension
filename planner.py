@@ -89,6 +89,7 @@ class Planner:
         # Parser
         parser = PDDL_Parser(domain, problem)
         grounded_instance = parser.grounded_instance
+        heuristic_functions.start(grounded_instance)
         # Parsed data
         state = grounded_instance.init_state
         self.initial_state = grounded_instance.init_state
@@ -109,12 +110,16 @@ class Planner:
 
         # Search
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
+        state.applicables_actions = state.get_applicable_happenings(
+            grounded_instance.actions
+        )
         root_node = StateNode(state)  # Root of the tree
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
 
         while self.queue:
             state, state_node = self.queue.popleft() # pop state and state node
 
+            # get metrics for logging
             self.max_depth = max(self.max_depth, state.depth)
             if hasattr(state, 'metric'):
                 self.min_metric = min(self.min_metric, state.metric)
@@ -136,6 +141,28 @@ class Planner:
                 print(f"[{elapsed:.2f}s] Nodes: {self.explored_states}, Max depth: {self.max_depth}, "
                       f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
                 last_stats_print_time = current_time
+
+            # check for currect novelty again when popping from the open list
+            if constants.DOUBLE_HEURISTIC:
+                if state.predecessor_action is not None:
+                    novelty = heuristic_functions.heuristic_function(state)
+                    if state.get_h_heuristic() < novelty:
+                        state.set_h_heuristic(novelty)
+                        if constants.SEARCH_GBFS:
+                            bisect.insort(self.queue, state)
+                        elif constants.SEARCH_ASTAR:
+                            self.queue.appendleft(state)
+                            self.queue = collections.deque(
+                                sorted(self.queue, key=lambda elem: (elem.h + elem.g))
+                            )
+                        elif constants.SEARCH_DFS:
+                            self.queue.appendleft(state)
+                            self.queue = collections.deque(
+                                sorted(
+                                    self.queue, key=lambda elem: (-elem.depth, elem.h)
+                                )
+                            )
+                        continue
 
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
@@ -160,9 +187,9 @@ class Planner:
             # time_passed = round(state.time + constants.DELTA_T, constants.NUMBER_PRECISION)
 
             # for aa in grounded_instance.actions.get_applicable(state):
-            for aa in state.get_applicable_happenings(grounded_instance.actions):
 
-                
+            applicables = state.applicables_actions
+            for aa in applicables:
                 new_state = None
 
                 if aa == constants.TIME_PASSING_ACTION:
@@ -246,6 +273,11 @@ class Planner:
                         (constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[new_state_hash].state.metric) or \
                             (not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[new_state_hash].state.metric):
                         self.visited_hashmap[new_state_hash] = VisitedState(new_state)
+                        new_state.applicables_actions = (
+                            new_state.get_applicable_happenings(
+                                grounded_instance.actions
+                            )
+                        )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
                         self.queue.append((new_state, new_node))  # Store new state with its tree node
 
@@ -270,6 +302,7 @@ class Planner:
                     for i in range(len(print_q)):
                         sys.stdout.write(print_q[i] + "\n")  # reprint the lines
 
+            heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
                 self.save_tree_in_chunks(root_node)
                 logger.close()
@@ -289,6 +322,7 @@ class Planner:
         # Parser
         parser = PDDL_Parser(domain, problem)
         grounded_instance = parser.grounded_instance
+        heuristic_functions.start(grounded_instance)
         # Parsed data
         state = grounded_instance.init_state
         self.initial_state = grounded_instance.init_state
@@ -307,6 +341,7 @@ class Planner:
 
         # Search
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
+        state.applicables_actions = grounded_instance.actions.get_applicable(state)
         root_node = StateNode(state)  # Root of the tree
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
 
@@ -335,6 +370,28 @@ class Planner:
                       f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
                 last_stats_print_time = current_time
 
+            # check for currect novelty again when popping from the open list
+            if constants.DOUBLE_HEURISTIC:
+                 if state.predecessor_action is not None:
+                     novelty = heuristic_functions.heuristic_function(state)
+                     if state.get_h_heuristic() < novelty:
+                         state.set_h_heuristic(novelty)
+                         if constants.SEARCH_GBFS:
+                             bisect.insort(self.queue, state)
+                         elif constants.SEARCH_ASTAR:
+                             self.queue.appendleft(state)
+                             self.queue = collections.deque(
+                                 sorted(self.queue, key=lambda elem: (elem.h + elem.g))
+                             )
+                         elif constants.SEARCH_DFS:
+                             self.queue.appendleft(state)
+                             self.queue = collections.deque(
+                                 sorted(
+                                     self.queue, key=lambda elem: (-elem.depth, elem.h)
+                                 )
+                             )
+                         continue
+
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
                 if grounded_instance.problem.metric == ['total-time']:
@@ -357,7 +414,8 @@ class Planner:
             from_state = VisitedState(state)
             # time_passed = round(state.time + constants.DELTA_T, constants.NUMBER_PRECISION)
 
-            for aa in grounded_instance.actions.get_applicable(state):
+            applicables = state.applicables_actions
+            for aa in applicables:
                 
                 new_state = None
 
@@ -435,6 +493,9 @@ class Planner:
                         (new_state_hash in self.visited_hashmap and constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[new_state_hash].state.metric) or \
                             (new_state_hash in self.visited_hashmap and not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[new_state_hash].state.metric):
                         self.visited_hashmap[new_state_hash] = VisitedState(new_state)
+                        new_state.applicables_actions = (
+                            grounded_instance.actions.get_applicable(new_state)
+                        )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
                         self.queue.append((new_state, new_node))  # Store new state with its tree node
 
@@ -463,6 +524,7 @@ class Planner:
                     for i in range(len(print_q)):
                         sys.stdout.write(print_q[i] + "\n")  # reprint the lines
 
+            heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
                 self.save_tree_in_chunks(root_node)
                 logger.close()
