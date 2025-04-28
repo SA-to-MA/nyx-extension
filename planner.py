@@ -149,17 +149,21 @@ class Planner:
                     if state.get_h_heuristic() < novelty:
                         state.set_h_heuristic(novelty)
                         if constants.SEARCH_GBFS:
-                            bisect.insort(self.queue, state)
-                        elif constants.SEARCH_ASTAR:
-                            self.queue.appendleft(state)
+                            # bisect.insort(self.queue, state)
+                            self.queue.appendleft((state, root_node))
                             self.queue = collections.deque(
-                                sorted(self.queue, key=lambda elem: (elem.h + elem.g))
+                                sorted(self.queue, key=lambda elem: elem[0].h)
+                            )
+                        elif constants.SEARCH_ASTAR:
+                            self.queue.appendleft((state, root_node))
+                            self.queue = collections.deque(
+                                sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g))
                             )
                         elif constants.SEARCH_DFS:
-                            self.queue.appendleft(state)
+                            self.queue.appendleft((state, root_node))
                             self.queue = collections.deque(
                                 sorted(
-                                    self.queue, key=lambda elem: (-elem.depth, elem.h)
+                                    self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)
                                 )
                             )
                         continue
@@ -377,17 +381,21 @@ class Planner:
                      if state.get_h_heuristic() < novelty:
                          state.set_h_heuristic(novelty)
                          if constants.SEARCH_GBFS:
-                             bisect.insort(self.queue, state)
-                         elif constants.SEARCH_ASTAR:
-                             self.queue.appendleft(state)
+                             # bisect.insort(self.queue, state)
+                             self.queue.appendleft((state, root_node))
                              self.queue = collections.deque(
-                                 sorted(self.queue, key=lambda elem: (elem.h + elem.g))
+                                 sorted(self.queue, key=lambda elem: elem[0].h)
+                             )
+                         elif constants.SEARCH_ASTAR:
+                             self.queue.appendleft((state, root_node))
+                             self.queue = collections.deque(
+                                 sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g))
                              )
                          elif constants.SEARCH_DFS:
-                             self.queue.appendleft(state)
+                             self.queue.appendleft((state, root_node))
                              self.queue = collections.deque(
                                  sorted(
-                                     self.queue, key=lambda elem: (-elem.depth, elem.h)
+                                     self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)
                                  )
                              )
                          continue
