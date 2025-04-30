@@ -283,7 +283,7 @@ class Planner:
                             )
                         )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
-                        self.queue.append((new_state, new_node))  # Store new state with its tree node
+                        self.enqueue_state((new_state, new_node)) # Store new state with its tree node
 
                 if self.explored_states % constants.PRINT_INFO == 0:
                     print_q = []
@@ -505,7 +505,7 @@ class Planner:
                             grounded_instance.actions.get_applicable(new_state)
                         )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
-                        self.queue.append((new_state, new_node))  # Store new state with its tree node
+                        self.enqueue_state((new_state, new_node)) # Store new state with its tree node
 
 
                 if self.explored_states % constants.PRINT_INFO == 0:
@@ -543,34 +543,43 @@ class Planner:
         logger.close()
         return None
 
-
+    # Helper function to sort with key
+    def bisect_left_with_key(self, a, x, key):
+        lo, hi = 0, len(a)
+        x_key = key(x)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if key(a[mid]) < x_key:
+                lo = mid + 1
+            else:
+                hi = mid
+        return lo
 
     def enqueue_state(self, n_state):
+        state, tree_node = n_state  # unpack the tuple
+
         if constants.SEARCH_BFS:
             self.queue.append(n_state)
+
         elif constants.SEARCH_DFS:
             self.queue.appendleft(n_state)
+
         elif constants.SEARCH_GBFS:
-            n_state.set_h_heuristic(heuristic_functions.heuristic_function(n_state))
-            ''' changing enqueue to bisect.insort ==> needs performance comparison '''
-            # self.queue.insert(0, n_state)
-            # self.queue = sorted(self.queue, key=lambda elem: (elem.h))
+            state.set_h_heuristic(heuristic_functions.heuristic_function(state))
 
-            bisect.insort(self.queue, n_state)
+            def sort_key(elem):
+                return elem[0].h
 
-            # self.queue.insert(bisect.bisect_left(self.queue, n_state), n_state)
-
-            # self.queue.appendleft(n_state)
-            # self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem.h)))
+            index = self.bisect_left_with_key(self.queue, n_state, key=sort_key)
+            self.queue.insert(index, n_state)
 
         elif constants.SEARCH_ASTAR:
-            n_state.set_h_heuristic(heuristic_functions.heuristic_function(n_state))
+            state.set_h_heuristic(heuristic_functions.heuristic_function(state))
             self.queue.appendleft(n_state)
-            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem.h + elem.g)))
+            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g)))
 
         if constants.PRINT_ALL_STATES:
             print(n_state)
-
 
     def enqueue_goal(self, n_state):
         ''' changing enqueue to bisect.insort ==> needs performance comparison '''
