@@ -1,5 +1,0 @@
-     0.000:	no-op_agent&unstack a2 a1 a b	[0.0]
-     0.000:	pick-up&put-down a2 b a1 a	[0.0]
-     0.000:	pick-up&stack a1 c a2 b a	[0.0]
-     0.000:	pick-up&stack a2 d a1 c b	[0.0]
-     0.000:	no-op_agent&stack a1 a2 d c	[0.0]

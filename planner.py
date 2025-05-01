@@ -84,8 +84,8 @@ class Planner:
     def solve(self, domain, problem):
         # --- Initialize Logger ---
         logger = SearchLogger(domain, problem, constants)
-
-        start_parse_time = time.time()
+        # mark when start solving
+        start_solve_time = time.time()
         # Parser
         parser = PDDL_Parser(domain, problem)
         grounded_instance = parser.grounded_instance
@@ -94,13 +94,12 @@ class Planner:
         state = grounded_instance.init_state
         self.initial_state = grounded_instance.init_state
 
-        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_parse_time)) + "s\n")
+        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_solve_time)) + "s\n")
         if (constants.DOMAIN_INFO):
             grounded_instance.print_domain_info()
         print('\n=================================================\n\n\n\n\n\n\n')
 
-        # mark when starting to solve and last time stats was printed
-        start_solve_time = time.time()
+        # mark last time stats was printed
         last_stats_print_time = start_solve_time
 
         # Do nothing
@@ -110,14 +109,13 @@ class Planner:
 
         # Search
         self.visited_hashmap[hash(VisitedState(state))] = VisitedState(state)
-        state.applicables_actions = state.get_applicable_happenings(
-            grounded_instance.actions
-        )
+        state.applicables_actions = state.get_applicable_happenings(grounded_instance.actions)
         root_node = StateNode(state)  # Root of the tree
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
 
         while self.queue:
-            state, state_node = self.queue.popleft() # pop state and state node
+            n_state =  self.queue.popleft() # pop state and state node
+            state, state_node = n_state # divide into state and state node
 
             # get metrics for logging
             self.max_depth = max(self.max_depth, state.depth)
@@ -149,23 +147,16 @@ class Planner:
                     if state.get_h_heuristic() < novelty:
                         state.set_h_heuristic(novelty)
                         if constants.SEARCH_GBFS:
-                            # bisect.insort(self.queue, state)
-                            self.queue.appendleft((state, root_node))
-                            self.queue = collections.deque(
-                                sorted(self.queue, key=lambda elem: elem[0].h)
-                            )
+                            def sort_key(elem):
+                                return elem[0].h
+                            index = self.bisect_left_with_key(self.queue, n_state, key=sort_key)
+                            self.queue.insert(index, n_state)
                         elif constants.SEARCH_ASTAR:
-                            self.queue.appendleft((state, root_node))
-                            self.queue = collections.deque(
-                                sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g))
-                            )
+                            self.queue.appendleft(n_state)
+                            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g)))
                         elif constants.SEARCH_DFS:
-                            self.queue.appendleft((state, root_node))
-                            self.queue = collections.deque(
-                                sorted(
-                                    self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)
-                                )
-                            )
+                            self.queue.appendleft(n_state)
+                            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)))
                         continue
 
             if grounded_instance.goals(state, constants):
@@ -194,8 +185,6 @@ class Planner:
 
             applicables = state.applicables_actions
             for aa in applicables:
-                new_state = None
-
                 if aa == constants.TIME_PASSING_ACTION:
 
                     ### HAPPENINGS ORDER: (events - optional if -dblevent) -> semantic attachment -> processes -> TILs -> events -> actions
@@ -322,7 +311,8 @@ class Planner:
         # --- Initialize Logger ---
         logger = SearchLogger(domain, problem, constants)
 
-        start_parse_time = time.time()
+        # mark when start solving
+        start_solve_time = time.time()
         # Parser
         parser = PDDL_Parser(domain, problem)
         grounded_instance = parser.grounded_instance
@@ -331,12 +321,11 @@ class Planner:
         state = grounded_instance.init_state
         self.initial_state = grounded_instance.init_state
 
-        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_parse_time)) + "s\n")
+        print("\t* model parse time: " + str("{:5.4f}".format(time.time() - start_solve_time)) + "s\n")
         if (constants.DOMAIN_INFO):
             grounded_instance.print_domain_info()
         print('\n=================================================\n\n\n\n\n\n\n')
 
-        start_solve_time = time.time()
         last_stats_print_time = start_solve_time
 
         # Do nothing
@@ -350,7 +339,8 @@ class Planner:
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
 
         while self.queue:
-            state, state_node = self.queue.popleft()  # Get state and its tree node
+            n_state = self.queue.popleft()  # pop state and state node
+            state, state_node = n_state  # divide into state and state node
 
             self.max_depth = max(self.max_depth, state.depth)
             if hasattr(state, 'metric'):
@@ -376,29 +366,22 @@ class Planner:
 
             # check for currect novelty again when popping from the open list
             if constants.DOUBLE_HEURISTIC:
-                 if state.predecessor_action is not None:
-                     novelty = heuristic_functions.heuristic_function(state)
-                     if state.get_h_heuristic() < novelty:
-                         state.set_h_heuristic(novelty)
-                         if constants.SEARCH_GBFS:
-                             # bisect.insort(self.queue, state)
-                             self.queue.appendleft((state, root_node))
-                             self.queue = collections.deque(
-                                 sorted(self.queue, key=lambda elem: elem[0].h)
-                             )
-                         elif constants.SEARCH_ASTAR:
-                             self.queue.appendleft((state, root_node))
-                             self.queue = collections.deque(
-                                 sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g))
-                             )
-                         elif constants.SEARCH_DFS:
-                             self.queue.appendleft((state, root_node))
-                             self.queue = collections.deque(
-                                 sorted(
-                                     self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)
-                                 )
-                             )
-                         continue
+                if state.predecessor_action is not None:
+                    novelty = heuristic_functions.heuristic_function(state)
+                    if state.get_h_heuristic() < novelty:
+                        state.set_h_heuristic(novelty)
+                        if constants.SEARCH_GBFS:
+                            def sort_key(elem):
+                                return elem[0].h
+                            index = self.bisect_left_with_key(self.queue, n_state, key=sort_key)
+                            self.queue.insert(index, n_state)
+                        elif constants.SEARCH_ASTAR:
+                            self.queue.appendleft(n_state)
+                            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g)))
+                        elif constants.SEARCH_DFS:
+                            self.queue.appendleft(n_state)
+                            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)))
+                        continue
 
             if grounded_instance.goals(state, constants):
                 self.total_goals_found += 1
