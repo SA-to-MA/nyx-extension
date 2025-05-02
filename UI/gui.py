@@ -9,6 +9,7 @@ from stats.StatsViewer import run_stats
 
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Other"]
 
+
 def is_valid_pddl_file(filepath, file_type):
     """
     file_type: either 'domain' or 'problem'
@@ -20,6 +21,7 @@ def is_valid_pddl_file(filepath, file_type):
     except Exception as e:
         print(f"Failed to read file: {filepath}. Error: {e}")
         return False
+
 
 class ModernApp(tk.Tk):
     def __init__(self):
@@ -75,8 +77,6 @@ class ModernApp(tk.Tk):
             "PlanResults": self.create_plan_result_page,
             "VisResults": self.create_vis_results_page,
             "show_solution": self.show_solution,
-        #    "STResults": self.create_ST_results_page,
-        #    "STVisualize": self.create_ST_Visualize_page,
         }
 
         self.current_frame = None
@@ -337,10 +337,20 @@ class ModernApp(tk.Tk):
         try:
             solution = self.controller.getParsedPlan()  # Retrieve the parsed plan from the controller
             self.create_page_title_and_background("The solution:")
-            # Display the solution text
-            solution_label = ttk.Label(self.current_frame, text=solution, font=("Roboto", 16), background="#1E1E1E",
-                                       foreground="#E0E0E0", wraplength=800, justify="left")
-            solution_label.place(relx=0.5, rely=0.36, anchor="center")
+            # Scrollable text area for long solution output
+            text_frame = tk.Frame(self.current_frame, bg="#1E1E1E")
+            text_frame.place(relx=0.5, rely=0.4, anchor="center", relwidth=0.85, relheight=0.30)
+
+            scrollbar = tk.Scrollbar(text_frame)
+            scrollbar.pack(side="right", fill="y")
+
+            solution_text = tk.Text(text_frame, yscrollcommand=scrollbar.set, font=("Roboto", 14),
+                                    bg="#1E1E1E", fg="#E0E0E0", wrap="word", relief="flat")
+            solution_text.insert("1.0", solution)
+            solution_text.config(state="disabled")  # Make read-only
+            solution_text.pack(fill="both", expand=True)
+
+            scrollbar.config(command=solution_text.yview)
 
             # Navigation buttons
             self.add_back_button("PlanResults")

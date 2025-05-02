@@ -30,7 +30,7 @@ class SearchLogger:
             "min_metric", "max_metric", "tracked_goals"
         ])
 
-        print(f"📊 Search stats log saved at: {os.path.abspath(self.log_path)}")
+        print(f" Search stats log saved at: {os.path.abspath(self.log_path)}")
 
     def log_stats(self, timestamp, nodes_expanded, max_depth, queue_size, min_metric, max_metric, tracked_goals):
         self.csv_writer.writerow([
