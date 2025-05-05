@@ -1,9 +1,10 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import glob
 import pytest
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 from MA_PDDL.MAtoSA import SolveController
 
 
@@ -36,14 +37,13 @@ def test_generate_and_solve_blocks(solve_controller):
         content = f.read()
     assert any(action in content for action in ["pick-up", "stack", "unstack", "put-down"]), "Expected actions not found in the plan."
 
-    log_files = glob.glob("stats/logs/search_stats_*.csv")
-    print(f"[Test] Found {len(log_files)} search stats file(s).")
+    log_files = glob.glob(os.path.join("stats", "logs", "search_stats_*.csv"))
     assert len(log_files) > 0, "Search stats file was not created."
 
 
 def test_get_parsed_plan_blocks(solve_controller):
     """
-    Verify that the parsed plan output contains key terms like 'agent' and 'block'.
+    Check that parsed plan contains meaningful structured output.
     """
     parsed = solve_controller.getParsedPlan()
     assert "pick-up" in parsed
@@ -55,31 +55,30 @@ def test_search_tree_file_created():
     """
     Check that search tree chunk files (.pkl) were created after solving.
     """
-    tree_files = glob.glob("VIS/Search_VIS/search_tree/tree_chunk_*.pkl")
-    print(f"[Test] Found {len(tree_files)} search tree chunk(s).")
-    assert len(tree_files) > 0, "Search tree chunk files were not created."
+    tree_files = glob.glob(os.path.join("VIS", "Search_VIS", "search_tree", "tree_chunk_*.pkl"))
+    assert len(tree_files) > 0, "No search tree files were generated."
 
 
 def test_search_tree_structure():
     """
-    Verify that each search tree chunk file is non-empty and valid.
+    Validate that each tree chunk is non-empty.
     """
-    tree_files = glob.glob("VIS/Search_VIS/search_tree/tree_chunk_*.pkl")
-    assert len(tree_files) > 0, "No search tree chunk files found."
+    tree_files = glob.glob(os.path.join("VIS", "Search_VIS", "search_tree", "tree_chunk_*.pkl"))
+    assert len(tree_files) > 0
     for tree_file in tree_files:
-        assert os.path.getsize(tree_file) > 0, f"Tree chunk file {tree_file} is empty."
+        assert os.path.getsize(tree_file) > 0, f"{tree_file} is empty."
 
 # --- Tests for invalid and error scenarios ---
 
 
 def test_fail_on_missing_domain_file():
     """
-    Expect FileNotFoundError if the domain file is missing.
+    Raise FileNotFoundError if domain file is missing.
     """
     with pytest.raises(FileNotFoundError):
         SolveController(
-            "tests/Data/does_not_exist.pddl",
-            "tests/Data/problem_blocks.pddl",
+            os.path.join("tests", "Data", "missing_domain.pddl"),
+            os.path.join("tests", "Data", "problem_blocks.pddl"),
             "Blocks",
             "-t:1 -pt"
         )
@@ -87,12 +86,12 @@ def test_fail_on_missing_domain_file():
 
 def test_fail_on_missing_problem_file():
     """
-    Expect FileNotFoundError if the problem file is missing.
+    Raise FileNotFoundError if problem file is missing.
     """
     with pytest.raises(FileNotFoundError):
         SolveController(
-            "tests/Data/domain_blocks.pddl",
-            "tests/Data/does_not_exist.pddl",
+            os.path.join("tests", "Data", "domain_blocks.pddl"),
+            os.path.join("tests", "Data", "missing_problem.pddl"),
             "Blocks",
             "-t:1 -pt"
         )
@@ -100,12 +99,11 @@ def test_fail_on_missing_problem_file():
 
 def test_fail_on_empty_files():
     """
-    Expect a specific parsing exception when domain and problem files are empty.
-    """
+    Expect parsing error if domain and problem files are empty.    """
     with pytest.raises(Exception, match="Malformed expression"):
         SolveController(
-            "tests/Data/empty_domain.pddl",
-            "tests/Data/empty_problem.pddl",
+            os.path.join("tests", "Data", "empty_domain.pddl"),
+            os.path.join("tests", "Data", "empty_problem.pddl"),
             "Blocks",
             "-t:1 -pt"
         )
@@ -113,12 +111,12 @@ def test_fail_on_empty_files():
 
 def test_fail_on_invalid_domain_syntax():
     """
-    Expect a parsing exception if the domain file has syntax errors (missing parentheses).
+    Raise error when domain file has invalid PDDL syntax.
     """
     with pytest.raises(Exception, match="Missing close parentheses"):
         SolveController(
-            "tests/Data/bad_domain.pddl",
-            "tests/Data/problem_blocks.pddl",
+            os.path.join("tests", "Data", "bad_domain.pddl"),
+            os.path.join("tests", "Data", "problem_blocks.pddl"),
             "Blocks",
             "-t:1 -pt"
         )
@@ -126,12 +124,12 @@ def test_fail_on_invalid_domain_syntax():
 
 def test_fail_on_invalid_problem_file():
     """
-    Expect a general exception if the problem file is structurally invalid.
+   Raise error if if the problem file is structurally invalid.
     """
     with pytest.raises(Exception):
         SolveController(
-            "tests/Data/domain_blocks.pddl",
-            "tests/Data/bad_problem.pddl",
+            os.path.join("tests", "Data", "domain_blocks.pddl"),
+            os.path.join("tests", "Data", "bad_problem.pddl"),
             "Blocks",
             "-t:1 -pt"
         )
@@ -139,15 +137,15 @@ def test_fail_on_invalid_problem_file():
 
 def test_fail_on_invalid_plan_file():
     """Force the controller to parse a bad plan file and expect a fallback message."""
-    solve_controller = SolveController(
-        "tests/Data/domain_blocks.pddl",
-        "tests/Data/problem_blocks.pddl",
+    controller = SolveController(
+        os.path.join("tests", "Data", "domain_blocks.pddl"),
+        os.path.join("tests", "Data", "problem_blocks.pddl"),
         "Blocks",
         "-t:1 -pt"
     )
-    solve_controller.plan = "tests/Data/bad_plan.pddl"  # Override to bad plan
-    parsed = solve_controller.getParsedPlan()
-    assert parsed == "Solution not found", f"Expected 'Solution not found', but got: {parsed}"
+    controller.plan = os.path.join("tests", "Data", "bad_plan.pddl")
+    parsed = controller.getParsedPlan()
+    assert parsed == "Solution not found"
 
 
 def test_invalid_config_file_format():
@@ -156,8 +154,8 @@ def test_invalid_config_file_format():
     (NYX should internally handle the bad config string.)
     """
     controller = SolveController(
-        "tests/Data/domain_blocks.pddl",
-        "tests/Data/problem_blocks.pddl",
+        os.path.join("tests", "Data", "domain_blocks.pddl"),
+        os.path.join("tests", "Data", "problem_blocks.pddl"),
         "Blocks",
         "bad_flag_syntax"
     )
