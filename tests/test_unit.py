@@ -1,8 +1,12 @@
 import pytest
 import os
 import sys
+from pathlib import Path
 
-# Make sure we can import properly
+# Set paths relative to this test file
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "Data"
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from MA_PDDL.MAtoSA import MAtoSA, SolveController
@@ -14,7 +18,7 @@ from VIS.Search_VIS.BlocksTree import random_color, parse_state
 # ------------------------------
 
 def test_random_color_range():
-    """Test that random_color() returns a tuple of three integers between 0 and 255."""
+    """Test that the function returns a valid RGB color tuple between 0 and 255."""
     color = random_color()
     assert isinstance(color, tuple)
     assert len(color) == 3
@@ -80,24 +84,24 @@ def test_is_valid_pddl_file_invalid(tmp_path):
 def test_get_parsed_plan_solution_not_found():
     """Test that SolveController returns 'Solution not found' for missing plan file."""
     controller = SolveController(
-        "tests/Data/domain_blocks.pddl",
-        "tests/Data/problem_blocks.pddl",
+        str(DATA_DIR / "domain_blocks.pddl"),
+        str(DATA_DIR / "problem_blocks.pddl"),
         "Blocks",
         "-t:1 -pt"
     )
-    controller.plan = "tests/Data/non_existent_plan.pddl"  # Force a non-existing plan
+    controller.plan = str(DATA_DIR / "non_existent_plan.pddl")
     parsed = controller.getParsedPlan()
     assert parsed == "Solution not found"
-
 
 # ------------------------------
 # Tests for MAtoSA core methods
 # ------------------------------
 
 def test_parse_actions_from_real_domain():
-    """Test that expected actions are parsed correctly from domain."""
-    domain_path = "tests/Data/domain_blocks.pddl"
-    parser = MAtoSA(domain_path, "tests/Data/problem_blocks.pddl")
+    """Test parsing of all expected actions from a real domain file. """
+    domain_path = str(DATA_DIR / "domain_blocks.pddl")
+    problem_path = str(DATA_DIR / "problem_blocks.pddl")
+    parser = MAtoSA(domain_path, problem_path)
     tokens = parser.scan_tokens(domain_path)
     actions = parser.parse_actions(tokens)
 
@@ -113,8 +117,8 @@ def test_parse_actions_from_real_domain():
 
 
 def test_generate_constraints():
-    """Test generating 'dif_*' constraints between different types."""
-    parser = MAtoSA("tests/Data/domain_blocks.pddl", "tests/Data/problem_blocks.pddl")
+    """ Test generating unique constraints (dif_*) between different objects."""
+    parser = MAtoSA(str(DATA_DIR / "domain_blocks.pddl"), str(DATA_DIR / "problem_blocks.pddl"))
     data = ['a1', 'a2', '-', 'agent', 'b1', 'b2', '-', 'block']
     constraints = parser.generate_constraints(data)
 
@@ -123,8 +127,8 @@ def test_generate_constraints():
 
 
 def test_process_objects_and_agents():
-    """Test proper separation of objects and agents."""
-    parser = MAtoSA("tests/Data/domain_blocks.pddl", "tests/Data/problem_blocks.pddl")
+    """Test correct categorization of agents and objects from input list."""
+    parser = MAtoSA(str(DATA_DIR / "domain_blocks.pddl"), str(DATA_DIR / "problem_blocks.pddl"))
     input_list = ['a', 'b', '-', 'block', [':private', 'a1', 'a2', '-', 'agent']]
     parser.process_objects_and_agents(input_list)
 
@@ -135,7 +139,7 @@ def test_process_objects_and_agents():
 
 def test_write_problem_creates_file(tmp_path):
     """Test that a problem file is correctly generated and saved."""
-    parser = MAtoSA("tests/Data/domain_blocks.pddl", "tests/Data/problem_blocks.pddl")
+    parser = MAtoSA(str(DATA_DIR / "domain_blocks.pddl"), str(DATA_DIR / "problem_blocks.pddl"))
     parser.scan_tokens(parser.ma_problem_file)
 
     output_file = tmp_path / "output_test_problem.pddl"
@@ -148,8 +152,8 @@ def test_write_problem_creates_file(tmp_path):
 
 
 def test_generate_action_combinations():
-    """Test that action combinations are generated for agents."""
-    parser = MAtoSA("tests/Data/domain_blocks.pddl", "tests/Data/problem_blocks.pddl")
+    """Test generation of all possible combinations of actions across agents."""
+    parser = MAtoSA(str(DATA_DIR / "domain_blocks.pddl"), str(DATA_DIR / "problem_blocks.pddl"))
     parsed_actions = {
         "move": {
             "params": ['?a', '-', 'agent'],
@@ -164,8 +168,8 @@ def test_generate_action_combinations():
 
 
 def test_unify_combinations_merges_correctly():
-    """Test that multiple actions are unified correctly."""
-    parser = MAtoSA("tests/Data/domain_blocks.pddl", "tests/Data/problem_blocks.pddl")
+    """Test merging multiple single-agent actions into one joint action."""
+    parser = MAtoSA(str(DATA_DIR / "domain_blocks.pddl"), str(DATA_DIR / "problem_blocks.pddl"))
     combinations = [
         [
             {"name": "move", "params": ["?a1"], "pre": ["ready", "?a1"], "effects": ["moved", "?a1"]},
