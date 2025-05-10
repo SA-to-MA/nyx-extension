@@ -1,0 +1,10 @@
+# Domain file:,MA_PDDL\outputs\PolyCraft\domain.pddl
+# Problem file:,MA_PDDL\outputs\PolyCraft\problem.pddl
+# Constants.TIMEOUT,1800
+# Constants.DELTA_T,0.1
+# Constants.TIME_HORIZON,3000
+# Constants.DEPTH_LIMIT,3000
+# Constants.METRIC_MINIMIZE,True
+
+timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
+1.01,4979,24,4021,inf,inf,0

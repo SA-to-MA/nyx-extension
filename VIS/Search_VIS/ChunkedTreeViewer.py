@@ -243,6 +243,35 @@ def get_visible_nodes(root_nodes, expanded_nodes):
 
     return list(visible)
 
+# def setup_new_nodes(new_nodes, loaded_nodes, seen_indices):
+#     """
+#     Prepares newly loaded nodes by assigning them unique indices and ensuring no duplicates.
+#
+#     Args:
+#         new_nodes (list): List of newly loaded nodes from a chunk.
+#         loaded_nodes (list): The master list of all currently loaded nodes.
+#         seen_indices (set): A set of indices already used (for avoiding duplication).
+#     """
+#     for node in new_nodes:
+#         if not hasattr(node, "index"):
+#             node.index = len(seen_indices)
+#
+#         if node.index in seen_indices:
+#             # Optional debug line:
+#             print(f"Skipping node {node.index}, already seen.")
+#             continue
+#
+#         # Ensure all required attributes exist
+#         node.original_idx = node.index
+#         node.children = getattr(node, "children", [])
+#         node.parent = getattr(node, "parent", None)
+#
+#         loaded_nodes.append(node)
+#         seen_indices.add(node.index)
+#
+#         # Optional debug line:
+#         print(f"Added node {node.index}")
+
 def setup_new_nodes(new_nodes, loaded_nodes, seen_indices):
     """
     Prepares newly loaded nodes by assigning them unique indices and ensuring no duplicates.
@@ -261,6 +290,8 @@ def setup_new_nodes(new_nodes, loaded_nodes, seen_indices):
             node.children = []
             loaded_nodes.append(node)
             seen_indices.add(node.index)
+            print(f"Added node {node.index}")
+
 
 def link_parents(loaded_nodes, index_to_node):
     """
@@ -352,7 +383,7 @@ def main(domain_name):
                     index_to_node.update({node.index: node for node in new_nodes})
                     link_parents(loaded_nodes, index_to_node)
 
-                    root_nodes = [node for node in loaded_nodes if node.parent is None]
+                    root_nodes = [node for node in loaded_nodes]
 
                     visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
                     node_positions, missing_parents = compute_node_positions(visible_nodes)
@@ -371,7 +402,8 @@ def main(domain_name):
                         index_to_node.update({node.index: node for node in chunk_nodes})
                     link_parents(loaded_nodes, index_to_node)
 
-                    root_nodes = [node for node in loaded_nodes if node.parent is None]
+                    root_nodes = [node for node in loaded_nodes]
+
                     visible_nodes = get_visible_nodes(root_nodes, expanded_nodes)
                     node_positions, missing_parents = compute_node_positions(visible_nodes)
                     selected_node = None

@@ -537,5 +537,5 @@ def run_nyx(domain, problem, flags):
 
 # EXAMPLE OF USAGE
 # if __name__ == "__main__":
-#     solve = SolveController("examples/Car/domain.pddl", "examples/Car/problem.pddl", "Car", "examples/Car/config.pddl")
-    # solve.solve()
+#     solve = SolveController("examples/Minecraft/minecraft_domain.pddl", "examples/Minecraft/3 agents/problem_3.pddl", "PolyCraft", "examples/Minecraft/3 agents/config.txt")
+#     solve.solve()
