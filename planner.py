@@ -274,6 +274,9 @@ class Planner:
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
                         self.enqueue_state((new_state, new_node)) # Store new state with its tree node
 
+                        # when not creating tree
+                        # self.enqueue_state((new_state, None))
+
                 if self.explored_states % constants.PRINT_INFO == 0:
                     print_q = []
                     # visi = len(self.visited_hashmap)
@@ -488,7 +491,10 @@ class Planner:
                             grounded_instance.actions.get_applicable(new_state)
                         )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
-                        self.enqueue_state((new_state, new_node)) # Store new state with its tree node
+                        self.enqueue_state((new_state, new_node))  # Store new state with its tree node
+
+                        # when not creating tree
+                        # self.enqueue_state((new_state, None))
 
 
                 if self.explored_states % constants.PRINT_INFO == 0:
