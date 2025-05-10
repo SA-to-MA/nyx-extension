@@ -105,6 +105,31 @@ def heuristic_function(state):
         if min_diff == 0:
             min_diff = 0.5
         return 1 / min_diff
+    elif constants.CUSTOM_HEURISTIC_ID == 7:
+        """
+        Custom heuristic 7:
+        For multi-agent car domain, estimate how far each agent is from reaching the goal (d(a) < 30).
+        Returns the maximum remaining distance among all agents (agents need to reach d(a) ≥ 30).
+        """
+        distances = []
+
+        for var_key, value in state.state_vars.items():
+            if var_key.startswith("['d'"):
+                try:
+                    distance = float(value)
+                    remaining = max(0, 30 - distance)
+                    distances.append(remaining)
+                except (ValueError, IndexError):
+                    continue
+
+        # If no distances found, fallback to neutral heuristic
+        if not distances:
+            return 0
+
+        # Choose one of:
+        return max(distances)  # pessimistic: furthest agent from goal
+        # return sum(distances)    # total remaining distance
+        # return min(distances)    # optimistic: nearest agent to goal
 
     return 0
 
