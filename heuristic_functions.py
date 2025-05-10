@@ -89,22 +89,7 @@ def heuristic_function(state):
         lifted_actions = list(set(act.name for act in state.applicables_actions))
         return 1 / len(lifted_actions)
     elif constants.CUSTOM_HEURISTIC_ID == 6:
-        """Custom heuristic 6: minimum absolute difference between the states"""
-        current_vars = set(state.state_vars)
-        if not novel_states:
-            novel_states.append(current_vars)
-            return 0  # No prior states to compare with
-
-        diffs = sorted(len(current_vars - prev_vars) for prev_vars in novel_states)
-        min_diff = diffs[0]
-        if min_diff != 0:
-            novel_states.append(current_vars)
-        elif len(diffs) > 1:
-            min_diff = diffs[1]
-
-        if min_diff == 0:
-            min_diff = 0.5
-        return 1 / min_diff
+        return 1
     elif constants.CUSTOM_HEURISTIC_ID == 7:
         """
         Custom heuristic 7:
