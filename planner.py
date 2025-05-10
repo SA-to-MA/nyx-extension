@@ -149,7 +149,7 @@ class Planner:
                         if constants.SEARCH_GBFS:
                             def sort_key(elem):
                                 return elem[0].h
-                            index = self.bisect_left_with_key(self.queue, n_state, key=sort_key)
+                            index = self.bisect_right_with_key(self.queue, n_state, key=sort_key)
                             self.queue.insert(index, n_state)
                         elif constants.SEARCH_ASTAR:
                             self.queue.appendleft(n_state)
@@ -274,6 +274,9 @@ class Planner:
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
                         self.enqueue_state((new_state, new_node)) # Store new state with its tree node
 
+                        # when not creating tree
+                        # self.enqueue_state((new_state, None))
+
                 if self.explored_states % constants.PRINT_INFO == 0:
                     print_q = []
                     # visi = len(self.visited_hashmap)
@@ -373,7 +376,7 @@ class Planner:
                         if constants.SEARCH_GBFS:
                             def sort_key(elem):
                                 return elem[0].h
-                            index = self.bisect_left_with_key(self.queue, n_state, key=sort_key)
+                            index = self.bisect_right_with_key(self.queue, n_state, key=sort_key)
                             self.queue.insert(index, n_state)
                         elif constants.SEARCH_ASTAR:
                             self.queue.appendleft(n_state)
@@ -488,7 +491,10 @@ class Planner:
                             grounded_instance.actions.get_applicable(new_state)
                         )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
-                        self.enqueue_state((new_state, new_node)) # Store new state with its tree node
+                        self.enqueue_state((new_state, new_node))  # Store new state with its tree node
+
+                        # when not creating tree
+                        # self.enqueue_state((new_state, None))
 
 
                 if self.explored_states % constants.PRINT_INFO == 0:
@@ -527,12 +533,12 @@ class Planner:
         return None
 
     # Helper function to sort with key
-    def bisect_left_with_key(self, a, x, key):
+    def bisect_right_with_key(self, a, x, key):
         lo, hi = 0, len(a)
         x_key = key(x)
         while lo < hi:
             mid = (lo + hi) // 2
-            if key(a[mid]) < x_key:
+            if key(a[mid]) <= x_key:
                 lo = mid + 1
             else:
                 hi = mid
@@ -553,7 +559,7 @@ class Planner:
             def sort_key(elem):
                 return elem[0].h
 
-            index = self.bisect_left_with_key(self.queue, n_state, key=sort_key)
+            index = self.bisect_right_with_key(self.queue, n_state, key=sort_key)
             self.queue.insert(index, n_state)
 
         elif constants.SEARCH_ASTAR:

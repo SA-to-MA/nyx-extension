@@ -23,4 +23,4 @@
      0.000:	return_plank&return_sack&return_stick a1 a3 a2	[0.0]
      0.000:	craft_wooden_pogo&get_log a3 a2	[0.0]
      0.000:	craft_wooden_pogo&return_log&return_wooden_pogo a1 a2 a3	[0.0]
-     0.000:	craft_tree_tap&return_wooden_pogo a3 a1	[0.0]
+     0.000:	craft_plank&craft_tree_tap&return_wooden_pogo a3 a2 a1	[0.0]

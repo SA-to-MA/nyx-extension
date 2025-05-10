@@ -1,9 +1,0 @@
-# Domain file:,C:\Users\v-laftabi\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\PolyCraft\domain.pddl
-# Problem file:,C:\Users\v-laftabi\Desktop\Nyx\nyx-extension\MA_PDDL\outputs\PolyCraft\problem.pddl
-# Constants.TIMEOUT,300.0
-# Constants.DELTA_T,1.0
-# Constants.TIME_HORIZON,3000
-# Constants.DEPTH_LIMIT,3000
-# Constants.METRIC_MINIMIZE,True
-
-timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
