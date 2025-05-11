@@ -52,33 +52,14 @@ class Planner:
         self.min_metric = float('inf')
         self.max_metric = float('-inf')
 
-    def save_tree_in_chunks(self, root, chunk_size=100):
-        """Save a large tree into multiple pickle files, each containing chunk_size nodes."""
+    def save_tree(self, root):
+        """Save a large tree into pickle file"""
         repo_root = get_repo_root()
         folder = repo_root / "VIS/Search_VIS/search_tree"
+        timestamp = str(time.time())
 
-        queue = deque([root])  # BFS traversal
-        chunk = []
-        chunk_index = 0
-        total_nodes = 0
-
-        while queue:
-            node = queue.popleft()
-            chunk.append(node)
-            total_nodes += 1
-            queue.extend(node.children)
-
-            if len(chunk) >= chunk_size:
-                with open(f"{folder}/tree_chunk_{chunk_index}.pkl", "wb") as file:
-                    pickle.dump(chunk, file)  # Use dill for serialization
-                chunk.clear()
-                chunk_index += 1
-
-        if chunk:
-            with open(f"{folder}/tree_chunk_{chunk_index}.pkl", "wb") as file:
-                pickle.dump(chunk, file)
-
-        print(f"Tree saved in {chunk_index + 1} chunks ({total_nodes} nodes in total).")
+        with open(f"{folder}/search_tree_{timestamp}.pkl", "wb") as file:
+            pickle.dump(root, file)  # Use dill for serialization
 
 
     def solve(self, domain, problem):
@@ -169,7 +150,7 @@ class Planner:
                     state.metric = grounded_instance.metric(state, constants)
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
-                    self.save_tree_in_chunks(root_node)
+                    self.save_tree(root_node)
                     logger.close()
                     return self.reached_goal_states
 
@@ -300,12 +281,12 @@ class Planner:
 
             heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
-                self.save_tree_in_chunks(root_node)
+                self.save_tree(root_node)
                 logger.close()
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
-        self.save_tree_in_chunks(root_node)
+        self.save_tree(root_node)
         logger.close()
         return None
 
@@ -396,7 +377,7 @@ class Planner:
                     state.metric = grounded_instance.metric(state, constants)
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
-                    self.save_tree_in_chunks(root_node)
+                    self.save_tree(root_node)
                     logger.close()
                     return self.reached_goal_states
 
@@ -523,12 +504,12 @@ class Planner:
 
             heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
-                self.save_tree_in_chunks(root_node)
+                self.save_tree(root_node)
                 logger.close()
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
-        self.save_tree_in_chunks(root_node)
+        self.save_tree(root_node)
         logger.close()
         return None
 
