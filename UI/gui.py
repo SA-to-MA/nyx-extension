@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
-
+import re
 from PIL import Image, ImageTk
 from MA_PDDL import MAtoSA
 from VIS.VisController import main, run
@@ -322,6 +322,34 @@ class ModernApp(TkinterDnD.Tk):
             file_name = os.path.basename(file_path)  # Extract file name only
             self.config_label_var.set(f"Selected: {file_name}")  # Update label
 
+    def extract_domain_name(self, filepath):
+        """Extracts the domain name from a PDDL file."""
+        try:
+            with open(filepath, "r") as f:
+                content = f.read().lower() # Read the file content and convert to lowercase
+
+            # remove all comments (starting with ;)
+            content = re.sub(r";.*", "", content)
+            match = re.search(r"\(define\s*\(domain\s+([^\s\)]+)", content)  # Regex to find the domain name. look for (define (domain <name>)
+            if match:
+                return match.group(1)  # Return the domain name
+        except Exception as e:
+            print(f"Error reading domain name from {filepath}: {e}")
+        return None
+
+    def extract_problem_domain(self, filepath):
+        """Extracts the referenced domain name from a PDDL problem file."""
+        try:
+            with open(filepath, "r") as f:
+                content = f.read().lower()
+            content = re.sub(r";.*", "", content)  # Remove comments
+            match = re.search(r"\(:domain\s+([^\s\)]+)", content) # Regex to find the domain name in the problem file. look for (:domain <name>)
+            if match:
+                return match.group(1)
+        except Exception as e:
+            print(f"Error reading problem domain from {filepath}: {e}")
+        return None
+
     def validate_input_files(self, next_page):
         """Validate input files"""
         if not self.domain_file or not self.problem_file:
@@ -344,10 +372,27 @@ class ModernApp(TkinterDnD.Tk):
             self.switch_page(next_page)
             return
 
+        domain_name = self.extract_domain_name(self.domain_file)
+        problem_domain = self.extract_problem_domain(self.problem_file)
+
+
+        if domain_name.lower() != self.selected_domain.get().lower():
+            messagebox.showerror("Domain Mismatch",
+                                 f"The selected domain '{self.selected_domain.get()}' does not match the domain file '{domain_name}'. Please select matching files.")
+            return
+
+
+
+        if domain_name.lower() != problem_domain.lower():
+            messagebox.showerror("Domain Mismatch",
+                                 f"The problem file is for domain '{problem_domain}', but the domain file is '{domain_name}'. Please select matching files.")
+            return
+
         print("DOMAIN FILE:", self.domain_file)
         print("PROBLEM FILE:", self.problem_file)
         print("CONFIG FILE:", self.config_file)
         print("SELECTED DOMAIN:", self.selected_domain.get())
+
 
         try:
             self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(),
