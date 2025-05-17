@@ -1,11 +1,6 @@
 import re
 import sys
 
-from syntax.action import Action
-
-
-####### THIS IS GENERIC INIT PARSER FOR YOUR USAGE
-####### SOME OF THE CODE IS TAKEN FROM ORIGINAL NYX CODE IN FILE PDDL.py
 class InitParser:
     def __init__(self, problem):
         '''
@@ -16,6 +11,27 @@ class InitParser:
         self.objects = {}
         self.agents = {}
 
+    ### PROBLEM FILE PARSER
+    def parse_problem(self):
+        try:
+            tokens = self.scan_tokens(self.problem)
+        except Exception as prob_error:
+            print(
+                "PDDL problem file error: missing file or malformed problem definition. \nCheck out \'README.md\' for help and usage instructions.\n")
+            sys.exit(1)
+
+        if type(tokens) is list and tokens.pop(0) == 'define':
+            while tokens:
+                group = tokens.pop(0)
+                t = group.pop(0)
+                if t == ':init':
+                    self.parse_init(group)
+                elif t == ':objects':
+                    self.parse_objects(group)
+        else:
+            raise Exception('File ' + self.problem + ' does not match problem pattern')
+
+    ### INIT SECTION PARSER
     def parse_init(self, group):
         """
         Parses the :init section of the problem file.
@@ -45,10 +61,10 @@ class InitParser:
                         self.init_state[obj_name] = {}
 
                     if len(args) == 1:
-                        # Boolean predicate: for example (running car1)
+                        # Boolean predicate
                         self.init_state[obj_name][pred_name] = True
                     elif len(args) == 2:
-                        # Key-value style: (= (a car1) 0)
+                        # Key-value
                         self.init_state[obj_name][pred_name] = args[1]
                     else:
                         # Multiple values: store as tuple
@@ -56,6 +72,7 @@ class InitParser:
             else:
                 print(f"Warning: Skipped unexpected init entry: {entry}")
 
+    ### TOKENIZER
     def scan_tokens(self, filename):
         with open(filename,'r') as f:
             # Remove single line comments
@@ -82,28 +99,8 @@ class InitParser:
             raise Exception('Malformed expression')
         return list[0]
 
-    def parse_problem(self):
-        try:
-            tokens = self.scan_tokens(self.problem)
-        except Exception as prob_error:
-            print(
-                "PDDL problem file error: missing file or malformed problem definition. \nRun \'python nyx.py -h\' for help and usage instructions.\n")
-            # print(constants.HELP_TEXT)
-            sys.exit(1)
-
-        if type(tokens) is list and tokens.pop(0) == 'define':
-            while tokens:
-                group = tokens.pop(0)
-                t = group.pop(0)
-                if t == ':init':
-                    self.parse_init(group)
-                elif t == ':objects':
-                    self.parse_objects(group)
-        else:
-            raise Exception('File ' + self.problem + ' does not match problem pattern')
-
+    ### OBJECTS SECTION PARSER
     def parse_objects(self, input_list):
-        # Iterate through the input list to classify the items
         i = 0
         current_objects = []
         while i < len(input_list):
@@ -130,10 +127,10 @@ class InitParser:
             i += 1
 
 
-if __name__ == "__main__":
-    # parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Blocks\problem-a1.pddl")
-    parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Car\problem.pddl")
-    parser.parse_problem()
-    print(parser.init_state)
-    print(parser.objects)
-    print(parser.agents)
+# if __name__ == "__main__":
+#     # parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Blocks\problem-a1.pddl")
+#     parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Car\problem.pddl")
+#     parser.parse_problem()
+#     print(parser.init_state)
+#     print(parser.objects)
+#     print(parser.agents)
