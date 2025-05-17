@@ -22,6 +22,7 @@ class SolutionParser:
         pattern = r"\(:action\s+([^\s]+)\s+:parameters\s*\(([^)]*)\)"
         for match in re.finditer(pattern, domain_text):
             action_name, param_str = match.groups()
+            action_name = action_name.lower() # convert to lowercase if not already
             param_tokens = param_str.strip().split()
 
             # Extract parameter types

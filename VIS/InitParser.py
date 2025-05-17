@@ -10,6 +10,8 @@ class InitParser:
         self.init_state = {}
         self.objects = {}
         self.agents = {}
+        self.functions = {}
+        self.goals = {}
 
     ### PROBLEM FILE PARSER
     def parse_problem(self):
@@ -28,6 +30,8 @@ class InitParser:
                     self.parse_init(group)
                 elif t == ':objects':
                     self.parse_objects(group)
+                elif t == ':goal':
+                    self.parse_goal(group)
         else:
             raise Exception('File ' + self.problem + ' does not match problem pattern')
 
@@ -43,11 +47,15 @@ class InitParser:
                     # Example: (= (charge robot1) 80)
                     func_expr = entry[1]  # ['charge', 'robot1']
                     value = entry[2]
-                    func_name = func_expr[0]
-                    obj_name = func_expr[1]
-                    if obj_name not in self.init_state:
-                        self.init_state[obj_name] = {}
-                    self.init_state[obj_name][func_name] = float(value)
+                    if len(func_expr) == 2:
+                        func_name = func_expr[0]
+                        obj_name = func_expr[1]
+                        if obj_name not in self.init_state:
+                            self.init_state[obj_name] = {}
+                        self.init_state[obj_name][func_name] = float(value)
+                    else:
+                        func_name = func_expr[0]
+                        self.functions[func_name] = float(value)
                 else:
                     # Standard predicate, e.g., (at robot1 room1)
                     pred_name = entry[0]
@@ -125,6 +133,54 @@ class InitParser:
                 else:
                     current_objects.append(input_list[i])
             i += 1
+
+
+    ### GOAL SECTION PARSER
+    def parse_goal(self, group):
+        """
+        Parses the :goal section of the problem file.
+        Builds self.goals as a dict: { object: {predicate/function: value} or function : value }
+        """
+        for entry in group:
+            if isinstance(entry, list):
+                if entry[0] == "and":
+                    entry = entry[1]
+                if len(entry) == 3 and entry[0] == '=' and isinstance(entry[1], list):
+                    # Example: (= (charge robot1) 80)
+                    func_expr = entry[1]  # ['charge', 'robot1']
+                    value = entry[2]
+                    if len(func_expr) == 2:
+                        func_name = func_expr[0]
+                        obj_name = func_expr[1]
+                        if obj_name not in self.goals:
+                            self.goals[obj_name] = {}
+                        self.goals[obj_name][func_name] = float(value)
+                    else:
+                        func_name = func_expr[0]
+                        self.goals[func_name] = float(value)
+                else:
+                    # Standard predicate, e.g., (at robot1 room1)
+                    pred_name = entry[0]
+                    args = entry[1:]
+
+                    if not args:
+                        continue  # Skip malformed
+
+                    obj_name = args[0]
+                    if obj_name not in self.goals:
+                        self.goals[obj_name] = {}
+
+                    if len(args) == 1:
+                        # Boolean predicate
+                        self.goals[obj_name][pred_name] = True
+                    elif len(args) == 2:
+                        # Key-value
+                        self.goals[obj_name][pred_name] = args[1]
+                    else:
+                        # Multiple values: store as tuple
+                        self.goals[obj_name][pred_name] = tuple(args[1:])
+            else:
+                print(f"Warning: Skipped unexpected goals entry: {entry}")
 
 
 # if __name__ == "__main__":

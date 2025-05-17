@@ -5,14 +5,14 @@ import random
 from VIS.Agent import Agent
 
 class MinecraftWindow:
-    def __init__(self, screen,init_obj, agent_data):
+    def __init__(self, screen, init_obj, agents_actions, functions, goals):
         self.screen = screen
-        self.agents_actions = agent_data
+        self.agents_actions = agents_actions
 
-        self.inventory = init_obj[0]
-        self.trees = init_obj[1]['trees_in_map'] # int
-        self.agents_state = init_obj[2] # free or not
-        self.goal = init_obj[3] # goal state
+        self.inventory = functions
+        self.trees = int(functions.pop('trees_in_map')) # int
+        self.agents_state = init_obj # agents state
+        self.goal = goals # goal state
 
         self.agent_icons = {}
         self.item_icons = {}
@@ -58,7 +58,7 @@ class MinecraftWindow:
                         print(f"Failed to load {filename}: {e}")
 
         # set each agent with random image
-        for agent in agent_data.keys():
+        for agent in agents_actions.keys():
             if agent_images_pool:
                 self.agent_icons[agent] = random.choice(agent_images_pool)
             else:
@@ -86,7 +86,7 @@ class MinecraftWindow:
             self.screen.blit(label, (x + 10, y - 20))
 
             # Draw the current action text if exists
-            if actions_log and agent_name in actions_log:
+            if actions_log and agent_name in actions_log and len(actions_log[agent_name]) > 0:
                 action_text = actions_log[agent_name][0].replace("_", " ")
                 action_label = font.render(f"{action_text}", True, (0, 0, 0))
                 self.screen.blit(action_label, (x, y + 70))
@@ -160,6 +160,9 @@ class MinecraftAgent(Agent):
         super().__init__(_name, _actions)
 
     def execute(self, _action, agent_states, window):
+        # if no action, continue
+        if len(_action) == 0:
+            return
         action_name = _action[0]
         agent_name = self.name
         inventory = window.inventory
@@ -233,11 +236,11 @@ class MinecraftAgent(Agent):
 
 
 class MinecraftSimulator:
-    def __init__(self, screen, agents_by_type, objects_by_type, init_state, solution, t_value=1):
-        self.window = window                         # The visualization window
+    def __init__(self, screen, agents_by_type, functions, init_state, goals, solution, t_value=1):
+        self.window =  MinecraftWindow(screen, init_state, solution, functions, goals)                        # The visualization window
         self.agents = {}           # Correct: dict of agent_name -> MinecraftAgent instances
-        for agent_name, agent in window.agents_actions.items():
-            self.agents[agent_name] = MinecraftAgent(agent_name, agent.actions)
+        for agent_name, actions in self.window.agents_actions.items():
+            self.agents[agent_name] = MinecraftAgent(agent_name, actions)
         self.t = t_value                              # Time delay between steps (seconds)
 
     def run(self):

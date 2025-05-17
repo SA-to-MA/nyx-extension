@@ -81,10 +81,10 @@ def run(selected_domain, domain_path, problem_path, solve=False, plan_file="", f
     # parse solution
     sol_parser = SolutionParser(init_parser.agents, domain_path, plan_file)
     sol_parser.parse()
-    main(selected_domain, init_parser.agents, init_parser.objects, init_parser.init_state, sol_parser.agents_actions, t_value)
+    main(selected_domain, init_parser.agents, init_parser.objects, init_parser.functions, init_parser.init_state, init_parser.goals, sol_parser.agents_actions, t_value)
 
 
-def main(selected_domain, agents_by_type, objects_by_type, init_state, solution, t_value):
+def main(selected_domain, agents_by_type, objects_by_type, functions, init_state, goals, solution, t_value):
     """
     Initializes and runs the visualization and simulation for the given domain.
 
@@ -111,7 +111,7 @@ def main(selected_domain, agents_by_type, objects_by_type, init_state, solution,
         simulator = CarSimulator(screen, init_state, solution, t_value)
 
     elif selected_domain == "PolyCraft":
-        simulator = MinecraftSimulator(screen, agents_by_type, objects_by_type, init_state, solution, t_value)
+        simulator = MinecraftSimulator(screen, agents_by_type, functions, init_state, goals, solution, t_value)
 
     else:
         print("Unsupported domain. Exiting...")
@@ -126,8 +126,21 @@ def main(selected_domain, agents_by_type, objects_by_type, init_state, solution,
     pygame.quit()
 
 if __name__ == "__main__":
-    domain = r"../MA_PDDL/examples/Car/2cars/domain.pddl"
-    problem = r"../MA_PDDL/examples/Car/3 cars/problem_3.pddl"
-    plan_file = r'../MA_PDDL/examples/Car/3 cars/plan.pddl'
-    flags = r"../MA_PDDL/examples/Car/3 cars/config.txt"
-    run("Car", domain, problem, False, plan_file, flags)
+    domain = r"../MA_PDDL/examples/Minecraft/minecraft_domain.pddl"
+    problem = r"../MA_PDDL/examples/Minecraft/2 agents/problem_2.pddl"
+    plan_file = r'../MA_PDDL/examples/Minecraft/2 agents/plan.pddl'
+    flags = r"../MA_PDDL/examples/Minecraft/2 agents/config.txt"
+    run("PolyCraft", domain, problem, False, plan_file, flags)
+
+    # domain = r"../MA_PDDL/examples/Minecraft/minecraft_domain.pddl"
+    # problem = r"../MA_PDDL/examples/Minecraft/1 agent/problem_1.pddl"
+    # plan_file = r'../MA_PDDL/examples/Minecraft/1 agent/plan.pddl'
+    # flags = r"../MA_PDDL/examples/Minecraft/1 agent/config.txt"
+    # run("PolyCraft", domain, problem, False, plan_file, flags)
+
+# if __name__ == "__main__":
+#     domain = r"../MA_PDDL/examples/Car/2cars/domain.pddl"
+#     problem = r"../MA_PDDL/examples/Car/3 cars/problem_3.pddl"
+#     plan_file = r'../MA_PDDL/examples/Car/3 cars/plan.pddl'
+#     flags = r"../MA_PDDL/examples/Car/3 cars/config.txt"
+#     run("Car", domain, problem, False, plan_file, flags)
