@@ -150,7 +150,9 @@ def get_visible_nodes(root_node, expanded_nodes):
 
 # --- Loading ---
 def show_loading_screen(screen, message="Loading tree..."):
-    bg_path = os.path.abspath(os.path.join("resources", "loading_bg.jpg"))
+    repo_root = get_repo_root()
+    bg_path = repo_root / "VIS" / "Search_VIS" / "resources" / "loading_bg.jpg"
+
     background_image = pygame.image.load(bg_path).convert()
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
@@ -209,4 +211,4 @@ def main(domain_name):
     pygame.quit()
 
 if __name__ == "__main__":
-    main("polycraft")
+    main("car")

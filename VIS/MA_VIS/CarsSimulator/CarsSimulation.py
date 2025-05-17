@@ -40,7 +40,7 @@ class CarWindow:
         resources_dir = os.path.join(base_path, "resources")
 
         # Load background road image
-        self.background_image = pygame.image.load(os.path.join(resources_dir, "road-2.jpg"))
+        self.background_image = pygame.image.load(os.path.join(resources_dir, "forest-road.jpg"))
         self.background_image = pygame.transform.scale(self.background_image, screen.get_size())
 
         # Load car image
@@ -88,11 +88,11 @@ class CarWindow:
         """
         screen_width, screen_height = self.screen.get_size()
         start_x = int(screen_width * 0.05)  # 5% from the left
-        start_y = int(screen_height * 0.75)  # 75% from the top
+        start_y = int(screen_height * 0.65)  # 75% from the top
 
         positions = {}
         for i, car_name in enumerate(self.cars.keys()):
-            positions[car_name] = [start_x, start_y + i * 80]  # Stack cars vertically
+            positions[car_name] = [start_x, start_y + i * 70]  # Stack cars vertically
         return positions
 
     def update_positions(self):
@@ -125,7 +125,7 @@ class CarWindow:
             # Display car status
             font = pygame.font.SysFont(None, 24)
             label = font.render(f"{car_name} (v={car.v:.1f}, a={car.a:.1f})", True, (255, 255, 255))
-            self.screen.blit(label, (x + 10, y - 20))
+            self.screen.blit(label, (x + 120, y - 10))
 
             # Display engine explosion if applicable
             if car.engine_blown:
@@ -137,7 +137,7 @@ class CarWindow:
             if car.goal_reached:
                 goal_font = pygame.font.SysFont(None, 30)
                 goal_label = goal_font.render("Goal Reached!", True, (0, 255, 0))  # Green text
-                self.screen.blit(goal_label, (x + 160, y))  # Place above the car
+                self.screen.blit(goal_label, (x + 160, y + 10))  # Place above the car
 
         pygame.display.flip()
 

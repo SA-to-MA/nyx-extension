@@ -448,9 +448,10 @@ def extract_variable_values(plan_f, var_list, csv_f=None):
 # -----------------------------------------------
 if __name__ == '__main__':
 
-    # domain = r'MA_PDDL\outputs\PolyCraft\domain.pddl'
-    # problem =r'MA_PDDL\outputs\PolyCraft\problem.pddl'
-    # flags = ['-search:gbfs', '-pt', '-dblh', '-custom_h:4']
+    # domain = r'MA_PDDL\outputs\Car\domain.pddl'
+    # problem =r'MA_PDDL\outputs\Car\problem.pddl'
+    # # flags = ['-search:gbfs', '-pt', '-dblh', '-custom_h:4']
+    # flags = ['-search:gbfs', '-pt', '-custom_h:6', '-t:10.0']
     # runner(domain, problem, flags)
 
     if len(sys.argv) < 3 or '-h' in sys.argv:
