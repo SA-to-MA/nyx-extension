@@ -83,7 +83,6 @@ class ModernApp(TkinterDnD.Tk):
         }
 
         self.current_frame = None
-        self.switch_page("Home")
         self.problem_file = ""
         self.domain_file = ""
         self.plan_file = ""
@@ -95,6 +94,7 @@ class ModernApp(TkinterDnD.Tk):
         self.problem_label_var = tk.StringVar(value="No file selected")
         self.plan_label_var = tk.StringVar(value="No file selected")
         self.config_label_var = tk.StringVar(value="No file selected")
+        self.switch_page("Home")
 
     def on_closing(self):
         """Handle the window close event."""
@@ -255,11 +255,11 @@ class ModernApp(TkinterDnD.Tk):
         back_label.place(relx=0.02, rely=0.02, anchor="nw")  # Position in the top-left corner
         back_label.bind("<Button-1>", lambda e: self.switch_page(target_page))  # Bind left-click to switch page
 
+
     def switch_page(self, page_name):
         """Switch to a different page by destroying the current frame and creating a new one."""
         if self.current_frame is not None:
             self.current_frame.destroy()
-
         self.current_frame = tk.Frame(self, bg="#1E1E1E")  # Create a new frame
         self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
 
@@ -412,6 +412,19 @@ class ModernApp(TkinterDnD.Tk):
 
     def create_home_page(self):
         """Create the Home page with project introduction and main navigation buttons."""
+        self.plan_file = ""
+        self.controller = None
+        self.domain_file = ""
+        self.problem_file = ""
+        self.config_file = ""
+        self.domain_label_var.set("No file selected")
+        self.problem_label_var.set("No file selected")
+        self.plan_label_var.set("No file selected")
+        self.config_label_var.set("No file selected")
+        #ChunkedTreeViewer.delete_all_chunks()
+        self.selected_domain.set("")  # Reset the selected domain
+        print("cleared plan, files and controller. Ready for new planning!\n")
+
         self.create_page_title_and_background("MA-PlanX")  # Set page title and background
 
         subtitle = ttk.Label(
