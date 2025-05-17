@@ -106,7 +106,7 @@ class Planner:
 
             # --- Log stats every ~1 second ---
             current_time = time.time()
-            if current_time - last_stats_print_time >= 1.0:
+            if current_time - last_stats_print_time >= 0.05:
                 elapsed = current_time - start_solve_time
                 logger.log_stats(
                     timestamp=elapsed,
@@ -333,7 +333,7 @@ class Planner:
 
             # --- Log stats every ~1 second ---
             current_time = time.time()
-            if current_time - last_stats_print_time >= 1:
+            if current_time - last_stats_print_time >= 0.05:
                 elapsed = current_time - start_solve_time
                 logger.log_stats(
                     timestamp=elapsed,

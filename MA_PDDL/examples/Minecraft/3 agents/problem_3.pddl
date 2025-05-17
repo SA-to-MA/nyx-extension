@@ -17,7 +17,7 @@
 		(= (count_pogo_stick) 0)
 	)
 	(:goal
-		(and (= (count_pogo_stick) 3)
+		(and (= (count_pogo_stick) 5)
 		)
 	)
 )

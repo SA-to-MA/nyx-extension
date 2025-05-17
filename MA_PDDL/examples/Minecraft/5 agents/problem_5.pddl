@@ -1,13 +1,13 @@
-(define (problem instance_2)
+(define (problem instance_4)
 	(:domain PolyCraft)
 
 	(:objects
         (:private
-		    a1 a2 - agent
+		    a1 a2 a3 a4 a5 - agent
 		)
 	)
 
-	(:init (agent_free a1) (agent_free a2) (= (trees_in_map) 15)
+	(:init (agent_free a1) (agent_free a2) (agent_free a3) (agent_free a4) (agent_free a5) (= (trees_in_map) 15)
 		; Items
 		(= (count_log_in_inventory) 0)
 		(= (count_planks_in_inventory) 0)
