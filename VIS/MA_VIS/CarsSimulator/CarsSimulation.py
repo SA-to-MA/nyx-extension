@@ -1,7 +1,7 @@
 import os
 import pygame
 import time
-from VIS.MA_VIS.Agent import Agent
+from VIS.Agent import Agent
 from VIS.MA_VIS.CarsSimulator.Car import Car
 
 
@@ -20,7 +20,7 @@ class CarAgent(Agent):
             self.car.stop()
 
 class CarWindow:
-    def __init__(self, screen, agents, car_pred):
+    def __init__(self, screen, init_state, solution):
         """
         Initialize the Car Simulation Window.
 
@@ -29,7 +29,7 @@ class CarWindow:
             agents (dict): Dictionary of car agent objects.
         """
         self.screen = screen
-        self.cars = self.initialize_cars(agents, car_pred)  # initialize initial state
+        self.cars = self.initialize_cars(init_state, solution)  # initialize initial state
 
         # Define car sizes
         self.car_width = 150
@@ -40,7 +40,7 @@ class CarWindow:
         resources_dir = os.path.join(base_path, "resources")
 
         # Load background road image
-        self.background_image = pygame.image.load(os.path.join(resources_dir, "road-2.jpg"))
+        self.background_image = pygame.image.load(os.path.join(resources_dir, "forest-road.jpg"))
         self.background_image = pygame.transform.scale(self.background_image, screen.get_size())
 
         # Load car image
@@ -50,7 +50,7 @@ class CarWindow:
         # Set initial positions for cars
         self.positions = self.initialize_positions()
 
-    def initialize_cars(self, agents, parsed_data):
+    def initialize_cars(self, init_state, cars_actions):
         """
         Converts parsed PDDL initial state dictionary into Car objects.
 
@@ -62,10 +62,10 @@ class CarWindow:
         """
         cars = {}
 
-        for car_name, car_data in parsed_data.items():
+        for car_name, car_data in init_state.items():
             # Extract values with defaults
             running = car_data.get("running", False)
-            engine_blown = car_data.get("engine_blown", False)
+            engine_blown = car_data.get("engineBlown", False)
             transmission_fine = car_data.get("transmission_fine", False)
             d = car_data.get("d", 0.0)
             v = car_data.get("v", 0.0)
@@ -79,7 +79,7 @@ class CarWindow:
                 running, engine_blown, transmission_fine, d, v, a, up_limit, down_limit, running_time
             )
             # create car agent for it
-            cars[car_name] = CarAgent(car_name, agents[car_name].actions, cur_car)
+            cars[car_name] = CarAgent(car_name, cars_actions[car_name], cur_car)
         return cars
 
     def initialize_positions(self):
@@ -88,11 +88,11 @@ class CarWindow:
         """
         screen_width, screen_height = self.screen.get_size()
         start_x = int(screen_width * 0.05)  # 5% from the left
-        start_y = int(screen_height * 0.75)  # 75% from the top
+        start_y = int(screen_height * 0.65)  # 75% from the top
 
         positions = {}
         for i, car_name in enumerate(self.cars.keys()):
-            positions[car_name] = [start_x, start_y + i * 80]  # Stack cars vertically
+            positions[car_name] = [start_x, start_y + i * 70]  # Stack cars vertically
         return positions
 
     def update_positions(self):
@@ -125,7 +125,7 @@ class CarWindow:
             # Display car status
             font = pygame.font.SysFont(None, 24)
             label = font.render(f"{car_name} (v={car.v:.1f}, a={car.a:.1f})", True, (255, 255, 255))
-            self.screen.blit(label, (x + 10, y - 20))
+            self.screen.blit(label, (x + 120, y - 10))
 
             # Display engine explosion if applicable
             if car.engine_blown:
@@ -137,17 +137,17 @@ class CarWindow:
             if car.goal_reached:
                 goal_font = pygame.font.SysFont(None, 30)
                 goal_label = goal_font.render("Goal Reached!", True, (0, 255, 0))  # Green text
-                self.screen.blit(goal_label, (x + 160, y))  # Place above the car
+                self.screen.blit(goal_label, (x + 160, y + 10))  # Place above the car
 
         pygame.display.flip()
 
 
 class CarSimulator:
-    def __init__(self, window, t_value=1):
+    def __init__(self, screen, init_state, solution, t_value=1):
         """
         Handles the simulation loop for multiple cars.
         """
-        self.window = window
+        self.window = CarWindow(screen, init_state, solution)
         self.t = t_value
 
     def execute_next_action(self):

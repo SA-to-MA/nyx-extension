@@ -2,53 +2,13 @@ import re
 import time
 from pathlib import Path
 import pygame
-from MA_PDDL.MAtoSA import MAtoSA, run_nyx
-from VIS.MA_VIS.Agent import Agent
-from VIS.MA_VIS.BlocksSimulator.BlocksInitParser import InitState
+from MA_PDDL.MAtoSA import run_nyx
+from VIS.InitParser import InitParser
 from VIS.MA_VIS.BlocksSimulator.BlocksSimulation import BlocksWindow, BlocksSimulator
 from VIS.MA_VIS.CarsSimulator.CarsSimulation import CarWindow, CarSimulator
 from VIS.MA_VIS.MinecraftSimulator.MinecraftSimulation import MinecraftWindow, MinecraftSimulator
-from VIS.MA_VIS.MinecraftSimulator.MinecraftInitParser import MinecraftInitState
-from VIS.SA_VIS.SA_Simulator import GenericSimulator
 import os
-from VIS.MA_VIS.CarsSimulator.CarsInitParser import InitStateCar
-
-class Parser:
-    def __init__(self, _agents, _actions):
-        # create list of Agents
-        # actions = {'stack': [agent, block, block],'unstack':[...]}
-        self.agents = {}
-        self.actions = _actions
-        for a in _agents:
-            self.agents[a] = Agent(a, [])
-        self.objects = {}
-
-    def parse(self, _plan):
-        with open(_plan, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                line = line.strip()
-                if line == '':
-                    continue
-                # Extract agent name and actions from the line
-                self.parse_line(line)
-
-    def parse_line(self, line):
-        # Match the format: "<time>: <agent>&<action1>&<action2> <params> [<time_cost>]"
-        parts = line.split()
-        parts = parts[1:-1]
-        actions = parts.pop(0).split('&')
-        for act in actions:
-            req_params = len(self.actions[act])
-            params = []
-            agent_name = ""
-            for i in range(req_params):
-                cur = parts.pop(0)
-                if cur in self.agents:
-                    agent_name = cur
-                else:
-                    params.append(cur)
-            self.agents[agent_name].add_action((act, params))
+from VIS.SolutionParser import SolutionParser
 
 
 def simulate_agents(parser):
@@ -69,92 +29,6 @@ def ensure_directory_exists(directory):
 def get_absolute_path(*path_parts):
     """Construct and return an absolute path from the given parts."""
     return str(Path(__file__).resolve().parent.parent.joinpath(*path_parts))
-
-def process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value):
-    """Process the 'Blocks' domain by parsing and simulating it."""
-    satoma = MAtoSA(domain_path, problem_path)
-    new_domain = os.path.join(output_dir, "domain.pddl")
-    new_problem = os.path.join(output_dir, "problem.pddl")
-    satoma.generate(new_domain, new_problem)
-
-    agents, blocks = satoma.agents["agent"], satoma.objects["block"]
-    object_dict = InitState(new_problem, agents, blocks).parse_pddl_init()
-
-    if parse:
-        plan_file = run_nyx(new_domain, new_problem, flags)
-
-    parser = Parser(agents, {
-        'no-op_agent': ['agent'],
-        'stack': ['agent', 'block', 'block'],
-        'unstack': ['agent', 'block', 'block'],
-        'pick-up': ['agent', 'block'],
-        'put-down': ['agent', 'block']
-    })
-    parser.parse(plan_file)
-    main(parser.agents, object_dict, "Blocks", t_value)
-
-def process_car_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value):
-    """Process the 'Car' domain by parsing and simulating it."""
-    satoma = MAtoSA(domain_path, problem_path)
-    new_domain = os.path.join(output_dir, "domain.pddl")
-    new_problem = os.path.join(output_dir, "problem.pddl")
-    satoma.generate(new_domain, new_problem)
-
-    agents = satoma.agents["agent"]  # Get cars (agents)
-    object_dict = InitStateCar(new_problem, agents).parse_pddl_init()  # Use InitStateCar
-
-    if parse:
-        plan_file = run_nyx(new_domain, new_problem, flags)  # Run Nyx planner
-
-    parser = Parser(agents, {
-        'no-op_agent': ['agent'],
-        'accelerate': ['agent'],
-        'decelerate': ['agent'],
-        'stop': ['agent'],
-    })
-    parser.parse(plan_file)
-
-    # Pass agents (cars) and their parsed state to the simulator
-    main(parser.agents, object_dict, "Car", t_value)
-
-def process_minecraft_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value):
-    # 1. Generate single-agent domain/problem
-    satoma = MAtoSA(domain_path, problem_path)
-    new_domain = os.path.join(output_dir, "domain.pddl")
-    new_problem = os.path.join(output_dir, "problem.pddl")
-    satoma.generate(new_domain, new_problem)
-
-    # 2. Get agents from original domain
-    agents = satoma.agents["agent"]
-
-    # 3. Parse initial state
-    inventory_dict = MinecraftInitState(new_problem, agents).parse_pddl_init()
-
-    # 4. Run planner if needed
-    if parse:
-        plan_file = run_nyx(new_domain, new_problem, flags)
-
-    # 5. Parse plan into per-agent action lists
-    parser = Parser(agents, {
-        'get_log': ['agent'],
-        'craft_plank': ['agent'],
-        'craft_stick': ['agent'],
-        'get_sack': ['agent'],
-        'place_tree_tap': ['agent'],
-        'craft_pogo_stick': ['agent'],
-        'craft_wooden_pogo': ['agent'],
-        'craft_tree_tap': ['agent'],
-        'return_log': ['agent'],
-        'return_plank': ['agent'],
-        'return_stick': ['agent'],
-        'return_tree_tap': ['agent'],
-        'return_sack': ['agent'],
-        'return_wooden_pogo': ['agent']
-    })
-    parser.parse(plan_file)
-
-    # 6. Run main visual simulation
-    main(parser.agents, inventory_dict, "PolyCraft", t_value)
 
 def read_flags_file(flags_path):
     """
@@ -190,46 +64,36 @@ def extract_t_value(flags_path, default_t=1.0):
         return float(match.group(1))  # Extract and return as float
     return default_t  # Return default if not found
 
-def run(selected_domain, domain_path, problem_path, parse=False, plan_file="", flags_path=""):
+
+def run(selected_domain, domain_path, problem_path, solve=False, plan_file="", flags_path=""):
     """Run the selected domain simulation."""
     # if no flags, set default flags
     if len(flags_path) == 0:
         flags = "-t:1 -pt"
     else: # if flags file is valid, read flags
         flags = read_flags_file(flags_path)
-    t_value = extract_t_value(flags_path) # get t value from flags
-    # if sa domain of sleeping beauty, run it
-    if selected_domain == "Sleeping Beauty":
-        if parse: # if no plan file, run and get plan
-            plan_file = run_nyx(domain_path, problem_path, flags)
-        # run domain problem and plan in simulator
-        GenericSimulator(selected_domain, problem_path, plan_file).simulate()
-    elif selected_domain == "Other": # if other domain, it's not supported in visualization
-        return "Not supported yet - you can complete this section"
-    else:
-        # if domain is MA, needs to convert to SA
-        # get output directory if runs with conversion to SA
-        output_dir = ensure_directory_exists(get_absolute_path("MA_PDDL", f"outputs/{selected_domain}"))
-        if selected_domain == "Blocks":
-            # if blocks, send to processing
-            process_blocks_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
-        elif selected_domain == "Car":
-            process_car_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
-        elif selected_domain == "PolyCraft":
-            process_minecraft_domain(domain_path, problem_path, output_dir, parse, plan_file, flags, t_value)
-        else:
-             return "Not supported - please add your custom domain"
+    if solve: # if no plan file, run and get plan
+        plan_file = run_nyx(domain_path, problem_path, flags)
+    t_value = extract_t_value(flags_path)  # get t value from flags
+    # parse init of problem
+    init_parser = InitParser(problem_path)
+    init_parser.parse_problem()
+    # parse solution
+    sol_parser = SolutionParser(init_parser.agents, domain_path, plan_file)
+    sol_parser.parse()
+    main(selected_domain, init_parser.agents, init_parser.objects, init_parser.init_state, sol_parser.agents_actions, t_value)
 
 
-def main(agents, init_obj, domain, t_value):
+def main(selected_domain, agents_by_type, objects_by_type, init_state, solution, t_value):
     """
     Initializes and runs the visualization and simulation for the given domain.
 
     Args:
-        agents (dict): A dictionary of agents (blocks or cars).
-        init_obj (dict): The parsed initial state of objects.
-        domain (str): The domain type ("Blocks" or "Car").
-        t_value (int): the interval for simulation
+        agents_by_type (dict): A dictionary of types of agents, and the agents' names. e.g. {'agent': ['a1']}
+        init_obj (dict): A dictionary of types of objects, and the objects' names. e.g. {'block': ['a', 'c', 'b']}
+        init_state (dict): A dictionary of agents/objects and their initial state. e.g. {'a1': {'handempty': True}, 'a2': {'handempty': True}, 'c': {'clear': True, 'on': 'b'}, 'a': {'clear': True, 'ontable': True}, 'b': {'ontable': True}}
+        solution (dict): A dict containing agent names and their actions. e.g. { 'a1': [('pick-up', 'b'), (), ('stack', 'b', 'a')]}
+        t_value(float): integer representing pace of simulation.
     """
     # Initialize Pygame
     pygame.init()
@@ -238,22 +102,16 @@ def main(agents, init_obj, domain, t_value):
     window_width = int((5 / 4) * window_height)
     screen = pygame.display.set_mode((window_width, window_height))
 
-    pygame.display.set_caption(f"{domain} Simulator")  # Dynamic title
+    pygame.display.set_caption(f"{selected_domain} Simulator")  # Dynamic title
 
-    if domain == "Blocks":
-        # Create Blocks visualization and simulator
-        sim_window = BlocksWindow(screen, agents, init_obj)
-        simulator = BlocksSimulator(sim_window, t_value)
+    if selected_domain == "Blocks":
+        simulator = BlocksSimulator(screen, agents_by_type, init_state, solution, t_value)
 
-    elif domain == "Car":
-        # Create Car visualization and simulator
-        sim_window = CarWindow(screen, agents, init_obj)  # CarWindow doesn't need init_obj
-        simulator = CarSimulator(sim_window, t_value)
+    elif selected_domain == "Car":
+        simulator = CarSimulator(screen, init_state, solution, t_value)
 
-    elif domain == "PolyCraft":
-        # Create PolyCraft visualization and simulator
-        sim_window = MinecraftWindow(screen, init_obj, agents)
-        simulator = MinecraftSimulator(sim_window, t_value)
+    elif selected_domain == "PolyCraft":
+        simulator = MinecraftSimulator(screen, agents_by_type, objects_by_type, init_state, solution, t_value)
 
     else:
         print("Unsupported domain. Exiting...")
@@ -267,10 +125,9 @@ def main(agents, init_obj, domain, t_value):
     time.sleep(5)
     pygame.quit()
 
-# if __name__ == "__main__":
-#     from InitParser import InitState
-#     from BlocksWindow import Agent, main
-#     domain = r"../MA_PDDL/examples/Blocks/domain-a2.pddl"
-#     problem = r"../MA_PDDL/examples/Blocks/problem-a2.pddl"
-#     plan_file = r'../MA_PDDL/outputs/plans/plan1_problem.pddl'
-#     run(domain, problem, False, plan_file)
+if __name__ == "__main__":
+    domain = r"../MA_PDDL/examples/Car/2cars/domain.pddl"
+    problem = r"../MA_PDDL/examples/Car/3 cars/problem_3.pddl"
+    plan_file = r'../MA_PDDL/examples/Car/3 cars/plan.pddl'
+    flags = r"../MA_PDDL/examples/Car/3 cars/config.txt"
+    run("Car", domain, problem, False, plan_file, flags)

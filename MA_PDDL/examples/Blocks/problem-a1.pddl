@@ -10,7 +10,6 @@
 )
 (:init
 	(handempty a1)
-	(handempty a2)
 	(clear c)
 	(clear a)
 	(ontable a)

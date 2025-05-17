@@ -2,17 +2,17 @@ import random
 import os
 import pygame
 import time
-from VIS.MA_VIS.Agent import Agent
+from VIS.Agent import Agent
 
 
 class BlocksWindow:
-    def __init__(self, screen, agents, blocks):
+    def __init__(self, screen, agents_by_type, init_state, solution):
         self.screen = screen
         # initialize empty dictionaries
         self.agents = {}
         self.blocks = {}
         # initialize blocks and agents
-        self.initializeVisObjects(agents, blocks)
+        self.initializeVisObjects(agents_by_type, init_state, solution)
         # set blocks size
         self.block_size = 50
         self.agent_size = 40
@@ -41,7 +41,7 @@ class BlocksWindow:
     def get_x(self):
         return self.block_x
 
-    def initializeVisObjects(self, agents, init_obj, dis=150):
+    def initializeVisObjects(self, agents_by_type, init_state, solution, dis=150):
         screen_width, screen_height = self.screen.get_size()
         # Define base positions relative to screen size
         self.block_x = int(screen_width * 0.3)
@@ -54,9 +54,9 @@ class BlocksWindow:
             if obj in visited:
                 return positions[obj]  # Already done
 
-            properties = init_obj[obj]
+            properties = init_state[obj]
 
-            if properties.get('on_table', False):
+            if properties.get('ontable', False):
                 # Object is on the table
                 self.increment_x()
                 positions[obj] = {'x': self.get_x(), 'y': block_y}
@@ -69,29 +69,33 @@ class BlocksWindow:
             visited.add(obj)
             return positions[obj]
 
-        for obj in init_obj.keys():
-            if obj not in agents:
-                if init_obj[obj].get('on_table', False):
+        for obj in init_state.keys():
+            if obj not in agents_by_type['agent']:
+                if init_state[obj].get('ontable', False):
                     self.increment_x()  # Increment base_x for each new table object
                 calculateBlockPosition(obj)
 
         # set blocks properties in blocks dictionary
         for block, pos in positions.items():
-            self.blocks[block] = Block(block, pos['x'], pos['y'], init_obj[block]['clear'], init_obj[block]['on_table'], init_obj[block]['in_hand'])
+            clear = init_state.get(block, {}).get('clear', False)
+            ontable = init_state.get(block, {}).get('ontable', False)
+            inhand = 'on' not in init_state.get(block, {}) and 'ontable' not in init_state.get(block, {})
+            self.blocks[block] = Block(block, pos['x'], pos['y'], clear, ontable, inhand)
         agent_x = int(screen_width * 0.05)
         agent_y = int(screen_height * 0.1)
-        for agent_name, agent_obj in agents.items():
-            # check if agent holding object, if so - put it
-            if init_obj[agent_name]['is_empty'] == True:
-                holding = None
-            else:
-                block_name = init_obj[agent_name]['holding']
-                holding = self.blocks[block_name]
-            # create vis agent
-            new_agent = BlockAgent(agent_name, agent_obj.actions, agent_x, agent_y, holding)
-            self.agents[agent_name] = new_agent
-            # increase x index by dis
-            agent_x+=dis
+        for agent_name, agent_prop in init_state.items():
+            if agent_name in agents_by_type['agent']:
+                # check if agent holding object, if so - put it
+                if init_state[agent_name]['handempty'] == True:
+                    holding = None
+                else:
+                    block_name = init_state[agent_name]['holding']
+                    holding = self.blocks[block_name]
+                # create vis agent
+                new_agent = BlockAgent(agent_name, solution[agent_name], agent_x, agent_y, holding)
+                self.agents[agent_name] = new_agent
+                # increase x index by dis
+                agent_x+=dis
 
     def draw(self):
         # Clear the screen
@@ -145,6 +149,9 @@ class BlockAgent(Agent):
         self.holding = holding
 
     def execute(self, action, blocks, screen):
+        # if no action, continue
+        if len(action) == 0:
+            return
         # Get screen dimensions
         screen_width, screen_height = screen.get_size()
 
@@ -203,8 +210,8 @@ class BlockAgent(Agent):
 
 
 class BlocksSimulator:
-    def __init__(self, window, t_value=1):
-        self.window = window
+    def __init__(self, screen, agents_by_type, init_state, solution, t_value):
+        self.window = BlocksWindow(screen, agents_by_type, init_state, solution)
         self.t = t_value
 
     def run(self):

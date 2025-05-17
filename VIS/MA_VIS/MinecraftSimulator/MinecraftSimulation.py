@@ -2,7 +2,7 @@ import pygame
 import time
 import os
 import random
-from VIS.MA_VIS.Agent import Agent
+from VIS.Agent import Agent
 
 class MinecraftWindow:
     def __init__(self, screen,init_obj, agent_data):
@@ -233,7 +233,7 @@ class MinecraftAgent(Agent):
 
 
 class MinecraftSimulator:
-    def __init__(self, window, t_value=1):
+    def __init__(self, screen, agents_by_type, objects_by_type, init_state, solution, t_value=1):
         self.window = window                         # The visualization window
         self.agents = {}           # Correct: dict of agent_name -> MinecraftAgent instances
         for agent_name, agent in window.agents_actions.items():

@@ -128,8 +128,8 @@ class InitParser:
 
 
 # if __name__ == "__main__":
-#     # parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Blocks\problem-a1.pddl")
-#     parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Car\problem.pddl")
+#     parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Blocks\problem-a1.pddl")
+#     #parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Car\problem.pddl")
 #     parser.parse_problem()
 #     print(parser.init_state)
 #     print(parser.objects)
