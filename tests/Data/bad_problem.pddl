@@ -1,3 +1,6 @@
+; ❌ Invalid PDDL file – missing closing parentheses
+; Missing ')' after :objects and at end of file
+
 (define (problem blocks-test) (:domain blocks)
 (:objects
     a - block

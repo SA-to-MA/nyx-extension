@@ -10,7 +10,7 @@ from VIS.Search_VIS import ChunkedTreeViewer
 from stats.StatsViewer import run_stats
 
 
-SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Other"]
+SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft","blocks", "car", "sleeping beauty", "polyCraft", "Other"]
 
 
 def is_valid_pddl_file(filepath, file_type):
@@ -19,7 +19,7 @@ def is_valid_pddl_file(filepath, file_type):
     """
     try:
         with open(filepath, 'r') as f:
-            content = f.read().lower()
+            content = f.read()
             return f"(define ({file_type}" in content
     except Exception as e:
         print(f"Failed to read file: {filepath}. Error: {e}")
@@ -191,7 +191,7 @@ class ModernApp(TkinterDnD.Tk):
         # Internal handler for dropped files
         def on_drop(event):
             file_path = event.data.strip("{}")  # Remove braces that Windows adds to file paths with spaces
-            file_type = label_text.split()[0].lower()
+            file_type = label_text.split()[0]
 
             # Update the correct internal variable and file label
             if file_type == "domain":
@@ -326,7 +326,7 @@ class ModernApp(TkinterDnD.Tk):
         """Extracts the domain name from a PDDL file."""
         try:
             with open(filepath, "r") as f:
-                content = f.read().lower() # Read the file content and convert to lowercase
+                content = f.read() # Read the file content and convert to lowercase
 
             # remove all comments (starting with ;)
             content = re.sub(r";.*", "", content)
@@ -341,7 +341,7 @@ class ModernApp(TkinterDnD.Tk):
         """Extracts the referenced domain name from a PDDL problem file."""
         try:
             with open(filepath, "r") as f:
-                content = f.read().lower()
+                content = f.read()
             content = re.sub(r";.*", "", content)  # Remove comments
             match = re.search(r"\(:domain\s+([^\s\)]+)", content) # Regex to find the domain name in the problem file. look for (:domain <name>)
             if match:
@@ -351,39 +351,42 @@ class ModernApp(TkinterDnD.Tk):
         return None
 
     def validate_input_files(self, next_page):
+        domain_name = self.extract_domain_name(self.domain_file)
+        problem_domain = self.extract_problem_domain(self.problem_file)
+
         """Validate input files"""
         if not self.domain_file or not self.problem_file:
             messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
             return
 
         # Validate domain file content
-        if not is_valid_pddl_file(self.domain_file, "domain"):
+        elif not is_valid_pddl_file(self.domain_file, "domain"):
             messagebox.showerror("Invalid Domain File",
-                                 "The selected domain file is not valid or missing (define (domain ...) definition.")
+                                 "The selected domain file is not valid or missing definition.")
             return
 
-        if not is_valid_pddl_file(self.problem_file, "problem"):
+        elif not is_valid_pddl_file(self.problem_file, "problem"):
             messagebox.showerror("Invalid Problem File",
-                                 "The selected problem file is not valid or missing (define (problem ...) definition.")
+                                 "The selected problem file is not valid or missing definition.")
             return
 
-        if self.plan_file:  # If a plan file is already selected, skip planning
+        elif self.plan_file:  # If a plan file is already selected, skip planning
             print("Using existing plan file:", self.plan_file)
             self.switch_page(next_page)
             return
 
-        domain_name = self.extract_domain_name(self.domain_file)
-        problem_domain = self.extract_problem_domain(self.problem_file)
+        # check if the domain name is a known domain
+        elif domain_name not in SUPPORTED_DOMAINS:
+            messagebox.showerror("Unknown Domain",
+                                 f"The selected domain '{domain_name}' is not supported. Please select a known domain.")
+            return
 
-
-        if domain_name.lower() != self.selected_domain.get().lower():
+        elif domain_name.lower() != self.selected_domain.get().lower():
             messagebox.showerror("Domain Mismatch",
                                  f"The selected domain '{self.selected_domain.get()}' does not match the domain file '{domain_name}'. Please select matching files.")
             return
 
-
-
-        if domain_name.lower() != problem_domain.lower():
+        elif domain_name.lower() != problem_domain.lower():
             messagebox.showerror("Domain Mismatch",
                                  f"The problem file is for domain '{problem_domain}', but the domain file is '{domain_name}'. Please select matching files.")
             return
@@ -503,6 +506,7 @@ class ModernApp(TkinterDnD.Tk):
             solution_text.insert("1.0", solution)
             solution_text.config(state="disabled")  # Make read-only
             solution_text.pack(fill="both", expand=True)
+
 
             scrollbar.config(command=solution_text.yview)
 
