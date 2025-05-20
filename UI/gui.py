@@ -1,13 +1,16 @@
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+from tkinterdnd2 import DND_FILES, TkinterDnD
+import re
 from PIL import Image, ImageTk
 from MA_PDDL import MAtoSA
 from VIS.VisController import main, run
 from VIS.Search_VIS import ChunkedTreeViewer
 from stats.StatsViewer import run_stats
 
-SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Other"]
+
+SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft","blocks", "car", "sleeping beauty", "polyCraft", "Other"]
 
 
 def is_valid_pddl_file(filepath, file_type):
@@ -16,14 +19,14 @@ def is_valid_pddl_file(filepath, file_type):
     """
     try:
         with open(filepath, 'r') as f:
-            content = f.read().lower()
+            content = f.read()
             return f"(define ({file_type}" in content
     except Exception as e:
         print(f"Failed to read file: {filepath}. Error: {e}")
         return False
 
 
-class ModernApp(tk.Tk):
+class ModernApp(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
         self.configure(bg="#1E1E1E")  # Set background color
@@ -80,7 +83,6 @@ class ModernApp(tk.Tk):
         }
 
         self.current_frame = None
-        self.switch_page("Home")
         self.problem_file = ""
         self.domain_file = ""
         self.plan_file = ""
@@ -92,6 +94,7 @@ class ModernApp(tk.Tk):
         self.problem_label_var = tk.StringVar(value="No file selected")
         self.plan_label_var = tk.StringVar(value="No file selected")
         self.config_label_var = tk.StringVar(value="No file selected")
+        self.switch_page("Home")
 
     def on_closing(self):
         """Handle the window close event."""
@@ -101,6 +104,68 @@ class ModernApp(tk.Tk):
             print("Failed to delete chunks:", e)
 
         self.destroy()
+
+    '''
+    def create_drag_file_input(self, label_text, y_position, variable):
+        """
+        Create a single smart input field that supports both click and drag-and-drop to select files.
+        """
+        print("Creating drag file input for:", label_text)
+
+        file_type = label_text.split()[0].lower()  # domain / problem / configuration / plan
+
+        # Label on the left (e.g. "Domain Input")
+        title = ttk.Label(self.current_frame, text=label_text, style="Custom.TLabel")
+        title.place(relx=0.15, rely=y_position, anchor="center")
+
+        # One unified label that is clickable and droppable
+        drop_click_label = tk.Label(self.current_frame,
+                                    text=f"Click or drag {file_type} file here",
+                                    fg="white", bg="#2E2E2E", font=("Roboto", 11),
+                                    relief="ridge", bd=4, width=30, height=3, cursor="hand2")
+        drop_click_label.place(relx=0.5, rely=y_position, anchor="center")
+        success = drop_click_label.drop_target_register(DND_FILES)
+        print("Drop target registered:", success)
+
+        # Handler for file click
+        def on_click(event):
+            filetypes = {
+                "domain": [("PDDL Files", "*.pddl"), ("All Files", "*.*")],
+                "problem": [("PDDL Files", "*.pddl"), ("All Files", "*.*")],
+                "plan": [("PDDL Files", "*.pddl"), ("All Files", "*.*")],
+                "configuration": [("TXT Files", "*.txt"), ("All Files", "*.*")]
+            }
+            selected = filedialog.askopenfilename(title=f"Select {file_type} file",
+                                                  filetypes=filetypes.get(file_type, [("All Files", "*.*")]))
+            if selected:
+                update_file(selected)
+
+        # Handler for file drag
+        def on_drop(event):
+            print("DROP EVENT:", event.data)
+
+            file_path = event.data.strip("{}")
+            update_file(file_path)
+
+        # Set file and update display
+        def update_file(file_path):
+            if file_type == "domain":
+                self.domain_file = file_path
+            elif file_type == "problem":
+                self.problem_file = file_path
+            elif file_type == "plan":
+                self.plan_file = file_path
+            elif file_type == "configuration":
+                self.config_file = file_path
+
+            variable.set(f"Selected: {os.path.basename(file_path)}")
+            drop_click_label.config(text=variable.get())  # update text
+
+        # Bind both click and drag events
+        drop_click_label.bind("<Button-1>", on_click)
+        drop_click_label.drop_target_register(DND_FILES)
+        drop_click_label.dnd_bind("<<Drop>>", on_drop)
+'''
 
     def create_file_input(self, label_text, y_position, button_command, variable):
         """Create a labeled file input field with a selection button and a file name preview."""
@@ -116,6 +181,34 @@ class ModernApp(tk.Tk):
         # Label to display the selected file name
         file_label = ttk.Label(self.current_frame, textvariable=variable, style="TLabel")
         file_label.place(relx=0.5, rely=y_position + 0.05, anchor="center")
+
+        # Additional label that accepts drag & drop of files
+        drop_label = tk.Label(self.current_frame, text="← or drag here", fg="white", bg="#2E2E2E",
+                              font=("Roboto", 10), relief="ridge", width=18, height=2)
+
+        drop_label.place(relx=0.79, rely=y_position, anchor="center")
+
+        # Internal handler for dropped files
+        def on_drop(event):
+            file_path = event.data.strip("{}")  # Remove braces that Windows adds to file paths with spaces
+            file_type = label_text.split()[0]
+
+            # Update the correct internal variable and file label
+            if file_type == "domain":
+                self.domain_file = file_path
+            elif file_type == "problem":
+                self.problem_file = file_path
+            elif file_type == "plan":
+                self.plan_file = file_path
+            elif file_type == "configuration":
+                self.config_file = file_path
+
+            variable.set(f"Selected: {os.path.basename(file_path)}")
+
+        # Register and bind the drop area
+        drop_label.drop_target_register(DND_FILES)
+        drop_label.dnd_bind("<<Drop>>", on_drop)
+
 
     def create_dropdown_input(self, label_text, y_position, options, variable):
         """Create a dropdown input field that matches the file input fields in position and width."""
@@ -162,11 +255,11 @@ class ModernApp(tk.Tk):
         back_label.place(relx=0.02, rely=0.02, anchor="nw")  # Position in the top-left corner
         back_label.bind("<Button-1>", lambda e: self.switch_page(target_page))  # Bind left-click to switch page
 
+
     def switch_page(self, page_name):
         """Switch to a different page by destroying the current frame and creating a new one."""
         if self.current_frame is not None:
             self.current_frame.destroy()
-
         self.current_frame = tk.Frame(self, bg="#1E1E1E")  # Create a new frame
         self.current_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
 
@@ -229,32 +322,80 @@ class ModernApp(tk.Tk):
             file_name = os.path.basename(file_path)  # Extract file name only
             self.config_label_var.set(f"Selected: {file_name}")  # Update label
 
+    def extract_domain_name(self, filepath):
+        """Extracts the domain name from a PDDL file."""
+        try:
+            with open(filepath, "r") as f:
+                content = f.read() # Read the file content and convert to lowercase
+
+            # remove all comments (starting with ;)
+            content = re.sub(r";.*", "", content)
+            match = re.search(r"\(define\s*\(domain\s+([^\s\)]+)", content)  # Regex to find the domain name. look for (define (domain <name>)
+            if match:
+                return match.group(1)  # Return the domain name
+        except Exception as e:
+            print(f"Error reading domain name from {filepath}: {e}")
+        return None
+
+    def extract_problem_domain(self, filepath):
+        """Extracts the referenced domain name from a PDDL problem file."""
+        try:
+            with open(filepath, "r") as f:
+                content = f.read()
+            content = re.sub(r";.*", "", content)  # Remove comments
+            match = re.search(r"\(:domain\s+([^\s\)]+)", content) # Regex to find the domain name in the problem file. look for (:domain <name>)
+            if match:
+                return match.group(1)
+        except Exception as e:
+            print(f"Error reading problem domain from {filepath}: {e}")
+        return None
+
     def validate_input_files(self, next_page):
+        domain_name = self.extract_domain_name(self.domain_file)
+        problem_domain = self.extract_problem_domain(self.problem_file)
+
         """Validate input files"""
         if not self.domain_file or not self.problem_file:
             messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
             return
 
         # Validate domain file content
-        if not is_valid_pddl_file(self.domain_file, "domain"):
+        elif not is_valid_pddl_file(self.domain_file, "domain"):
             messagebox.showerror("Invalid Domain File",
-                                 "The selected domain file is not valid or missing (define (domain ...) definition.")
+                                 "The selected domain file is not valid or missing definition.")
             return
 
-        if not is_valid_pddl_file(self.problem_file, "problem"):
+        elif not is_valid_pddl_file(self.problem_file, "problem"):
             messagebox.showerror("Invalid Problem File",
-                                 "The selected problem file is not valid or missing (define (problem ...) definition.")
+                                 "The selected problem file is not valid or missing definition.")
             return
 
-        if self.plan_file:  # If a plan file is already selected, skip planning
+        elif self.plan_file:  # If a plan file is already selected, skip planning
             print("Using existing plan file:", self.plan_file)
             self.switch_page(next_page)
+            return
+
+        # check if the domain name is a known domain
+        elif domain_name not in SUPPORTED_DOMAINS:
+            messagebox.showerror("Unknown Domain",
+                                 f"The selected domain '{domain_name}' is not supported. Please select a known domain.")
+            return
+
+        elif domain_name.lower() != self.selected_domain.get().lower():
+            messagebox.showerror("Domain Mismatch",
+                                 f"The selected domain '{self.selected_domain.get()}' does not match the domain file '{domain_name}'. Please select matching files.")
+            return
+
+        elif domain_name.lower() != problem_domain.lower():
+            messagebox.showerror("Domain Mismatch",
+                                 f"The problem file is for domain '{problem_domain}', but the domain file is '{domain_name}'. Please select matching files.")
             return
 
         print("DOMAIN FILE:", self.domain_file)
         print("PROBLEM FILE:", self.problem_file)
         print("CONFIG FILE:", self.config_file)
         print("SELECTED DOMAIN:", self.selected_domain.get())
+
 
         try:
             self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(),
@@ -274,6 +415,19 @@ class ModernApp(tk.Tk):
 
     def create_home_page(self):
         """Create the Home page with project introduction and main navigation buttons."""
+        self.plan_file = ""
+        self.controller = None
+        self.domain_file = ""
+        self.problem_file = ""
+        self.config_file = ""
+        self.domain_label_var.set("No file selected")
+        self.problem_label_var.set("No file selected")
+        self.plan_label_var.set("No file selected")
+        self.config_label_var.set("No file selected")
+        #ChunkedTreeViewer.delete_all_chunks()
+        self.selected_domain.set("")  # Reset the selected domain
+        print("cleared plan, files and controller. Ready for new planning!\n")
+
         self.create_page_title_and_background("MA-PlanX")  # Set page title and background
 
         subtitle = ttk.Label(
@@ -302,10 +456,13 @@ class ModernApp(tk.Tk):
         self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
 
         # Create input fields
+        #self.create_drag_file_input("Domain Input:", 0.37, self.domain_label_var)
+        #self.create_drag_file_input("Problem Input:", 0.49, self.problem_label_var)
+        #self.create_drag_file_input("Configuration (optional):", 0.61, self.config_label_var)
+
         self.create_file_input("Domain Input:", 0.37, self.select_domain_file, self.domain_label_var)
         self.create_file_input("Problem Input:", 0.49, self.select_problem_file, self.problem_label_var)
         self.create_file_input("Configuration (optional):", 0.61, self.select_config_file, self.config_label_var)
-
         self.create_button_with_icon(text="Plan", y_position=0.85, command=lambda: self.validate_input_files("PlanResults"),
                                      icon=self.plan_icon, relx=0.50)
 
@@ -349,6 +506,7 @@ class ModernApp(tk.Tk):
             solution_text.insert("1.0", solution)
             solution_text.config(state="disabled")  # Make read-only
             solution_text.pack(fill="both", expand=True)
+
 
             scrollbar.config(command=solution_text.yview)
 
@@ -413,5 +571,4 @@ class ModernApp(tk.Tk):
 if __name__ == "__main__":
     app = ModernApp()
     app.mainloop()
-
 
