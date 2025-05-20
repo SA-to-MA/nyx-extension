@@ -41,6 +41,8 @@ def parse_state(state_vars):
     return parsed_state
 
 def render_domain(node, surface, font, res_dir, width, height):
+    import ast
+
     state_vars = getattr(node.state, "state_vars", [])
     parsed_state = parse_state(state_vars)
 
@@ -52,23 +54,22 @@ def render_domain(node, surface, font, res_dir, width, height):
     hand_img = pygame.transform.scale(hand_img, (80, 80))
 
     block_positions = {}
+    drawn_blocks = set()
     x_pos = 40
     y_pos = height - 120
 
+    # Step 1: Place blocks on table
     for block in parsed_state.get("ontable", []):
         block_positions[block] = (x_pos, y_pos)
         x_pos += 60
 
+    # Step 2: Place blocks on top of other blocks
     for top, bottom in parsed_state.get("on", {}).items():
         if bottom in block_positions:
-            block_positions[top] = (block_positions[bottom][0], block_positions[bottom][1] - 40)
+            bx, by = block_positions[bottom]
+            block_positions[top] = (bx, by - 40)
 
-    for block, (x, y) in block_positions.items():
-        pygame.draw.rect(surface, random_color(), (x, y, 40, 40))
-        text_surface = font.render(block, True, (255, 255, 255))
-        surface.blit(text_surface, (x + 10, y + 10))
-
-    # Agent hands logic
+    # Step 3: Agent hands
     agents = []
     for agent, held_block in parsed_state.get("holding", {}).items():
         held_block = held_block.strip() if held_block != "False" else None
@@ -77,6 +78,14 @@ def render_domain(node, surface, font, res_dir, width, height):
     for agent in parsed_state.get("handempty", []):
         agents.append((agent.strip(), None))
 
+    # Step 4: Draw blocks that were placed
+    for block, (x, y) in block_positions.items():
+        pygame.draw.rect(surface, random_color(), (x, y, 40, 40))
+        text_surface = font.render(block, True, (255, 255, 255))
+        surface.blit(text_surface, (x + 10, y + 10))
+        drawn_blocks.add(block)
+
+    # Step 5: Draw agent hands and held blocks
     hand_x = 200
     for agent, held_block in agents:
         hand_y = 50
@@ -84,9 +93,32 @@ def render_domain(node, surface, font, res_dir, width, height):
         text_surface = font.render(agent, True, (255, 255, 255))
         surface.blit(text_surface, (hand_x + 20, hand_y - 10))
 
-        if held_block:
+        if held_block and held_block not in drawn_blocks:
             pygame.draw.rect(surface, random_color(), (hand_x + 10, hand_y + 40, 40, 40))
             text_surface = font.render(held_block, True, (255, 255, 255))
             surface.blit(text_surface, (hand_x + 20, hand_y + 50))
+            drawn_blocks.add(held_block)
 
         hand_x += 100
+
+    # Step 6: Ensure missing blocks are drawn on the side (fallback)
+    all_blocks = set()
+    for key in state_vars:
+        try:
+            parsed = ast.literal_eval(key)
+            if isinstance(parsed, list):
+                for item in parsed[1:]:
+                    if isinstance(item, str) and len(item) == 1 and item.isalpha():
+                        all_blocks.add(item)
+        except:
+            continue
+
+    all_blocks.update(parsed_state.get("holding", {}).values())
+
+    for block in all_blocks:
+        if block not in drawn_blocks:
+            block_positions[block] = (x_pos, y_pos)
+            pygame.draw.rect(surface, random_color(), (x_pos, y_pos, 40, 40))
+            text_surface = font.render(block, True, (255, 255, 255))
+            surface.blit(text_surface, (x_pos + 10, y_pos + 10))
+            x_pos += 60

@@ -268,7 +268,9 @@ class ModernApp(TkinterDnD.Tk):
 
     def create_page_title_and_background(self, title_text, y_position=0.10):
         """Create a standardized background,  and title for all pages."""
-        bg_image = tk.PhotoImage(file="img/background.png")  # Load the background image
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(script_dir, "img", "background.png")
+        bg_image = tk.PhotoImage(file=image_path)
         bg_label = tk.Label(self.current_frame, image=bg_image)
         bg_label.image = bg_image  # Keep a reference to prevent garbage collection
         bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Fill the entire window
@@ -480,8 +482,13 @@ class ModernApp(TkinterDnD.Tk):
         # Add a button to show the solution
         self.create_button_with_icon(text="Show Solution", y_position=0.61, command=lambda: self.show_solution(),
                                      icon=self.solve_icon)
+
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.abspath(os.path.join(base_dir, os.pardir))
+        log_path = os.path.join(project_root, "stats", "logs")
+
         self.create_button_with_icon(text="Show Statistics", y_position=0.73,
-                                    command=lambda: run_stats(os.path.abspath("../stats/logs")),  icon=self.go_icon)
+                                    command=lambda: run_stats(os.path.abspath(log_path)),  icon=self.go_icon)
         self.add_back_button("Solve")
         self.create_button_with_icon(text="Home", y_position=0.85, command=lambda: self.switch_page("Home"),
                                      icon=self.home_icon)
