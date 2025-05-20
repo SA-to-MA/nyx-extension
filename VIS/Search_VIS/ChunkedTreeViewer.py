@@ -68,19 +68,32 @@ def delete_all_chunks():
 
 # --- Node Handling ---
 def compute_node_positions(nodes):
-    ### TODO: MAKE ROOT INDEX START AT 1 AND FIX REST OF INDICES
     levels = {}
     node_positions = {}
+
+    # Sort potential root nodes by current index (if any) to pick the lowest
+    root_nodes = sorted(
+        [node for node in nodes if getattr(node.state, "depth", 0) == 0],
+        key=lambda n: getattr(n, "index", float("inf"))
+    )
+
+    # Assign index 1 to the root node if it doesn't have one
+    if root_nodes:
+        root = root_nodes[0]
+        if not hasattr(root, "index"):
+            root.index = index_counter[0]
+            index_counter[0] += 1
+
+    # Assign levels and missing indices
     for node in nodes:
         if not hasattr(node, "index"):
             node.index = index_counter[0]
             index_counter[0] += 1
-        depth = node.state.depth if hasattr(node.state, "depth") else 0
-        if depth not in levels:
-            levels[depth] = []
-        levels[depth].append(node)
+        depth = getattr(node.state, "depth", 0)
+        levels.setdefault(depth, []).append(node)
 
-    max_depth = max(levels.keys()) if levels else 1
+    # Calculate spacing
+    max_depth = max(levels.keys(), default=1)
     y_spacing = HEIGHT // (max_depth + 2)
 
     for depth, level_nodes in levels.items():
@@ -89,6 +102,7 @@ def compute_node_positions(nodes):
             x = (i + 1) * x_spacing
             y = (depth + 1) * y_spacing
             node_positions[node] = (x, y, node.index)
+
     return node_positions
 
 def draw_tree(screen, nodes, selected_node, node_positions):
@@ -134,12 +148,28 @@ def get_visible_nodes(root_node, expanded_nodes):
     dfs(root_node)
     return list(visible)
 
+# --- Loading ---
+def show_loading_screen(screen, message="Loading tree..."):
+    repo_root = get_repo_root()
+    bg_path = repo_root / "VIS" / "Search_VIS" / "resources" / "loading_bg.jpg"
+
+    background_image = pygame.image.load(bg_path).convert()
+    background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+
+    screen.blit(background_image, (0, 0))  # Draw background image
+    font = pygame.font.SysFont(None, 48)
+    text_surface = font.render(message, True, (255, 255, 255))  # Black text
+    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    screen.blit(text_surface, text_rect)
+    pygame.display.flip()
+
 # --- Main Function ---
 def main(domain_name):
     global DOMAIN
     DOMAIN = domain_name
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    show_loading_screen(screen)
     pygame.display.set_caption("Pygame Search Tree Viewer")
     clock = pygame.time.Clock()
 

@@ -51,8 +51,8 @@ def render_domain(node, surface, font, res_dir, width, height):
     # Load images
     road_img = pygame.image.load(os.path.join(res_dir, "road-2.jpg"))
     road_img = pygame.transform.scale(road_img, (width, height))
-    car_img = pygame.image.load(os.path.join(res_dir, "car.png"))
-    car_img = pygame.transform.scale(car_img, (150, 60))
+    car_img = pygame.image.load(os.path.join(res_dir, "car2.png"))
+    car_img = pygame.transform.scale(car_img, (120, 60))
 
     surface.blit(road_img, (0, 0))  # draw background
 
@@ -62,22 +62,35 @@ def render_domain(node, surface, font, res_dir, width, height):
 
     max_distance = 1000  # adjust based on your domain scale
 
+    # Determine dynamic spacing based on number of agents
+    num_agents = len(car_states)
+    car_height = 70
+    top_padding = 20
+    bottom_padding = 20
+    total_available_height = height - top_padding - bottom_padding
+
+    # Dynamic spacing: split full area evenly
+    lane_spacing = total_available_height // max(num_agents, 1)
+
+    # But ensure each lane has enough space for one car
+    if lane_spacing < car_height + 3:
+        lane_spacing = car_height + 3  # force enough space
+
     for i, (agent, state) in enumerate(car_states.items()):
         distance = state.get("distance", 0.0)
         x_pos = int((distance / max_distance) * (width - 200))
 
-        # Updated: align cars to road lanes at the bottom half
-        lane_y_start = height * 0.5  # start of road area
-        lane_spacing = 80  # vertical space between lanes
-        y_pos = int(lane_y_start + i * lane_spacing)
+        # Evenly space lanes from top down
+        y_pos = top_padding + i * lane_spacing
 
         surface.blit(car_img, (x_pos, y_pos))
 
-        # Draw agent name
+        # Agent label
         label = font.render(agent, True, (255, 255, 255))
-        surface.blit(label, (x_pos + 10, y_pos - 20))
+        surface.blit(label, (x_pos + 10, y_pos - 10))
 
-        # Draw status: velocity & acceleration
+        # Velocity/acceleration label
         status = f"v: {state['velocity']:.1f}, a: {state['acceleration']:.1f}"
         status_text = font.render(status, True, (255, 255, 0))
         surface.blit(status_text, (x_pos + 160, y_pos + 20))
+

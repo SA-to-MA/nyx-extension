@@ -1,0 +1,10 @@
+-search:gbfs -pt -custom_h:4 -dblh
+
+
+
+Time: 0.163
+		States Explored: 171
+		Goals Reached: 1
+		Best Plan Metric: 24.000
+
+		agent 1

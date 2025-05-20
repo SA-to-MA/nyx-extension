@@ -1,0 +1,17 @@
+# Domain file:,C:\Users\noamsh\PycharmProjects\nyx-extension\MA_PDDL\outputs\Car\domain.pddl
+# Problem file:,C:\Users\noamsh\PycharmProjects\nyx-extension\MA_PDDL\outputs\Car\problem.pddl
+# Constants.TIMEOUT,30.0
+# Constants.DELTA_T,10.0
+# Constants.TIME_HORIZON,3000
+# Constants.DEPTH_LIMIT,20.0
+# Constants.METRIC_MINIMIZE,True
+
+timestamp,nodes_expanded,max_depth,queue_size,min_metric,max_metric,tracked_goals
+0.05,3496,5,1039,inf,inf,0
+0.1,7314,5,2190,inf,inf,0
+0.15,10954,6,3281,inf,inf,0
+0.2,14711,6,4416,inf,inf,0
+0.25,15107,6,4523,inf,inf,0
+0.31,18824,6,5605,inf,inf,0
+0.36,22624,6,6685,inf,inf,0
+0.41,26406,6,7785,inf,inf,0

@@ -3,16 +3,26 @@
 (:types agent - object )
 (:predicates (agent_free ?agent - agent )(agent_get_log ?agent - agent )(agent_craft_plank ?agent - agent )(agent_craft_stick ?agent - agent )(agent_get_sack ?agent - agent )(agent_place_tree_tap ?agent - agent )(agent_craft_pogo_stick ?agent - agent )(dif_agent ?ob1 - agent ?ob2 - agent ))
 (:functions (trees_in_map )(count_log_in_inventory )(count_planks_in_inventory )(count_stick_in_inventory )(count_sack_polyisoprene_pellets_in_inventory )(count_tree_tap_in_inventory )(count_pogo_stick ))
-(:action craft_plank
+(:action return_sack
 :parameters (?a1 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
+(agent_get_sack ?a1 )
 )
 :effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
+(agent_free ?a1 )
+(not (agent_get_sack ?a1 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+(:action return_log
+:parameters (?a1 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
 )
 )
 (:action return_stick
@@ -24,6 +34,55 @@
 (agent_free ?a1 )
 (not (agent_craft_stick ?a1 ))
 (increase (count_stick_in_inventory )4 )
+)
+)
+(:action craft_tree_tap
+:parameters (?a1 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+)
+)
+(:action return_wooden_pogo
+:parameters (?a1 - agent)
+:precondition (and
+(agent_craft_pogo_stick ?a1 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_pogo_stick ?a1 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action place_tree_tap
+:parameters (?a1 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+)
+)
+(:action craft_plank
+:parameters (?a1 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
 )
 )
 (:action return_tree_tap
@@ -53,37 +112,16 @@
 (agent_craft_pogo_stick ?a1 )
 )
 )
-(:action return_wooden_pogo
+(:action get_log
 :parameters (?a1 - agent)
 :precondition (and
-(agent_craft_pogo_stick ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
 )
 :effect (and
-(agent_free ?a1 )
-(not (agent_craft_pogo_stick ?a1 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action return_sack
-:parameters (?a1 - agent)
-:precondition (and
-(agent_get_sack ?a1 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_sack ?a1 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action return_plank
-:parameters (?a1 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
 )
 )
 (:action craft_stick
@@ -98,206 +136,39 @@
 (agent_craft_stick ?a1 )
 )
 )
-(:action return_log
+(:action return_plank
 :parameters (?a1 - agent)
 :precondition (and
-(agent_get_log ?a1 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-)
-)
-(:action place_tree_tap
-:parameters (?a1 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-)
-)
-(:action get_log
-:parameters (?a1 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-)
-)
-(:action craft_tree_tap
-:parameters (?a1 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-)
-)
-
-(:action craft_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
 )
 )
-
-(:action get_log&return_tree_tap
+(:action get_log&return_plank
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_place_tree_tap ?a1 )
-(agent_craft_pogo_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_place_tree_tap ?a1 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_plank&craft_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-)
-)
-(:action craft_tree_tap&return_sack
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-(:action return_log&return_plank
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_get_log ?a1 )
 (agent_craft_plank ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
 (agent_free ?a2 )
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
 )
 )
-(:action get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_pogo_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action return_sack&return_tree_tap
+(:action return_sack&return_stick
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (agent_get_sack ?a1 )
-(agent_place_tree_tap ?a2 )
+(agent_craft_stick ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
@@ -305,8 +176,8 @@
 (not (agent_get_sack ?a1 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
 )
 )
 (:action place_tree_tap&return_tree_tap
@@ -328,12 +199,96 @@
 )
 
 
-(:action get_log&return_log
+
+(:action place_tree_tap&return_sack
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+(:action return_log&return_plank
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_craft_plank ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+)
+)
+(:action craft_plank&return_plank
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+)
+)
+
+(:action return_log&return_stick
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_craft_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_place_tree_tap ?a1 )
+(agent_craft_pogo_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_place_tree_tap ?a1 ))
+(increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_pogo_stick ?a2 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action get_log&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (agent_free ?a1 )
-(agent_get_log ?a2 )
+(agent_place_tree_tap ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
@@ -341,8 +296,42 @@
 (not (agent_free ?a1 ))
 (agent_get_log ?a1 )
 (agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action craft_stick&return_log
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
 (not (agent_get_log ?a2 ))
 (increase (count_log_in_inventory )1 )
+)
+)
+(:action return_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_craft_stick ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_stick ?a1 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
 )
 )
 (:action craft_plank&craft_wooden_pogo
@@ -367,6 +356,207 @@
 (agent_craft_pogo_stick ?a2 )
 )
 )
+
+(:action get_log&return_sack
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+(:action craft_wooden_pogo&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action return_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_plank&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action craft_tree_tap&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action craft_plank&return_sack
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+(:action return_plank&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_craft_plank ?a1 )
+(agent_craft_pogo_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_craft_pogo_stick ?a2 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action craft_tree_tap&return_sack
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+(:action craft_stick&return_stick
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action craft_stick&place_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+)
+)
+
+
+(:action place_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_pogo_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_pogo_stick ?a2 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
 (:action craft_wooden_pogo&get_log
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -389,6 +579,57 @@
 (agent_get_log ?a2 )
 )
 )
+(:action return_sack&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_get_sack ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_sack ?a1 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_plank&get_log
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+)
+)
+(:action craft_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
 (:action craft_tree_tap&get_log
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -409,169 +650,24 @@
 (agent_get_log ?a2 )
 )
 )
-(:action craft_stick&return_log
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-)
-)
-(:action return_log&return_stick
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
 
-(:action craft_plank&return_plank
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-)
-)
-(:action get_log&return_plank
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-)
-)
-
-
-(:action craft_wooden_pogo&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_get_sack ?a1 )
-(agent_craft_pogo_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_sack ?a1 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action place_tree_tap&return_wooden_pogo
+(:action place_tree_tap&return_log
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a1 )
-(agent_craft_pogo_stick ?a2 )
+(agent_get_log ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
 (not (agent_free ?a1 ))
 (agent_get_sack ?a1 )
 (agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
 )
 )
-(:action craft_plank&craft_stick
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-)
-)
-
-
 (:action return_plank&return_stick
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -588,29 +684,28 @@
 (increase (count_stick_in_inventory )4 )
 )
 )
-(:action craft_plank&return_stick
+(:action return_log&return_sack
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
+(agent_get_log ?a1 )
+(agent_get_sack ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 )
 )
-(:action get_log&return_stick
+(:action get_log&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (agent_free ?a1 )
-(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
@@ -618,42 +713,24 @@
 (not (agent_free ?a1 ))
 (agent_get_log ?a1 )
 (agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
+(not (agent_craft_pogo_stick ?a2 ))
+(increase (count_pogo_stick )1 )
 )
 )
-(:action place_tree_tap&return_plank
+(:action return_stick&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-)
-)
-(:action craft_stick&return_stick
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
 (agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
+(agent_craft_pogo_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_stick ?a1 ))
 (increase (count_stick_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_craft_pogo_stick ?a2 ))
+(increase (count_pogo_stick )1 )
 )
 )
 (:action craft_wooden_pogo&return_wooden_pogo
@@ -672,6 +749,23 @@
 (decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_pogo_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_pogo_stick ?a2 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action craft_plank&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_pogo_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
 (agent_free ?a2 )
 (not (agent_craft_pogo_stick ?a2 ))
 (increase (count_pogo_stick )1 )
@@ -696,63 +790,6 @@
 (increase (count_pogo_stick )1 )
 )
 )
-(:action craft_tree_tap&return_log
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-)
-)
-
-(:action return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_get_sack ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action craft_plank&place_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-)
-)
-
-
-
 (:action place_tree_tap&return_stick
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -770,57 +807,7 @@
 (increase (count_stick_in_inventory )4 )
 )
 )
-(:action craft_stick&place_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-)
-)
-(:action place_tree_tap&return_log
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-)
-)
-(:action return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_craft_stick ?a1 )
-(agent_craft_pogo_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_stick ?a1 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
-)
-)
+
 (:action craft_stick&get_log
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -839,89 +826,6 @@
 (agent_get_log ?a2 )
 )
 )
-(:action return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_get_sack ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_place_tree_tap ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_pogo_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_sack
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
 (:action craft_stick&return_sack
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -940,65 +844,51 @@
 )
 )
 
-(:action return_stick&return_tree_tap
+(:action get_log&return_stick
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(agent_craft_stick ?a1 )
-(agent_place_tree_tap ?a2 )
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
-(agent_free ?a1 )
-(not (agent_craft_stick ?a1 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_wooden_pogo&return_log
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(decrease (trees_in_map )1 )
 (not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
+(agent_get_log ?a1 )
 (agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
 )
 )
 
-(:action return_log&return_tree_tap
+
+(:action craft_plank&craft_tree_tap
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(agent_get_log ?a1 )
-(agent_place_tree_tap ?a2 )
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_place_tree_tap ?a2 )
 )
 )
-(:action return_sack&return_stick
+
+(:action return_sack&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (agent_get_sack ?a1 )
-(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
@@ -1006,77 +896,25 @@
 (not (agent_get_sack ?a1 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_craft_pogo_stick ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
 (not (agent_craft_pogo_stick ?a2 ))
 (increase (count_pogo_stick )1 )
 )
 )
-(:action craft_plank&return_wooden_pogo
+(:action craft_stick&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
+(>= (count_planks_in_inventory )2 )
 (agent_free ?a1 )
 (agent_craft_pogo_stick ?a2 )
 (dif_agent ?a1 ?a2 )
 )
 :effect (and
-(decrease (count_log_in_inventory )1 )
+(decrease (count_planks_in_inventory )2 )
 (not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
+(agent_craft_stick ?a1 )
 (agent_free ?a2 )
 (not (agent_craft_pogo_stick ?a2 ))
 (increase (count_pogo_stick )1 )
-)
-)
-
-(:action place_tree_tap&return_sack
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action craft_plank&get_log
-:parameters (?a1 - agent ?a2 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
 )
 )
 
@@ -1102,6 +940,42 @@
 (agent_get_sack ?a2 )
 )
 )
+(:action craft_plank&return_stick
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action craft_plank&place_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+)
+)
+
 (:action craft_tree_tap&place_tree_tap
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
@@ -1122,294 +996,100 @@
 (agent_get_sack ?a2 )
 )
 )
-(:action craft_stick&return_wooden_pogo
+(:action return_log&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
+(agent_get_log ?a1 )
 (agent_craft_pogo_stick ?a2 )
 (dif_agent ?a1 ?a2 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_pogo_stick ?a2 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_stick&return_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-(:action craft_stick&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_plank&craft_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action return_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
 (agent_free ?a1 )
 (not (agent_get_log ?a1 ))
 (increase (count_log_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
+(not (agent_craft_pogo_stick ?a2 ))
 (increase (count_pogo_stick )1 )
 )
 )
-(:action craft_plank&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+(:action place_tree_tap&return_plank
+:parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_plank&get_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
 (>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
+(>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a1 )
 (agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
 (dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
-(decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
+(agent_get_sack ?a1 )
 (agent_free ?a2 )
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
 )
 )
-(:action craft_plank&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+(:action get_log&return_log
+:parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
+(>= (trees_in_map )1 )
 (agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
+(agent_get_log ?a2 )
 (dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
-(decrease (count_log_in_inventory )1 )
+(decrease (trees_in_map )1 )
 (not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
+(agent_get_log ?a1 )
 (agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+)
+)
+(:action return_plank&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent)
+:precondition (and
+(agent_craft_plank ?a1 )
+(agent_place_tree_tap ?a2 )
+(dif_agent ?a1 ?a2 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
 )
 )
 
-(:action craft_plank&get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+(:action craft_plank&craft_stick
+:parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
-(>= (trees_in_map )1 )
+(>= (count_planks_in_inventory )2 )
 (agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
 (decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
+(decrease (count_planks_in_inventory )2 )
 (not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
+(agent_craft_stick ?a2 )
 )
 )
-(:action craft_tree_tap&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action craft_wooden_pogo&place_tree_tap&return_log
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+(:action craft_wooden_pogo&return_log
+:parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )2 )
 (>= (count_stick_in_inventory )4 )
 (>= (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
+(agent_get_log ?a2 )
 (dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
 (decrease (count_planks_in_inventory )2 )
@@ -1417,130 +1097,37 @@
 (decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_pogo_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
 (increase (count_log_in_inventory )1 )
 )
 )
-
-(:action craft_plank&craft_wooden_pogo&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+(:action return_plank&return_sack
+:parameters (?a1 - agent ?a2 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action get_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
 (agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
 (agent_free ?a2 )
 (not (agent_get_sack ?a2 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
 )
 )
 
 
-(:action return_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-(:action place_tree_tap&return_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-(:action craft_tree_tap&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+(:action craft_tree_tap&return_log
+:parameters (?a1 - agent ?a2 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )5 )
 (>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
 (agent_get_log ?a2 )
-(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
 )
 :effect (and
 (decrease (count_planks_in_inventory )5 )
@@ -1550,82 +1137,6 @@
 (agent_free ?a2 )
 (not (agent_get_log ?a2 ))
 (increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_stick&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-(:action return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_sack ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_sack ?a1 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_tree_tap&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
 )
 )
 (:action craft_stick&return_sack&return_tree_tap
@@ -1654,125 +1165,17 @@
 
 
 
-(:action get_log&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_plank&craft_tree_tap&get_log
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-)
-)
 
 
 
-
-
-
-(:action craft_plank&craft_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action return_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-(:action place_tree_tap&return_sack&return_tree_tap
+(:action place_tree_tap&return_plank&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
+(agent_craft_plank ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -1781,14 +1184,17 @@
 (not (agent_free ?a1 ))
 (agent_get_sack ?a1 )
 (agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
 )
 )
-(:action craft_stick&place_tree_tap&return_sack
+
+
+
+(:action craft_stick&place_tree_tap&return_log
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )2 )
@@ -1796,7 +1202,7 @@
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a2 )
-(agent_get_sack ?a3 )
+(agent_get_log ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -1808,17 +1214,17 @@
 (not (agent_free ?a2 ))
 (agent_get_sack ?a2 )
 (agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_get_log ?a3 ))
+(increase (count_log_in_inventory )1 )
 )
 )
-(:action get_log&return_stick&return_tree_tap
+(:action get_log&return_stick&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (agent_free ?a1 )
 (agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -1831,341 +1237,11 @@
 (not (agent_craft_stick ?a2 ))
 (increase (count_stick_in_inventory )4 )
 (agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_stick ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_stick ?a1 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
 (not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
 )
 )
-(:action craft_plank&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action get_log&return_log&return_plank
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-)
-)
-
-(:action get_log&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action return_log&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action return_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action place_tree_tap&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_stick&place_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_wooden_pogo&place_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-)
-)
-
-(:action get_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_wooden_pogo&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-(:action return_plank&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_stick&get_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-(:action craft_tree_tap&place_tree_tap&return_log
+(:action craft_tree_tap&place_tree_tap&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )5 )
@@ -2174,7 +1250,7 @@
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a2 )
-(agent_get_log ?a3 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -2187,46 +1263,19 @@
 (not (agent_free ?a2 ))
 (agent_get_sack ?a2 )
 (agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
 )
 )
-(:action craft_wooden_pogo&get_log&return_log
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-)
-)
-
-(:action craft_plank&return_sack&return_wooden_pogo
+(:action craft_plank&place_tree_tap&return_sack
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_get_sack ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -2235,207 +1284,13 @@
 (decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action place_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_stick&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
 (agent_free ?a3 )
 (not (agent_get_sack ?a3 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 )
 )
-(:action craft_stick&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-(:action place_tree_tap&return_log&return_plank
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-)
-)
-
-
-
-(:action craft_stick&get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action return_plank&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-(:action place_tree_tap&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
 
 
 (:action craft_stick&return_log&return_wooden_pogo
@@ -2465,15 +1320,39 @@
 
 
 
-(:action craft_plank&craft_tree_tap&return_sack
+
+
+(:action get_log&return_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action craft_plank&return_stick&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
+(agent_craft_stick ?a2 )
+(agent_place_tree_tap ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -2482,23 +1361,22 @@
 (decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
 (agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
 )
 )
 
 
-(:action return_log&return_plank&return_tree_tap
+(:action return_log&return_plank&return_stick
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_get_log ?a1 )
 (agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
+(agent_craft_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -2511,107 +1389,6 @@
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action place_tree_tap&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-(:action craft_plank&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-(:action craft_plank&craft_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action get_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
 (not (agent_craft_stick ?a3 ))
 (increase (count_stick_in_inventory )4 )
 )
@@ -2622,95 +1399,13 @@
 
 
 
-(:action place_tree_tap&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action craft_wooden_pogo&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action get_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&get_log
+(:action craft_plank&return_sack&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
+(agent_get_sack ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -2719,53 +1414,6 @@
 (decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-)
-)
-
-(:action return_plank&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-(:action return_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
 (agent_free ?a2 )
 (not (agent_get_sack ?a2 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
@@ -2775,127 +1423,6 @@
 )
 )
 
-(:action place_tree_tap&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action place_tree_tap&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_plank&craft_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-(:action return_plank&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_craft_stick ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_tree_tap&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
 (:action craft_wooden_pogo&get_log&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
@@ -2924,42 +1451,20 @@
 (increase (count_tree_tap_in_inventory )1 )
 )
 )
-(:action craft_wooden_pogo&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
 
 
-(:action craft_tree_tap&get_log&return_log
+
+
+
+
+(:action craft_tree_tap&place_tree_tap&return_log
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )5 )
 (>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
 (>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a2 )
 (agent_get_log ?a3 )
 (dif_agent ?a1 ?a2 )
@@ -2971,105 +1476,19 @@
 (decrease (count_stick_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
 (not (agent_free ?a2 ))
-(agent_get_log ?a2 )
+(agent_get_sack ?a2 )
 (agent_free ?a3 )
 (not (agent_get_log ?a3 ))
 (increase (count_log_in_inventory )1 )
 )
 )
-
-
-
-(:action craft_plank&place_tree_tap&return_stick
+(:action return_log&return_plank&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-(:action place_tree_tap&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
+(agent_get_log ?a1 )
 (agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-(:action get_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
 (agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action return_log&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -3082,37 +1501,61 @@
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
 )
 )
-
-
-(:action craft_tree_tap&return_log&return_tree_tap
+(:action craft_plank&craft_stick&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
+(>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
-(agent_get_log ?a2 )
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a2 ))
+(agent_craft_stick ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_plank&get_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
 (agent_place_tree_tap ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
 )
 :effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
+(decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
+(agent_craft_plank ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
 (agent_free ?a3 )
 (not (agent_place_tree_tap ?a3 ))
 (increase (count_tree_tap_in_inventory )1 )
 )
 )
+
+
 (:action craft_plank&craft_tree_tap&place_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
@@ -3141,823 +1584,6 @@
 )
 )
 
-
-
-(:action return_log&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action return_log&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_plank&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_plank&craft_stick&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action get_log&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-(:action craft_plank&craft_stick&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-(:action craft_tree_tap&place_tree_tap&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-(:action craft_stick&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-(:action craft_tree_tap&get_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action get_log&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_tree_tap&place_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_stick&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_wooden_pogo&get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&get_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-(:action craft_plank&place_tree_tap&return_plank
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-)
-)
-
-
-
-
-
-(:action place_tree_tap&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_stick&get_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_plank&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-(:action craft_wooden_pogo&place_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action return_plank&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_stick&place_tree_tap&return_log
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-)
-)
-
-(:action craft_plank&place_tree_tap&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-(:action place_tree_tap&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-(:action craft_plank&craft_wooden_pogo&get_log
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-)
-)
-(:action craft_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&get_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action craft_plank&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_place_tree_tap ?a2 )
-(agent_craft_pogo_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_place_tree_tap ?a2 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
-)
-)
 
 
 (:action craft_plank&craft_wooden_pogo&return_tree_tap
@@ -4012,6 +1638,405 @@
 (increase (count_stick_in_inventory )4 )
 )
 )
+(:action craft_stick&get_log&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+
+(:action place_tree_tap&return_sack&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+
+
+
+
+(:action craft_plank&craft_tree_tap&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_place_tree_tap ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_tree_tap&return_sack&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+(:action get_log&return_plank&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+(:action craft_plank&craft_wooden_pogo&get_log
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a2 )
+(>= (trees_in_map )1 )
+(agent_free ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_craft_pogo_stick ?a2 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a3 ))
+(agent_get_log ?a3 )
+)
+)
+(:action place_tree_tap&return_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+
+
+(:action craft_plank&craft_tree_tap&get_log
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a2 )
+(>= (trees_in_map )1 )
+(agent_free ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_place_tree_tap ?a2 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a3 ))
+(agent_get_log ?a3 )
+)
+)
+
+
+
+
+
+
+(:action craft_plank&craft_tree_tap&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_place_tree_tap ?a2 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+(:action place_tree_tap&return_log&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action return_plank&return_sack&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_craft_plank ?a1 )
+(agent_get_sack ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+
+
+
+(:action craft_wooden_pogo&place_tree_tap&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action get_log&return_sack&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+
+(:action craft_tree_tap&return_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action return_sack&return_stick&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_get_sack ?a1 )
+(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_sack ?a1 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
 
 
 
@@ -4041,7 +2066,8 @@
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 )
 )
-(:action craft_plank&place_tree_tap&return_wooden_pogo
+
+(:action craft_plank&place_tree_tap&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
@@ -4049,7 +2075,7 @@
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a2 )
-(agent_craft_pogo_stick ?a3 )
+(agent_place_tree_tap ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -4061,17 +2087,43 @@
 (not (agent_free ?a2 ))
 (agent_get_sack ?a2 )
 (agent_free ?a3 )
-(not (agent_craft_pogo_stick ?a3 ))
-(increase (count_pogo_stick )1 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
 )
 )
-(:action get_log&return_plank&return_sack
+
+
+(:action place_tree_tap&return_log&return_plank
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_plank ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_plank ?a3 ))
+(increase (count_planks_in_inventory )4 )
+)
+)
+
+(:action get_log&return_sack&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
+(agent_get_sack ?a2 )
+(agent_place_tree_tap ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -4081,11 +2133,397 @@
 (not (agent_free ?a1 ))
 (agent_get_log ?a1 )
 (agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+
+
+(:action place_tree_tap&return_plank&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+
+(:action craft_stick&return_sack&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action craft_stick&get_log&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action place_tree_tap&return_log&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+
+
+
+
+(:action craft_stick&place_tree_tap&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+
+
+
+
+
+(:action craft_stick&return_log&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+
+
+
+
+
+(:action craft_stick&get_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action craft_stick&return_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+(:action craft_plank&return_plank&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
 (not (agent_get_sack ?a3 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+
+
+
+
+
+
+(:action craft_plank&return_sack&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action get_log&return_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_plank&return_stick&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action return_stick&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_craft_stick ?a1 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_stick ?a1 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_wooden_pogo&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_plank&craft_stick&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a2 ))
+(agent_craft_stick ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
 )
 )
 (:action craft_plank&craft_stick&place_tree_tap
@@ -4114,14 +2552,15 @@
 )
 )
 
-(:action place_tree_tap&return_plank&return_wooden_pogo
+
+(:action place_tree_tap&return_plank&return_sack
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a1 )
 (agent_craft_plank ?a2 )
-(agent_craft_pogo_stick ?a3 )
+(agent_get_sack ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
@@ -4133,10 +2572,379 @@
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+(:action craft_plank&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
 (not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
 )
 )
+
+
+
+(:action craft_wooden_pogo&get_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action place_tree_tap&return_sack&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+
+(:action return_log&return_plank&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_craft_plank ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_plank&get_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_stick&return_log&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+
+
+(:action craft_plank&craft_wooden_pogo&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_craft_pogo_stick ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action place_tree_tap&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
+(increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+
+
+
+
+
+(:action craft_wooden_pogo&return_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action get_log&return_plank&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_tree_tap&get_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+(:action place_tree_tap&return_stick&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action craft_plank&craft_stick&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a2 ))
+(agent_craft_stick ?a2 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+(:action craft_wooden_pogo&get_log&return_log
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_get_log ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_get_log ?a3 ))
+(increase (count_log_in_inventory )1 )
+)
+)
+
+
 
 (:action craft_stick&place_tree_tap&return_stick
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
@@ -4165,7 +2973,184 @@
 
 
 
+(:action return_log&return_sack&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
 
+
+
+
+
+
+
+
+
+
+
+
+(:action return_plank&return_sack&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_craft_plank ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action place_tree_tap&return_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+(:action craft_stick&place_tree_tap&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_plank&return_plank&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action craft_wooden_pogo&place_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action return_log&return_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_craft_stick ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
 (:action return_sack&return_stick&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
@@ -4188,10 +3173,11 @@
 (increase (count_tree_tap_in_inventory )1 )
 )
 )
-(:action return_sack&return_tree_tap&return_wooden_pogo
+(:action craft_stick&return_tree_tap&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(agent_get_sack ?a1 )
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
 (agent_place_tree_tap ?a2 )
 (agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
@@ -4199,9 +3185,9 @@
 (dif_agent ?a2 ?a3 )
 )
 :effect (and
-(agent_free ?a1 )
-(not (agent_get_sack ?a1 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
 (agent_free ?a2 )
 (not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
@@ -4210,14 +3196,195 @@
 (increase (count_pogo_stick )1 )
 )
 )
+(:action craft_plank&place_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
 
-(:action craft_tree_tap&return_sack&return_tree_tap
+(:action return_plank&return_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_craft_plank ?a1 )
+(agent_craft_stick ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_plank&return_plank&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+
+
+
+
+
+
+(:action get_log&return_sack&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action craft_stick&return_sack&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+
+
+
+
+
+
+
+
+
+(:action place_tree_tap&return_plank&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_craft_plank ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+(:action get_log&return_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_tree_tap&place_tree_tap&return_tree_tap
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )5 )
 (>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
-(agent_get_sack ?a2 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
 (agent_place_tree_tap ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
@@ -4228,6 +3395,188 @@
 (decrease (count_stick_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_place_tree_tap ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action craft_tree_tap&return_log&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+
+
+
+(:action craft_wooden_pogo&place_tree_tap&return_log
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_get_log ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_pogo_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_get_log ?a3 ))
+(increase (count_log_in_inventory )1 )
+)
+)
+
+(:action craft_stick&return_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+
+
+(:action get_log&return_log&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+(:action craft_stick&get_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+
+(:action craft_stick&return_stick&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+
+
+
+
+
+(:action craft_plank&return_sack&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
 (agent_free ?a2 )
 (not (agent_get_sack ?a2 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
@@ -4236,7 +3585,164 @@
 (increase (count_tree_tap_in_inventory )1 )
 )
 )
+(:action craft_tree_tap&place_tree_tap&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_place_tree_tap ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
 
+
+
+(:action craft_plank&get_log&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(agent_free ?a2 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a2 ))
+(agent_get_log ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_stick ?a3 ))
+(increase (count_stick_in_inventory )4 )
+)
+)
+
+
+(:action craft_plank&craft_stick&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a2 ))
+(agent_craft_stick ?a2 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
+(:action get_log&return_log&return_plank
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_craft_plank ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_plank ?a3 ))
+(increase (count_planks_in_inventory )4 )
+)
+)
+
+
+
+(:action craft_plank&craft_wooden_pogo&place_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(>= (count_stick_in_inventory )4 )
+(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a2 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(decrease (count_stick_in_inventory )4 )
+(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_craft_pogo_stick ?a2 )
+(not (agent_free ?a3 ))
+(agent_get_sack ?a3 )
+)
+)
+
+(:action place_tree_tap&return_sack&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a1 )
+(agent_get_sack ?a2 )
+(agent_place_tree_tap ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(not (agent_free ?a1 ))
+(agent_get_sack ?a1 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_place_tree_tap ?a3 ))
+(increase (count_tree_tap_in_inventory )1 )
+)
+)
 (:action craft_stick&get_log&return_log
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
@@ -4262,14 +3768,41 @@
 )
 )
 
-(:action craft_tree_tap&get_log&return_wooden_pogo
+
+(:action craft_plank&craft_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
+(not (agent_free ?a2 ))
+(agent_place_tree_tap ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_tree_tap&return_sack&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )5 )
 (>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
+(agent_get_sack ?a2 )
 (agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
@@ -4280,9 +3813,9 @@
 (decrease (count_stick_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
+(agent_free ?a2 )
+(not (agent_get_sack ?a2 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a3 )
 (not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
@@ -4291,6 +3824,54 @@
 
 
 
+(:action get_log&return_log&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (trees_in_map )1 )
+(agent_free ?a1 )
+(agent_get_log ?a2 )
+(agent_get_sack ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (trees_in_map )1 )
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_get_sack ?a3 ))
+(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+)
+)
+(:action craft_plank&craft_stick&get_log
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a2 )
+(>= (trees_in_map )1 )
+(agent_free ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a2 ))
+(agent_craft_stick ?a2 )
+(decrease (trees_in_map )1 )
+(not (agent_free ?a3 ))
+(agent_get_log ?a3 )
+)
+)
 
 
 
@@ -4318,102 +3899,32 @@
 (increase (count_planks_in_inventory )4 )
 )
 )
-(:action place_tree_tap&return_stick&return_tree_tap
+
+
+
+(:action craft_tree_tap&return_tree_tap&return_wooden_pogo
 :parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
 (dif_agent ?a2 ?a3 )
 )
 :effect (and
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
 (not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
+(agent_place_tree_tap ?a1 )
 (agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
+(not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_plank&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action return_plank&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_stick&get_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a2 ?a3 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
 )
 )
 
@@ -4447,210 +3958,18 @@
 
 
 
-(:action craft_stick&place_tree_tap&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-(:action place_tree_tap&return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-(:action craft_stick&return_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-(:action craft_plank&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_tree_tap&get_log&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action craft_tree_tap&get_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_planks_in_inventory )5 )
 (>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
 (>= (trees_in_map )1 )
 (agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_place_tree_tap ?a4 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (decrease (count_planks_in_inventory )5 )
@@ -4661,572 +3980,22 @@
 (not (agent_free ?a2 ))
 (agent_get_log ?a2 )
 (agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action place_tree_tap&return_log&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-(:action return_log&return_plank&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
+(not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
 )
 )
 
 
 
-
-(:action craft_stick&place_tree_tap&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&place_tree_tap&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_stick&return_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_plank&return_plank&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action craft_tree_tap&get_log&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action get_log&return_plank&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_tree_tap&place_tree_tap&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-(:action craft_plank&get_log&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-(:action craft_plank&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&get_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-(:action return_log&return_plank&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_log&return_plank&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_get_log ?a1 )
 (agent_craft_plank ?a2 )
 (agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
@@ -5238,1667 +4007,68 @@
 (agent_free ?a3 )
 (not (agent_get_sack ?a3 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
 )
 )
 
-
-
-
-
-
-
-
-
-(:action craft_tree_tap&return_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_plank&craft_stick&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action place_tree_tap&return_plank&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_plank&get_log&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-(:action get_log&return_plank&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_wooden_pogo&place_tree_tap&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_tree_tap&get_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action return_plank&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-(:action craft_stick&return_log&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_plank&craft_tree_tap&get_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-(:action craft_tree_tap&place_tree_tap&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_plank&get_log&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action place_tree_tap&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_plank&craft_stick&get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_plank&place_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&return_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_plank&return_plank&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_wooden_pogo&return_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_wooden_pogo&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_stick&get_log&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-(:action craft_plank&get_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-(:action craft_stick&get_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action place_tree_tap&return_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-(:action craft_stick&place_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action place_tree_tap&return_plank&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&get_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_log&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action place_tree_tap&return_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_log&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-(:action return_log&return_plank&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_log&return_sack&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
+(agent_get_sack ?a2 )
 (agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
 (not (agent_get_log ?a1 ))
 (increase (count_log_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-(:action craft_wooden_pogo&get_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_stick&place_tree_tap&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&place_tree_tap&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_tree_tap&get_log&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action place_tree_tap&return_log&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-(:action craft_plank&return_sack&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
 (not (agent_get_sack ?a2 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a3 )
 (not (agent_craft_stick ?a3 ))
 (increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
 )
 )
-
-(:action craft_stick&get_log&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action get_log&return_sack&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-(:action place_tree_tap&return_plank&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-(:action craft_plank&craft_tree_tap&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action craft_plank&get_log&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
+(>= (trees_in_map )1 )
 (agent_free ?a2 )
 (agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
+(decrease (trees_in_map )1 )
 (not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
+(agent_get_log ?a2 )
 (agent_free ?a3 )
 (not (agent_get_sack ?a3 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
 )
 )
 
-(:action return_plank&return_sack&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+
+
+
+(:action return_plank&return_sack&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_craft_plank ?a1 )
 (agent_get_sack ?a2 )
 (agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
@@ -6910,1077 +4080,19 @@
 (agent_free ?a3 )
 (not (agent_craft_stick ?a3 ))
 (increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
 )
 )
 
 
-
-
-
-
-
-
-
-
-
-
-(:action get_log&return_log&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_plank&craft_stick&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-(:action get_log&return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action return_log&return_plank&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-(:action craft_plank&craft_wooden_pogo&get_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-(:action place_tree_tap&return_log&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-(:action place_tree_tap&return_log&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-(:action craft_plank&get_log&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-(:action get_log&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_plank&place_tree_tap&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_plank&craft_wooden_pogo&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action place_tree_tap&return_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_plank&place_tree_tap&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action craft_tree_tap&place_tree_tap&return_log&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&place_tree_tap&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&place_tree_tap&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&craft_wooden_pogo&place_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-(:action return_log&return_plank&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_plank&place_tree_tap&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-(:action craft_stick&place_tree_tap&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action place_tree_tap&return_plank&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&get_log&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&craft_stick&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-(:action craft_tree_tap&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action get_log&return_plank&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action return_log&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_log&return_sack&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_get_log ?a1 )
 (agent_get_sack ?a2 )
 (agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
@@ -7992,1952 +4104,256 @@
 (agent_free ?a3 )
 (not (agent_place_tree_tap ?a3 ))
 (increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
 )
 )
 
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&get_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_plank&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
 (agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action get_log&return_log&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action place_tree_tap&return_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_tree_tap&get_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
 (agent_place_tree_tap ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_tree_tap&place_tree_tap&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_pogo_stick ?a4 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_plank&get_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_stick&return_sack&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_tree_tap&place_tree_tap&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&place_tree_tap&return_plank&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-(:action craft_plank&place_tree_tap&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&return_plank&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-(:action place_tree_tap&return_sack&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_stick&return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_tree_tap&place_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_plank&get_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action place_tree_tap&return_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action place_tree_tap&return_log&return_plank&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_plank ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-(:action return_log&return_plank&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action get_log&return_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action craft_stick&place_tree_tap&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_plank&place_tree_tap&return_plank&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_craft_plank ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_plank ?a3 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&return_plank&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-(:action craft_plank&craft_stick&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-(:action get_log&return_plank&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-(:action craft_tree_tap&get_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-(:action craft_tree_tap&place_tree_tap&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-(:action place_tree_tap&return_plank&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_tree_tap&return_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action get_log&return_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-(:action get_log&return_plank&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_tree_tap&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action return_plank&return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
 (not (agent_craft_plank ?a1 ))
 (increase (count_planks_in_inventory )4 )
 (agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_tree_tap&return_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_wooden_pogo&place_tree_tap&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
+(not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action get_log&return_log&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
 (agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
+(not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
 )
 )
-
-
-
-
-(:action craft_tree_tap&get_log&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-(:action return_log&return_sack&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_log&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_get_log ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
 (not (agent_get_log ?a1 ))
 (increase (count_log_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
+(not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
 )
 )
 
-
-
-
-
-(:action craft_wooden_pogo&place_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action craft_tree_tap&return_log&return_tree_tap
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
+(agent_get_log ?a2 )
 (agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
 (not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
+(agent_place_tree_tap ?a1 )
+(agent_free ?a2 )
+(not (agent_get_log ?a2 ))
+(increase (count_log_in_inventory )1 )
 (agent_free ?a3 )
 (not (agent_place_tree_tap ?a3 ))
 (increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
 )
 )
-(:action craft_plank&craft_stick&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action get_log&return_plank&return_sack
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_log_in_inventory )1 )
+(>= (trees_in_map )1 )
 (agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
+(agent_craft_plank ?a2 )
 (agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
-(decrease (count_log_in_inventory )1 )
+(decrease (trees_in_map )1 )
 (not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_craft_plank ?a2 ))
+(increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
 (not (agent_get_sack ?a3 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
 )
 )
-
-
-
-
-
-
-
-(:action place_tree_tap&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action place_tree_tap&return_log&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
+(agent_get_log ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (not (agent_free ?a1 ))
 (agent_get_sack ?a1 )
 (agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-(:action craft_plank&craft_stick&get_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_wooden_pogo&get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_craft_pogo_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&place_tree_tap&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&place_tree_tap&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&get_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-(:action craft_stick&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action return_log&return_sack&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_get_sack ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
+(not (agent_get_log ?a2 ))
 (increase (count_log_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+
+(:action craft_plank&place_tree_tap&return_stick
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_log_in_inventory )1 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
+(agent_craft_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_log_in_inventory )1 )
+(not (agent_free ?a1 ))
+(agent_craft_plank ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
 (agent_free ?a3 )
 (not (agent_craft_stick ?a3 ))
 (increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
+)
+)
+
+(:action craft_stick&place_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(>= (count_planks_in_inventory )2 )
+(agent_free ?a1 )
+(>= (trees_in_map )1 )
+(>= (count_tree_tap_in_inventory )1 )
+(agent_free ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(decrease (count_planks_in_inventory )2 )
+(not (agent_free ?a1 ))
+(agent_craft_stick ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
 )
 )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_wooden_pogo&get_log&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action craft_tree_tap&get_log&return_log
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
+(>= (count_planks_in_inventory )5 )
+(>= (count_stick_in_inventory )1 )
 (agent_free ?a1 )
 (>= (trees_in_map )1 )
 (agent_free ?a2 )
 (agent_get_log ?a3 )
-(agent_place_tree_tap ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
+(decrease (count_planks_in_inventory )5 )
+(decrease (count_stick_in_inventory )1 )
 (not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
+(agent_place_tree_tap ?a1 )
 (decrease (trees_in_map )1 )
 (not (agent_free ?a2 ))
 (agent_get_log ?a2 )
 (agent_free ?a3 )
 (not (agent_get_log ?a3 ))
 (increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
 )
 )
-
-
-
-
-
-
-(:action craft_plank&return_plank&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_log&return_stick&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_get_log ?a1 )
+(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_get_log ?a1 ))
+(increase (count_log_in_inventory )1 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action return_plank&return_stick&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
+:precondition (and
+(agent_craft_plank ?a1 )
+(agent_craft_stick ?a2 )
+(agent_craft_pogo_stick ?a3 )
+(dif_agent ?a1 ?a2 )
+(dif_agent ?a1 ?a3 )
+(dif_agent ?a2 ?a3 )
+)
+:effect (and
+(agent_free ?a1 )
+(not (agent_craft_plank ?a1 ))
+(increase (count_planks_in_inventory )4 )
+(agent_free ?a2 )
+(not (agent_craft_stick ?a2 ))
+(increase (count_stick_in_inventory )4 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
+)
+)
+(:action craft_plank&return_plank&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
 (agent_craft_plank ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (decrease (count_log_in_inventory )1 )
@@ -9947,177 +4363,54 @@
 (not (agent_craft_plank ?a2 ))
 (increase (count_planks_in_inventory )4 )
 (agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
 )
 )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_stick&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action get_log&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
 (>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_craft_stick ?a3 )
-(agent_place_tree_tap ?a4 )
+(agent_free ?a1 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
 (decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
+(not (agent_free ?a1 ))
+(agent_get_log ?a1 )
+(agent_free ?a2 )
+(not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
+(agent_free ?a3 )
+(not (agent_craft_pogo_stick ?a3 ))
+(increase (count_pogo_stick )1 )
 )
 )
-
-
-
-
-
-
-
-
-
-
-(:action return_sack&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action return_sack&return_tree_tap&return_wooden_pogo
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (agent_get_sack ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
+(agent_place_tree_tap ?a2 )
+(agent_craft_pogo_stick ?a3 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
 (agent_free ?a1 )
 (not (agent_get_sack ?a1 ))
 (increase (count_sack_polyisoprene_pellets_in_inventory )1 )
 (agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
+(not (agent_place_tree_tap ?a2 ))
 (increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_plank&craft_tree_tap&place_tree_tap&return_sack
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a3 )
-(agent_get_sack ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_get_sack ?a4 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-)
-)
-
-
-
-(:action get_log&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
+(not (agent_craft_pogo_stick ?a3 ))
 (increase (count_pogo_stick )1 )
 )
 )
@@ -10125,689 +4418,30 @@
 
 
 
-
-
-
-
-
-
-
-
-
-(:action craft_wooden_pogo&get_log&return_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(>= (count_stick_in_inventory )4 )
-(>= (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(decrease (count_stick_in_inventory )4 )
-(decrease (count_sack_polyisoprene_pellets_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_pogo_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_plank&place_tree_tap&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
+(:action craft_plank&place_tree_tap&return_plank
+:parameters (?a1 - agent ?a2 - agent ?a3 - agent)
 :precondition (and
 (>= (count_log_in_inventory )1 )
 (agent_free ?a1 )
 (>= (trees_in_map )1 )
 (>= (count_tree_tap_in_inventory )1 )
 (agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-(:action craft_stick&place_tree_tap&return_sack&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-(:action craft_plank&craft_stick&place_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a2 ))
-(agent_craft_stick ?a2 )
-(not (agent_free ?a3 ))
-(agent_get_sack ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action get_log&return_log&return_stick&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_craft_stick ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_craft_stick ?a3 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-(:action return_log&return_stick&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_get_log ?a1 )
-(agent_craft_stick ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_get_log ?a1 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a2 )
-(not (agent_craft_stick ?a2 ))
-(increase (count_stick_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_stick&return_log&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-(:action craft_plank&craft_tree_tap&get_log&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a2 )
-(>= (trees_in_map )1 )
-(agent_free ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a2 ))
-(agent_place_tree_tap ?a2 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a3 ))
-(agent_get_log ?a3 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action return_plank&return_sack&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(agent_craft_plank ?a1 )
-(agent_get_sack ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(agent_free ?a1 )
-(not (agent_craft_plank ?a1 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a2 )
-(not (agent_get_sack ?a2 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action craft_stick&get_log&return_log&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(decrease (trees_in_map )1 )
-(not (agent_free ?a2 ))
-(agent_get_log ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-(:action craft_tree_tap&place_tree_tap&return_tree_tap&return_wooden_pogo
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )5 )
-(>= (count_stick_in_inventory )1 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_place_tree_tap ?a3 )
-(agent_craft_pogo_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )5 )
-(decrease (count_stick_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_place_tree_tap ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_place_tree_tap ?a3 ))
-(increase (count_tree_tap_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_pogo_stick ?a4 ))
-(increase (count_pogo_stick )1 )
-)
-)
-(:action craft_stick&place_tree_tap&return_log&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a2 )
-(agent_get_log ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(not (agent_free ?a2 ))
-(agent_get_sack ?a2 )
-(agent_free ?a3 )
-(not (agent_get_log ?a3 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-(:action place_tree_tap&return_plank&return_sack&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(>= (count_tree_tap_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_place_tree_tap ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(not (agent_free ?a1 ))
-(agent_get_sack ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
-)
-)
-
-
-
-
-
-
-
-
-(:action craft_stick&return_log&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_planks_in_inventory )2 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_planks_in_inventory )2 )
-(not (agent_free ?a1 ))
-(agent_craft_stick ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-(:action craft_plank&return_plank&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (count_log_in_inventory )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (count_log_in_inventory )1 )
-(not (agent_free ?a1 ))
-(agent_craft_plank ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(:action get_log&return_log&return_plank&return_tree_tap
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_get_log ?a2 )
 (agent_craft_plank ?a3 )
-(agent_place_tree_tap ?a4 )
 (dif_agent ?a1 ?a2 )
 (dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
 (dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
 )
 :effect (and
-(decrease (trees_in_map )1 )
+(decrease (count_log_in_inventory )1 )
 (not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_get_log ?a2 ))
-(increase (count_log_in_inventory )1 )
+(agent_craft_plank ?a1 )
+(not (agent_free ?a2 ))
+(agent_get_sack ?a2 )
 (agent_free ?a3 )
 (not (agent_craft_plank ?a3 ))
 (increase (count_planks_in_inventory )4 )
-(agent_free ?a4 )
-(not (agent_place_tree_tap ?a4 ))
-(increase (count_tree_tap_in_inventory )1 )
 )
 )
-
-
-
-(:action get_log&return_plank&return_sack&return_stick
-:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?a4 - agent)
-:precondition (and
-(>= (trees_in_map )1 )
-(agent_free ?a1 )
-(agent_craft_plank ?a2 )
-(agent_get_sack ?a3 )
-(agent_craft_stick ?a4 )
-(dif_agent ?a1 ?a2 )
-(dif_agent ?a1 ?a3 )
-(dif_agent ?a1 ?a4 )
-(dif_agent ?a2 ?a3 )
-(dif_agent ?a2 ?a4 )
-(dif_agent ?a3 ?a4 )
-)
-:effect (and
-(decrease (trees_in_map )1 )
-(not (agent_free ?a1 ))
-(agent_get_log ?a1 )
-(agent_free ?a2 )
-(not (agent_craft_plank ?a2 ))
-(increase (count_planks_in_inventory )4 )
-(agent_free ?a3 )
-(not (agent_get_sack ?a3 ))
-(increase (count_sack_polyisoprene_pellets_in_inventory )1 )
-(agent_free ?a4 )
-(not (agent_craft_stick ?a4 ))
-(increase (count_stick_in_inventory )4 )
-)
-)
-
-
 
 
 )
