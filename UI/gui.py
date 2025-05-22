@@ -10,7 +10,8 @@ from VIS.Search_VIS import ChunkedTreeViewer
 from stats.StatsViewer import run_stats
 
 
-SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft","blocks", "car", "sleeping beauty", "polyCraft", "Other"]
+SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Sailing"]
+SUPPORTED_DOMAINS_low = ["blocks", "car", "sleeping beauty", "polyCraft", "sailing"]
 
 
 def is_valid_pddl_file(filepath, file_type):
@@ -378,7 +379,7 @@ class ModernApp(TkinterDnD.Tk):
             return
 
         # check if the domain name is a known domain
-        elif domain_name not in SUPPORTED_DOMAINS:
+        elif domain_name not in SUPPORTED_DOMAINS_low:
             messagebox.showerror("Unknown Domain",
                                  f"The selected domain '{domain_name}' is not supported. Please select a known domain.")
             return
@@ -456,11 +457,6 @@ class ModernApp(TkinterDnD.Tk):
 
         # Create domain selection dropdown
         self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
-
-        # Create input fields
-        #self.create_drag_file_input("Domain Input:", 0.37, self.domain_label_var)
-        #self.create_drag_file_input("Problem Input:", 0.49, self.problem_label_var)
-        #self.create_drag_file_input("Configuration (optional):", 0.61, self.config_label_var)
 
         self.create_file_input("Domain Input:", 0.37, self.select_domain_file, self.domain_label_var)
         self.create_file_input("Problem Input:", 0.49, self.select_problem_file, self.problem_label_var)
