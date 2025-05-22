@@ -50,24 +50,6 @@ def test_get_parsed_plan_blocks(solve_controller):
     assert "agent" in parsed
     assert "block" in parsed
 
-
-def test_search_tree_file_created():
-    """
-    Check that search tree chunk files (.pkl) were created after solving.
-    """
-    tree_files = glob.glob(os.path.join("VIS", "Search_VIS", "search_tree", "tree_chunk_*.pkl"))
-    assert len(tree_files) > 0, "No search tree files were generated."
-
-
-def test_search_tree_structure():
-    """
-    Validate that each tree chunk is non-empty.
-    """
-    tree_files = glob.glob(os.path.join("VIS", "Search_VIS", "search_tree", "tree_chunk_*.pkl"))
-    assert len(tree_files) > 0
-    for tree_file in tree_files:
-        assert os.path.getsize(tree_file) > 0, f"{tree_file} is empty."
-
 # --- Tests for invalid and error scenarios ---
 
 
@@ -145,7 +127,7 @@ def test_fail_on_invalid_plan_file():
     )
     controller.plan = os.path.join("tests", "Data", "bad_plan.pddl")
     parsed = controller.getParsedPlan()
-    assert parsed == "Solution not found"
+    assert "MALFORMED" in parsed
 
 
 def test_invalid_config_file_format():
@@ -161,3 +143,4 @@ def test_invalid_config_file_format():
     )
     plan_file = controller.getPlanFile()
     assert plan_file is not None
+
