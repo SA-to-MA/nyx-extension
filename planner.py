@@ -61,6 +61,31 @@ class Planner:
         with open(f"{folder}/search_tree_{timestamp}.pkl", "wb") as file:
             pickle.dump(root, file)  # Use dill for serialization
 
+    def write_stats(self, logger, state, start_solve_time, last_stats_print_time):
+        # get metrics for logging
+        self.max_depth = max(self.max_depth, state.depth)
+        if hasattr(state, 'metric'):
+            self.min_metric = min(self.min_metric, state.metric)
+            self.max_metric = max(self.max_metric, state.metric)
+
+        # --- Log stats every ~1 second ---
+        current_time = time.time()
+        if current_time - last_stats_print_time >= 0.05:
+            elapsed = current_time - start_solve_time
+            logger.log_stats(
+                timestamp=elapsed,
+                nodes_expanded=self.explored_states,
+                max_depth=self.max_depth,
+                queue_size=len(self.queue),
+                min_metric=self.min_metric,
+                max_metric=self.max_metric,
+                tracked_goals=len(self.reached_goal_states)
+            )
+            print(f"[{elapsed:.2f}s] Nodes: {self.explored_states}, Max depth: {self.max_depth}, "
+                  f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
+            return current_time
+        # if didn't print, return -1
+        return -1
 
     def solve(self, domain, problem):
         # --- Initialize Logger ---
@@ -98,29 +123,6 @@ class Planner:
             n_state =  self.queue.popleft() # pop state and state node
             state, state_node = n_state # divide into state and state node
 
-            # get metrics for logging
-            self.max_depth = max(self.max_depth, state.depth)
-            if hasattr(state, 'metric'):
-                self.min_metric = min(self.min_metric, state.metric)
-                self.max_metric = max(self.max_metric, state.metric)
-
-            # --- Log stats every ~1 second ---
-            current_time = time.time()
-            if current_time - last_stats_print_time >= 0.05:
-                elapsed = current_time - start_solve_time
-                logger.log_stats(
-                    timestamp=elapsed,
-                    nodes_expanded=self.explored_states,
-                    max_depth=self.max_depth,
-                    queue_size=len(self.queue),
-                    min_metric=self.min_metric,
-                    max_metric=self.max_metric,
-                    tracked_goals=len(self.reached_goal_states)
-                )
-                print(f"[{elapsed:.2f}s] Nodes: {self.explored_states}, Max depth: {self.max_depth}, "
-                      f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
-                last_stats_print_time = current_time
-
             # check for currect novelty again when popping from the open list
             if constants.DOUBLE_HEURISTIC:
                 if state.predecessor_action is not None:
@@ -151,6 +153,7 @@ class Planner:
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
                     self.save_tree(root_node)
+                    self.write_stats(logger, state, start_solve_time, last_stats_print_time)
                     logger.close()
                     return self.reached_goal_states
 
@@ -279,14 +282,21 @@ class Planner:
                     for i in range(len(print_q)):
                         sys.stdout.write(print_q[i] + "\n")  # reprint the lines
 
+
             heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
                 self.save_tree(root_node)
+                self.write_stats(logger, state, start_solve_time, last_stats_print_time)
                 logger.close()
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
+            # print stats
+            to_print = self.write_stats(logger, state, start_solve_time, last_stats_print_time)
+            if to_print != -1: # if printed, mark print time as last print time
+                last_stats_print_time = to_print
         self.save_tree(root_node)
+        self.write_stats(logger, state, start_solve_time, last_stats_print_time)
         logger.close()
         return None
 
@@ -326,28 +336,6 @@ class Planner:
             n_state = self.queue.popleft()  # pop state and state node
             state, state_node = n_state  # divide into state and state node
 
-            self.max_depth = max(self.max_depth, state.depth)
-            if hasattr(state, 'metric'):
-                self.min_metric = min(self.min_metric, state.metric)
-                self.max_metric = max(self.max_metric, state.metric)
-
-            # --- Log stats every ~1 second ---
-            current_time = time.time()
-            if current_time - last_stats_print_time >= 0.05:
-                elapsed = current_time - start_solve_time
-                logger.log_stats(
-                    timestamp=elapsed,
-                    nodes_expanded=self.explored_states,
-                    max_depth=self.max_depth,
-                    queue_size=len(self.queue),
-                    min_metric=self.min_metric,
-                    max_metric=self.max_metric,
-                    tracked_goals=len(self.reached_goal_states)
-                )
-                print(f"[{elapsed:.2f}s] Nodes: {self.explored_states}, Max depth: {self.max_depth}, "
-                      f"Metric(min/max): {self.min_metric:.4f}/{self.max_metric:.4f}, Goals: {len(self.reached_goal_states)}")
-                last_stats_print_time = current_time
-
             # check for currect novelty again when popping from the open list
             if constants.DOUBLE_HEURISTIC:
                 if state.predecessor_action is not None:
@@ -378,6 +366,7 @@ class Planner:
                 self.enqueue_goal(VisitedState(state))
                 if not (constants.ANYTIME):
                     self.save_tree(root_node)
+                    self.write_stats(logger, state, start_solve_time, last_stats_print_time)
                     logger.close()
                     return self.reached_goal_states
 
@@ -505,11 +494,17 @@ class Planner:
             heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
                 self.save_tree(root_node)
+                self.write_stats(logger, state, start_solve_time, last_stats_print_time)
                 logger.close()
                 if (constants.ANYTIME):
                     return self.reached_goal_states
                 return None
+            # print stats
+            to_print = self.write_stats(logger, state, start_solve_time, last_stats_print_time)
+            if to_print != -1: # if printed, mark print time as last print time
+                last_stats_print_time = to_print
         self.save_tree(root_node)
+        self.write_stats(logger, state, start_solve_time, last_stats_print_time)
         logger.close()
         return None
 

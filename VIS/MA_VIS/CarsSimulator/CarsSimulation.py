@@ -137,7 +137,7 @@ class CarWindow:
             if car.goal_reached:
                 goal_font = pygame.font.SysFont(None, 30)
                 goal_label = goal_font.render("Goal Reached!", True, (0, 255, 0))  # Green text
-                self.screen.blit(goal_label, (x + 160, y + 10))  # Place above the car
+                self.screen.blit(goal_label, (x - 160, y + 10))  # Place above the car
 
         pygame.display.flip()
 
