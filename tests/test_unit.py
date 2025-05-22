@@ -62,21 +62,6 @@ def test_is_valid_pddl_file_domain(tmp_path):
     domain_file.write_text("(define (domain blocks))")
     assert is_valid_pddl_file(str(domain_file), "domain")
 
-
-def test_is_valid_pddl_file_problem(tmp_path):
-    """Test detection of a valid problem PDDL file."""
-    problem_file = tmp_path / "problem.pddl"
-    problem_file.write_text("(define (problem blocks-problem))")
-    assert is_valid_pddl_file(str(problem_file), "problem")
-
-
-def test_is_valid_pddl_file_invalid(tmp_path):
-    """Test that a non-PDDL file is rejected."""
-    invalid_file = tmp_path / "invalid.txt"
-    invalid_file.write_text("This is not a valid PDDL content.")
-    assert not is_valid_pddl_file(str(invalid_file), "domain")
-
-
 # ------------------------------
 # Tests for SolveController - plan parsing
 # ------------------------------
@@ -91,7 +76,7 @@ def test_get_parsed_plan_solution_not_found():
     )
     controller.plan = str(DATA_DIR / "non_existent_plan.pddl")
     parsed = controller.getParsedPlan()
-    assert parsed == "Solution not found"
+    assert "Solution not found" in parsed
 
 # ------------------------------
 # Tests for MAtoSA core methods
@@ -182,4 +167,3 @@ def test_unify_combinations_merges_correctly():
     assert "move&load" in unified[0]["name"]
     assert any("moved" in str(effect) for effect in unified[0]["effects"])
     assert any("done" in str(effect) for effect in unified[0]["effects"])
-

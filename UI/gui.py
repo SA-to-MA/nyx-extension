@@ -5,12 +5,13 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 import re
 from PIL import Image, ImageTk
 from MA_PDDL import MAtoSA
-from VIS.VisController import main, run
+from VIS.VisController import run
 from VIS.Search_VIS import ChunkedTreeViewer
 from stats.StatsViewer import run_stats
 
-
+# When adding new domain, update the following list only
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Sailing", "Other"]
+SUPPORTED_DOMAINS_low = [domain.lower() for domain in SUPPORTED_DOMAINS]
 
 
 def is_valid_pddl_file(filepath, file_type):
@@ -378,7 +379,7 @@ class ModernApp(TkinterDnD.Tk):
             return
 
         # check if the domain name is a known domain
-        elif domain_name not in SUPPORTED_DOMAINS:
+        elif domain_name.lower() not in SUPPORTED_DOMAINS_low :
             messagebox.showerror("Unknown Domain",
                                  f"The selected domain '{domain_name}' is not supported. Please select a known domain.")
             return

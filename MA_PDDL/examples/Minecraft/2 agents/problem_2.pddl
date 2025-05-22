@@ -7,7 +7,10 @@
 		)
 	)
 
-	(:init (agent_free a1) (agent_free a2) (= (trees_in_map) 15)
+	(:init
+		(agent_free a1)
+		(agent_free a2)
+		(= (trees_in_map) 10)
 		; Items
 		(= (count_log_in_inventory) 0)
 		(= (count_planks_in_inventory) 0)
@@ -17,7 +20,7 @@
 		(= (count_pogo_stick) 0)
 	)
 	(:goal
-		(and (= (count_pogo_stick) 5)
+		(and (= (count_pogo_stick) 2)
 		)
 	)
 )

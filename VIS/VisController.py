@@ -53,7 +53,7 @@ def extract_t_value(flags_path, default_t=1.0):
     Extracts the -t flag value from the flags string.
 
     Args:
-        flags (str): The flags string containing -t.
+        flags_path (str): The flags file path containing -t.
         default_t (float): Default value for time if -t is not found.
 
     Returns:
@@ -91,7 +91,7 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
 
     Args:
         agents_by_type (dict): A dictionary of types of agents, and the agents' names. e.g. {'agent': ['a1']}
-        init_obj (dict): A dictionary of types of objects, and the objects' names. e.g. {'block': ['a', 'c', 'b']}
+        objects_by_type (dict): A dictionary of types of objects, and the objects' names. e.g. {'block': ['a', 'c', 'b']}
         init_state (dict): A dictionary of agents/objects and their initial state. e.g. {'a1': {'handempty': True}, 'a2': {'handempty': True}, 'c': {'clear': True, 'on': 'b'}, 'a': {'clear': True, 'ontable': True}, 'b': {'ontable': True}}
         solution (dict): A dict containing agent names and their actions. e.g. { 'a1': [('pick-up', 'b'), (), ('stack', 'b', 'a')]}
         t_value(float): integer representing pace of simulation.
@@ -105,16 +105,14 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
 
     pygame.display.set_caption(f"{selected_domain} Simulator")  # Dynamic title
 
-    if selected_domain == "Blocks":
+    domain = selected_domain.lower()
+    if domain == "blocks":
         simulator = BlocksSimulator(screen, agents_by_type, init_state, solution, t_value)
-
-    elif selected_domain == "Car":
+    elif domain == "car":
         simulator = CarSimulator(screen, init_state, solution, t_value)
-
-    elif selected_domain == "PolyCraft":
+    elif domain == "polycraft":
         simulator = MinecraftSimulator(screen, agents_by_type, functions, init_state, goals, solution, t_value)
-
-    elif selected_domain == "Sailing":
+    elif domain == "sailing":
         simulator = SailingSimulator(screen, agents_by_type, init_state, solution, t_value)
     else:
         print("Unsupported domain. Exiting...")
@@ -134,16 +132,3 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
 #     plan_file = r'../MA_PDDL/outputs/Sailing/plans/plan1_problem.pddl'
 #     flags = r"../MA_PDDL/outputs/Sailing/config.txt"
 #     run("Sailing", domain, problem, False, plan_file, flags)
-
-    # domain = r"../MA_PDDL/examples/Minecraft/minecraft_domain.pddl"
-    # problem = r"../MA_PDDL/examples/Minecraft/1 agent/problem_1.pddl"
-    # plan_file = r'../MA_PDDL/examples/Minecraft/1 agent/plan.pddl'
-    # flags = r"../MA_PDDL/examples/Minecraft/1 agent/config.txt"
-    # run("PolyCraft", domain, problem, False, plan_file, flags)
-
-# if __name__ == "__main__":
-#     domain = r"../MA_PDDL/examples/Car/2cars/domain.pddl"
-#     problem = r"../MA_PDDL/examples/Car/3 cars/problem_3.pddl"
-#     plan_file = r'../MA_PDDL/examples/Car/3 cars/plan.pddl'
-#     flags = r"../MA_PDDL/examples/Car/3 cars/config.txt"
-#     run("Car", domain, problem, False, plan_file, flags)

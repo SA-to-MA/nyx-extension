@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # Four spaces as indentation [no tabs]
-import bisect
 import collections
 import subprocess
-from hmac import new
 from pathlib import Path
 
 import heuristic_functions as heuristic_functions
@@ -19,24 +17,17 @@ from syntax.state import State
 import semantic_attachments.semantic_attachment as semantic_attachment
 
 import dill as pickle
-import os
-from collections import deque
+
 
 def get_repo_root() -> Path:
     return Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).decode().strip())
 
+
 class Planner:
 
-    #-----------------------------------------------
+    # -----------------------------------------------
     # Solve
-    #-----------------------------------------------
-
-    # initial_state = None
-    # reached_goal_state = None
-    # explored_states = 0
-    # # total_visited = 0
-    # queue = []
-    # visited_hashmap = {}
+    # -----------------------------------------------
 
     def __init__(self):
         self.initial_state = None
@@ -120,8 +111,8 @@ class Planner:
         self.queue = collections.deque([(state, root_node)])  # Store state with tree node
 
         while self.queue:
-            n_state =  self.queue.popleft() # pop state and state node
-            state, state_node = n_state # divide into state and state node
+            n_state = self.queue.popleft()  # pop state and state node
+            state, state_node = n_state  # divide into state and state node
 
             # check for currect novelty again when popping from the open list
             if constants.DOUBLE_HEURISTIC:
@@ -132,6 +123,7 @@ class Planner:
                         if constants.SEARCH_GBFS:
                             def sort_key(elem):
                                 return elem[0].h
+
                             index = self.bisect_right_with_key(self.queue, n_state, key=sort_key)
                             self.queue.insert(index, n_state)
                         elif constants.SEARCH_ASTAR:
@@ -139,7 +131,8 @@ class Planner:
                             self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g)))
                         elif constants.SEARCH_DFS:
                             self.queue.appendleft(n_state)
-                            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)))
+                            self.queue = collections.deque(
+                                sorted(self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)))
                         continue
 
             if grounded_instance.goals(state, constants):
@@ -181,7 +174,8 @@ class Planner:
                         # happenings_list = grounded_instance.events.get_applicable(new_state)
                         happenings_list = new_state.get_applicable_happenings(grounded_instance.events)
                         for hp_e1 in happenings_list:
-                            new_state = new_state.apply_happening(hp_e1, from_state=from_state, create_new_state=new_state is state)
+                            new_state = new_state.apply_happening(hp_e1, from_state=from_state,
+                                                                  create_new_state=new_state is state)
 
                     # check whether any semantic attachment processes are active, if applicable
                     if constants.SEMANTIC_ATTACHMENT:
@@ -194,7 +188,8 @@ class Planner:
                     # happenings_list = grounded_instance.processes.get_applicable(new_state)
                     happenings_list = new_state.get_applicable_happenings(grounded_instance.processes)
                     for hp_p1 in happenings_list:
-                        new_state = new_state.apply_happening(hp_p1, from_state=from_state, create_new_state=new_state is state)
+                        new_state = new_state.apply_happening(hp_p1, from_state=from_state,
+                                                              create_new_state=new_state is state)
 
                     # set clock for the newly generated state after applying process effects
                     new_state.time = constants.fast_round(state.time + constants.DELTA_T, constants.NUMBER_PRECISION)
@@ -204,13 +199,15 @@ class Planner:
                     happenings_list = new_state.get_applicable_happenings(grounded_instance.events)
                     for hp_e_til in happenings_list:
                         if (hp_e_til.happening_type == 'timed_initial_event'):
-                            new_state = new_state.apply_happening(hp_e_til, from_state=from_state, create_new_state=new_state is state)
+                            new_state = new_state.apply_happening(hp_e_til, from_state=from_state,
+                                                                  create_new_state=new_state is state)
 
                     # next check triggered events
                     # happenings_list = grounded_instance.events.get_applicable(new_state)
                     happenings_list = new_state.get_applicable_happenings(grounded_instance.events)
                     for hp_e2 in happenings_list:
-                        new_state = new_state.apply_happening(hp_e2, from_state=from_state, create_new_state=new_state is state)
+                        new_state = new_state.apply_happening(hp_e2, from_state=from_state,
+                                                              create_new_state=new_state is state)
 
                     ### TODO: CHECK IF THIS BLOCK IS NECESSARY
                     # if new_state is state:
@@ -222,7 +219,6 @@ class Planner:
                 else:
                     ### HAPPENINGS ORDER (for non-temporal domains): actions -> semantic attachments -> events
                     ### (TODO: CHECK IF THIS IS THE CORRECT ORDER OF HAPPENINGS)
-
 
                     new_state = state.apply_happening(aa, from_state=from_state, create_new_state=True)
 
@@ -236,7 +232,8 @@ class Planner:
                         # happenings_list = grounded_instance.events.get_applicable(new_state)
                         happenings_list = new_state.get_applicable_happenings(grounded_instance.events)
                         for hp_e in happenings_list:
-                            new_state = new_state.apply_happening(hp_e, from_state=from_state, create_new_state=new_state is state)
+                            new_state = new_state.apply_happening(hp_e, from_state=from_state,
+                                                                  create_new_state=new_state is state)
 
                 self.explored_states += 1
 
@@ -244,11 +241,14 @@ class Planner:
                 #     print("VIOLATED DURATION CONSTRAINTSSSSSS!")
 
                 new_state_hash = hash(VisitedState(new_state))
-                if new_state.time <= constants.TIME_HORIZON and new_state.depth <= constants.DEPTH_LIMIT and grounded_instance.duration_constraints(new_state, constants):
-                    
+                if new_state.time <= constants.TIME_HORIZON and new_state.depth <= constants.DEPTH_LIMIT and grounded_instance.duration_constraints(
+                        new_state, constants):
+
                     if (new_state_hash not in self.visited_hashmap) or \
-                        (constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[new_state_hash].state.metric) or \
-                            (not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[new_state_hash].state.metric):
+                            (constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[
+                                new_state_hash].state.metric) or \
+                            (not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[
+                                new_state_hash].state.metric):
                         self.visited_hashmap[new_state_hash] = VisitedState(new_state)
                         new_state.applicables_actions = (
                             new_state.get_applicable_happenings(
@@ -256,7 +256,7 @@ class Planner:
                             )
                         )
                         new_node = state_node.add_child(new_state, aa)  # Add new state to the tree
-                        self.enqueue_state((new_state, new_node)) # Store new state with its tree node
+                        self.enqueue_state((new_state, new_node))  # Store new state with its tree node
 
                         # when not creating tree
                         # self.enqueue_state((new_state, None))
@@ -265,13 +265,16 @@ class Planner:
                     print_q = []
                     # visi = len(self.visited_hashmap)
                     time_checkpoint = time.time() - start_solve_time
-                    print_q.append('[' + str("{:6.2f}".format(time_checkpoint)) + '] ==> states explored: ' + str(self.explored_states))
-                    print_q.append('\t\t ==> exploration rate: ' + str(constants.fast_round(self.explored_states / time_checkpoint, 2)) + ' states/sec')
+                    print_q.append('[' + str("{:6.2f}".format(time_checkpoint)) + '] ==> states explored: ' + str(
+                        self.explored_states))
+                    print_q.append('\t\t ==> exploration rate: ' + str(
+                        constants.fast_round(self.explored_states / time_checkpoint, 2)) + ' states/sec')
                     if (constants.ANYTIME):
                         print_q.append('\t\t ==> tracked goals: ' + str(len(self.reached_goal_states)))
                         print_q.append('\t\t ==> total goals found: ' + str(self.total_goals_found))
                         if len(self.reached_goal_states) > 0:
-                            print_q.append('\t\t ==> best metric: {:6.3f}'.format(self.reached_goal_states[0].state.metric))
+                            print_q.append(
+                                '\t\t ==> best metric: {:6.3f}'.format(self.reached_goal_states[0].state.metric))
                         else:
                             print_q.append('\t\t ==> best metric: N/A')
 
@@ -281,7 +284,6 @@ class Planner:
                     # print_q.append(s)
                     for i in range(len(print_q)):
                         sys.stdout.write(print_q[i] + "\n")  # reprint the lines
-
 
             heuristic_functions.update_novelty(from_state.state)
             if (time.time() - start_solve_time) >= constants.TIMEOUT:
@@ -293,13 +295,12 @@ class Planner:
                 return None
             # print stats
             to_print = self.write_stats(logger, state, start_solve_time, last_stats_print_time)
-            if to_print != -1: # if printed, mark print time as last print time
+            if to_print != -1:  # if printed, mark print time as last print time
                 last_stats_print_time = to_print
         self.save_tree(root_node)
         self.write_stats(logger, state, start_solve_time, last_stats_print_time)
         logger.close()
         return None
-
 
     def solve_pt(self, domain, problem):
         # --- Initialize Logger ---
@@ -345,6 +346,7 @@ class Planner:
                         if constants.SEARCH_GBFS:
                             def sort_key(elem):
                                 return elem[0].h
+
                             index = self.bisect_right_with_key(self.queue, n_state, key=sort_key)
                             self.queue.insert(index, n_state)
                         elif constants.SEARCH_ASTAR:
@@ -352,7 +354,8 @@ class Planner:
                             self.queue = collections.deque(sorted(self.queue, key=lambda elem: (elem[0].h + elem[0].g)))
                         elif constants.SEARCH_DFS:
                             self.queue.appendleft(n_state)
-                            self.queue = collections.deque(sorted(self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)))
+                            self.queue = collections.deque(
+                                sorted(self.queue, key=lambda elem: (-elem[0].depth, elem[0].h)))
                         continue
 
             if grounded_instance.goals(state, constants):
@@ -380,7 +383,7 @@ class Planner:
 
             applicables = state.applicables_actions
             for aa in applicables:
-                
+
                 new_state = None
 
                 if aa == constants.TIME_PASSING_ACTION:
@@ -394,7 +397,8 @@ class Planner:
                     if constants.DOUBLE_EVENT_CHECK:
                         happenings_list = grounded_instance.events.get_applicable(new_state)
                         for hp_e1 in happenings_list:
-                            new_state = new_state.apply_happening(hp_e1, from_state=from_state, create_new_state=new_state is state)
+                            new_state = new_state.apply_happening(hp_e1, from_state=from_state,
+                                                                  create_new_state=new_state is state)
 
                     # check whether any semantic attachment processes are active, if applicable
                     if constants.SEMANTIC_ATTACHMENT:
@@ -406,7 +410,8 @@ class Planner:
                     # next check applicable processes
                     happenings_list = grounded_instance.processes.get_applicable(new_state)
                     for hp_p1 in happenings_list:
-                        new_state = new_state.apply_happening(hp_p1, from_state=from_state, create_new_state=new_state is state)
+                        new_state = new_state.apply_happening(hp_p1, from_state=from_state,
+                                                              create_new_state=new_state is state)
 
                     # set clock for the newly generated state after applying process effects
                     new_state.time = constants.fast_round(state.time + constants.DELTA_T, constants.NUMBER_PRECISION)
@@ -416,13 +421,14 @@ class Planner:
                     happenings_list = grounded_instance.events.get_applicable(new_state)
                     for hp_e_til in happenings_list:
                         if (hp_e_til.happening_type == 'timed_initial_event'):
-                            new_state = new_state.apply_happening(hp_e_til, from_state=from_state, create_new_state=new_state is state)
+                            new_state = new_state.apply_happening(hp_e_til, from_state=from_state,
+                                                                  create_new_state=new_state is state)
 
                     # next check triggered events
                     happenings_list = grounded_instance.events.get_applicable(new_state)
                     for hp_e2 in happenings_list:
-                        new_state = new_state.apply_happening(hp_e2, from_state=from_state, create_new_state=new_state is state)
-
+                        new_state = new_state.apply_happening(hp_e2, from_state=from_state,
+                                                              create_new_state=new_state is state)
 
                     ### TODO: CHECK IF THIS BLOCK IS NECESSARY
                     # if new_state is state:
@@ -446,16 +452,21 @@ class Planner:
 
                         happenings_list = grounded_instance.events.get_applicable(new_state)
                         for hp_e in happenings_list:
-                            new_state = new_state.apply_happening(hp_e, from_state=from_state, create_new_state=new_state is state)
+                            new_state = new_state.apply_happening(hp_e, from_state=from_state,
+                                                                  create_new_state=new_state is state)
 
                 self.explored_states += 1
 
                 new_state_hash = hash(VisitedState(new_state))
-                if new_state.time <= constants.TIME_HORIZON and new_state.depth <= constants.DEPTH_LIMIT and grounded_instance.duration_constraints(new_state, constants):
-                    
+                if new_state.time <= constants.TIME_HORIZON and new_state.depth <= constants.DEPTH_LIMIT and grounded_instance.duration_constraints(
+                        new_state, constants):
+
                     if (new_state_hash not in self.visited_hashmap) or \
-                        (new_state_hash in self.visited_hashmap and constants.METRIC_MINIMIZE and new_state.metric < self.visited_hashmap[new_state_hash].state.metric) or \
-                            (new_state_hash in self.visited_hashmap and not constants.METRIC_MINIMIZE and new_state.metric > self.visited_hashmap[new_state_hash].state.metric):
+                            (new_state_hash in self.visited_hashmap and constants.METRIC_MINIMIZE and new_state.metric <
+                             self.visited_hashmap[new_state_hash].state.metric) or \
+                            (
+                                    new_state_hash in self.visited_hashmap and not constants.METRIC_MINIMIZE and new_state.metric >
+                                    self.visited_hashmap[new_state_hash].state.metric):
                         self.visited_hashmap[new_state_hash] = VisitedState(new_state)
                         new_state.applicables_actions = (
                             grounded_instance.actions.get_applicable(new_state)
@@ -465,7 +476,6 @@ class Planner:
 
                         # when not creating tree
                         # self.enqueue_state((new_state, None))
-
 
                 if self.explored_states % constants.PRINT_INFO == 0:
                     print_q = []
@@ -501,7 +511,7 @@ class Planner:
                 return None
             # print stats
             to_print = self.write_stats(logger, state, start_solve_time, last_stats_print_time)
-            if to_print != -1: # if printed, mark print time as last print time
+            if to_print != -1:  # if printed, mark print time as last print time
                 last_stats_print_time = to_print
         self.save_tree(root_node)
         self.write_stats(logger, state, start_solve_time, last_stats_print_time)
@@ -551,17 +561,24 @@ class Planner:
         # print("\n\nNEW STATE METRIC: " + str(n_state.metric))
 
         if constants.METRIC_MINIMIZE:
-            if (len(self.reached_goal_states) < constants.TRACKED_PLANS) or ((len(self.reached_goal_states) == constants.TRACKED_PLANS) \
-                    and ((n_state.state.metric < self.reached_goal_states[-1].state.metric) or (n_state.state.metric == self.reached_goal_states[-1].state.metric and n_state.state.depth < self.reached_goal_states[-1].state.depth))):
+            if (len(self.reached_goal_states) < constants.TRACKED_PLANS) or (
+                    (len(self.reached_goal_states) == constants.TRACKED_PLANS) and ((n_state.state.metric < self.reached_goal_states[-1].state.metric) or (
+                    n_state.state.metric == self.reached_goal_states[-1].state.metric and n_state.state.depth <
+                    self.reached_goal_states[-1].state.depth))):
                 self.reached_goal_states.appendleft(n_state)
-                self.reached_goal_states = collections.deque(sorted(self.reached_goal_states, key=lambda elem: (elem.state.metric, elem.state.depth)), maxlen=constants.TRACKED_PLANS)
+                self.reached_goal_states = collections.deque(
+                    sorted(self.reached_goal_states, key=lambda elem: (elem.state.metric, elem.state.depth)),
+                    maxlen=constants.TRACKED_PLANS)
 
         else:
-            if (len(self.reached_goal_states) < constants.TRACKED_PLANS) or ((len(self.reached_goal_states) == constants.TRACKED_PLANS) \
-                    and ((n_state.state.metric > self.reached_goal_states[-1].state.metric) or (n_state.state.metric == self.reached_goal_states[-1].state.metric and n_state.state.depth < self.reached_goal_states[-1].state.depth))):
+            if (len(self.reached_goal_states) < constants.TRACKED_PLANS) or (
+                    (len(self.reached_goal_states) == constants.TRACKED_PLANS) and ((n_state.state.metric > self.reached_goal_states[-1].state.metric) or (
+                    n_state.state.metric == self.reached_goal_states[-1].state.metric and n_state.state.depth <
+                    self.reached_goal_states[-1].state.depth))):
                 self.reached_goal_states.appendleft(n_state)
-                self.reached_goal_states = collections.deque(sorted(self.reached_goal_states, key=lambda elem: (elem.state.metric, -elem.state.depth), reverse=True), maxlen=constants.TRACKED_PLANS)
-
+                self.reached_goal_states = collections.deque(
+                    sorted(self.reached_goal_states, key=lambda elem: (elem.state.metric, -elem.state.depth),
+                           reverse=True), maxlen=constants.TRACKED_PLANS)
 
     def get_trajectory(self, sstate: State):
         plan = []
