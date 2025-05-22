@@ -11,7 +11,7 @@ from stats.StatsViewer import run_stats
 
 
 SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Sailing"]
-SUPPORTED_DOMAINS_low = ["blocks", "car", "sleeping beauty", "polyCraft", "sailing"]
+SUPPORTED_DOMAINS_low = ["blocks", "car", "sleeping beauty", "polycraft", "sailing"]
 
 
 def is_valid_pddl_file(filepath, file_type):
