@@ -247,7 +247,7 @@ class MinecraftSimulator:
         print("Starting Minecraft simulation...")
         self.window.draw()  # Initial state
         running = True
-        time.sleep(1)
+        time.sleep(7)
 
         while running:
             running = False

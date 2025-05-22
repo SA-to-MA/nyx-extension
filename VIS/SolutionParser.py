@@ -9,6 +9,42 @@ class SolutionParser:
         self.agents_actions = {}
         self.actions = {}
 
+    def parse(self):
+        self.parse_actions()
+        with open(self.plan, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip()
+                if line == '':
+                    continue
+                self.parse_line(line)
+
+    def parse_line(self, line):
+        parts = line.split()
+        parts = parts[1:-1]
+        actions = parts.pop(0).split('&')
+        cur_agents = []
+        for act in actions:
+            req_params = len(self.actions[act])
+            params = []
+            agent_name = ""
+            for i in range(req_params):
+                cur = parts.pop(0)
+                if cur in self.all_agents:
+                    agent_name = cur
+                else:
+                    params.append(cur)
+            if agent_name not in self.agents_actions:
+                self.agents_actions[agent_name] = []
+            self.agents_actions[agent_name].append((act, params))
+            cur_agents.append(agent_name)
+        # if agent does nothing, append empty tuple
+        for agent in self.all_agents:
+            if agent not in cur_agents:
+                if agent not in self.agents_actions:
+                    self.agents_actions[agent] = []
+                self.agents_actions[agent].append(())
+
 
     def parse_actions(self):
         with open(self.domain, 'r') as f:
@@ -38,41 +74,3 @@ class SolutionParser:
             self.actions[action_name] = param_types
 
         return self.actions
-
-    def parse(self):
-        # create actions dictionary from domain
-        self.parse_actions()
-        with open(self.plan, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                line = line.strip()
-                if line == '':
-                    continue
-                # Extract agent name and actions from the line
-                self.parse_line(line)
-
-    def parse_line(self, line):
-        parts = line.split()
-        parts = parts[1:-1]
-        actions = parts.pop(0).split('&')
-        cur_agents = []
-        for act in actions:
-            req_params = len(self.actions[act])
-            params = []
-            agent_name = ""
-            for i in range(req_params):
-                cur = parts.pop(0)
-                if cur in self.all_agents:
-                    agent_name = cur
-                else:
-                    params.append(cur)
-            if agent_name not in self.agents_actions:
-                self.agents_actions[agent_name] = []
-            self.agents_actions[agent_name].append((act, params))
-            cur_agents.append(agent_name)
-        # if agent does nothing, append empty tuple
-        for agent in self.all_agents:
-            if agent not in cur_agents:
-                if agent not in self.agents_actions:
-                    self.agents_actions[agent] = []
-                self.agents_actions[agent].append(())
