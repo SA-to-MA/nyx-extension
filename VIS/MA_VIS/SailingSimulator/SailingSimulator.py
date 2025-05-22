@@ -16,22 +16,26 @@ class SailingWindow:
         base_path = os.path.dirname(os.path.abspath(__file__))
         res_dir = os.path.join(base_path, "resources")
         self.boat_image = pygame.transform.scale(
-            pygame.image.load(os.path.join(res_dir, "boat.png")), (60, 60))
+            pygame.image.load(os.path.join(res_dir, "boat.png")), (80, 80))
         self.person_image = pygame.transform.scale(
-            pygame.image.load(os.path.join(res_dir, "man.png")), (40, 40))
+            pygame.image.load(os.path.join(res_dir, "man.png")), (50, 50))
         self.background_image = pygame.transform.scale(
         pygame.image.load(os.path.join(res_dir, "background.png")),
         self.screen.get_size())
 
     def initializeObjects(self, agents_by_type, init_state, solution):
+        # Initialize boats
         for name in agents_by_type["boat"]:
             x = init_state[name]["x"]
             y = init_state[name]["y"]
             self.boats[name] = SailingAgent(name, solution[name], x, y)
 
-        boat_x = init_state["b0"]["x"]
-        boat_y = init_state["b0"]["y"]
+        # Use the first available boat as reference for positioning people
+        first_boat = next(iter(agents_by_type["boat"]))
+        boat_x = init_state[first_boat]["x"]
+        boat_y = init_state[first_boat]["y"]
 
+        # Initialize people
         for i, (name, props) in enumerate(init_state.items()):
             if name not in agents_by_type["boat"]:
                 d = props["d"]
@@ -101,7 +105,7 @@ class Person:
         self.d = d
         self.saved = False
 
-        logical_x = 0 + index * 2
+        logical_x = index * 2
         logical_y = d
 
         GRID_SCALE = 10
