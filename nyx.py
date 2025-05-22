@@ -448,15 +448,15 @@ def extract_variable_values(plan_f, var_list, csv_f=None):
 # -----------------------------------------------
 if __name__ == '__main__':
 
-    domain = r'MA_PDDL\outputs\Sailing\domain.pddl'
-    problem =r'MA_PDDL\outputs\Sailing\problem.pddl'
-    # flags = ['-search:gbfs', '-pt', '-dblh', '-custom_h:4']
-    # flags = ['-search:dfs']
-    flags = ['-search:gbfs','-pt' ,'-custom_h:6', '-t:1.0']
-    runner(domain, problem, flags)
+    # domain = r'MA_PDDL\outputs\Sailing\domain.pddl'
+    # problem =r'MA_PDDL\outputs\Sailing\problem.pddl'
+    # # flags = ['-search:gbfs', '-pt', '-dblh', '-custom_h:4']
+    # # flags = ['-search:dfs']
+    # flags = ['-search:gbfs','-pt' ,'-custom_h:6', '-t:1.0']
+    # runner(domain, problem, flags)
 
-    # if len(sys.argv) < 3 or '-h' in sys.argv:
-    #     print(constants.HELP_TEXT)
-    #     exit(1)
-    #
-    # runner(sys.argv[1], sys.argv[2], sys.argv[3:])
+    if len(sys.argv) < 3 or '-h' in sys.argv:
+        print(constants.HELP_TEXT)
+        exit(1)
+
+    runner(sys.argv[1], sys.argv[2], sys.argv[3:])
