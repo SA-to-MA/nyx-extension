@@ -4,9 +4,10 @@ from pathlib import Path
 import pygame
 from MA_PDDL.MAtoSA import run_nyx
 from VIS.InitParser import InitParser
-from VIS.MA_VIS.BlocksSimulator.BlocksSimulation import BlocksWindow, BlocksSimulator
-from VIS.MA_VIS.CarsSimulator.CarsSimulation import CarWindow, CarSimulator
-from VIS.MA_VIS.MinecraftSimulator.MinecraftSimulation import MinecraftWindow, MinecraftSimulator
+from VIS.MA_VIS.BlocksSimulator.BlocksSimulation import BlocksSimulator
+from VIS.MA_VIS.CarsSimulator.CarsSimulation import CarSimulator
+from VIS.MA_VIS.MinecraftSimulator.MinecraftSimulation import MinecraftSimulator
+from VIS.MA_VIS.SailingSimulator.SailingSimulator import SailingSimulator
 import os
 from VIS.SolutionParser import SolutionParser
 
@@ -113,6 +114,8 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
     elif selected_domain == "PolyCraft":
         simulator = MinecraftSimulator(screen, agents_by_type, functions, init_state, goals, solution, t_value)
 
+    elif selected_domain == "Sailing":
+        simulator = SailingSimulator(screen, agents_by_type, init_state, solution, t_value)
     else:
         print("Unsupported domain. Exiting...")
         pygame.quit()
@@ -126,11 +129,11 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
     pygame.quit()
 
 if __name__ == "__main__":
-    domain = r"../MA_PDDL/examples/Minecraft/minecraft_domain.pddl"
-    problem = r"../MA_PDDL/examples/Minecraft/2 agents/problem_2.pddl"
-    plan_file = r'../MA_PDDL/examples/Minecraft/2 agents/plan.pddl'
-    flags = r"../MA_PDDL/examples/Minecraft/2 agents/config.txt"
-    run("PolyCraft", domain, problem, False, plan_file, flags)
+    domain = r"../MA_PDDL/examples/Sailing/original_domain.pddl"
+    problem = r"../MA_PDDL/examples/Sailing/problem.pddl"
+    plan_file = r'../MA_PDDL/outputs/Sailing/plans/plan1_problem.pddl'
+    flags = r"../MA_PDDL/outputs/Sailing/config.txt"
+    run("Sailing", domain, problem, False, plan_file, flags)
 
     # domain = r"../MA_PDDL/examples/Minecraft/minecraft_domain.pddl"
     # problem = r"../MA_PDDL/examples/Minecraft/1 agent/problem_1.pddl"
