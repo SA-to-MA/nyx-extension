@@ -5,7 +5,7 @@ import re
 import os
 import glob
 import shlex
-from MA_PDDL.DeduplicateFunc import transform_pddl
+from MA_PDDL.Deduplicate import transform_pddl
 
 
 class MAtoSA:

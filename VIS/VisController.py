@@ -112,7 +112,6 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
 
     elif selected_domain == "PolyCraft":
         simulator = MinecraftSimulator(screen, agents_by_type, functions, init_state, goals, solution, t_value)
-
     else:
         print("Unsupported domain. Exiting...")
         pygame.quit()

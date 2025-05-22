@@ -44,6 +44,7 @@ python3 -m UI.gui
   - **[Minecraft](MA_PDDL/examples/Minecraft/)**
 - **[outputs](MA_PDDL/outputs/)**: Stores MA plans processed by Nyx.
 - **[MAtoSA.py](MA_PDDL/MAtoSA.py)**: Converts Multi-Agent PDDL files into Single-Agent PDDL files.
+- **[Deduplicate.py](MA_PDDL/Deduplicate.py)**: Performs deduplication of actions in PDDL domain files.
 
 ---
 
@@ -54,37 +55,37 @@ python3 -m UI.gui
 ---
 
 ## **3. [VIS](VIS) - Visualization Components**
-
-- **[ActionsParser.py](VIS/SA_VIS/ActionsParser.py)**  
-  - Parses actions in single-agent simulations.
-- **[SA_Simulator.py](VIS/SA_VIS/SA_Simulator.py)**  
-  - Generic simulator for single-agent planning.
+- **[Agent.py](VIS/Agent.py)**  
+  - Class of Agent object.
 - **[InitParser.py](VIS/SA_VIS/InitParser.py)**  
   - Parses initial state configurations.
+- **[SolutionParser.py](VIS/SA_VIS/InitParser.py)**  
+  - Parses output of solution plan from NYX.
 - **[VisController.py](VIS/SA_VIS/VisController.py)**  
   - Manages visualization controls for SA and MA simulations.
 
-### **📌 Single-Agent Visualization ([SA_VIS](VIS/SA_VIS/))**
-- **[CarSimulator](VIS/SA_VIS/CarSimulator/)**  
-  - **[resources](VIS/SA_VIS/CarSimulator/resources/)**: Stores assets for the car simulator.
-  - **[Car.py](VIS/SA_VIS/CarSimulator/Car.py)**: Defines car object properties and behavior.
-  - **[CarSimulator.py](VIS/SA_VIS/CarSimulator/CarSimulator.py)**: Manages the car simulation process.
-  - **[CarWindow.py](VIS/SA_VIS/CarSimulator/CarWindow.py)**: Handles the visualization for car simulation.
+### **📌 Search Tree Visualization ([Search_VIS](VIS/Search_VIS/))**
+  - **[resources](VIS/Search_VIS/resources/)**: Stores assets (e.g., `car.png`, `background.png`).
+  - **[search_tree](VIS/Search_VIS/search_tree/)**: Stores the search tree pkl files.
+    - **[ChunkedTreeViewer.py](VIS/Search_VIS/search_tree/ChunkedTreeViewer.py)**: Manages the visualization of search trees.
+    - <**Domain name**>Tree: Visualization of the state represented by a node in a search tree for specific domain.
 
-- **[SleepingBeautySimulator](VIS/SA_VIS/SleepingBeautySimulator/)**  
-  - **[resources](VIS/SA_VIS/SleepingBeautySimulator/resources/)**: Stores assets for the Sleeping Beauty simulator.
-  - **[SleepingBeauty.py](VIS/SA_VIS/SleepingBeautySimulator/SleepingBeauty.py)**: Defines Sleeping Beauty domain logic.
-  - **[SleepingBeautySimulator.py](VIS/SA_VIS/SleepingBeautySimulator/SleepingBeautySimulator.py)**: Manages the Sleeping Beauty simulation.
-  - **[SleepingBeautyWindow.py](VIS/SA_VIS/SleepingBeautySimulator/SleepingBeautyWindow.py)**: Handles the visualization for the Sleeping Beauty simulation.
+### **📌 Single-Agent Visualization ([SA_VIS](VIS/SA_VIS/))**
+- **[SleepingBeautySimulator](VIS/SA_VIS/SleepingBeautySimulator/)**
 
 ### **📌 Multi-Agent Visualization ([MA_VIS](VIS/MA_VIS/))**
-- **[BlocksSimulator](VIS/MA_VIS/BlocksSimulator/)**  
+
+- **[BlocksSimulator](VIS/MA_VIS/BlocksSimulator/)**
+- **[CarsSimulator](VIS/MA_VIS/CarsSimulator/)** 
+- **[MinecraftSimulator](VIS/MA_VIS/MinecraftSimulator/)** 
+
+Each directory includes:
   - **[resources](VIS/MA_VIS/BlocksSimulator/resources/)**: Stores assets (e.g., `table.png`, `hand.png`).
-  - **[BlocksWindow.py](VIS/MA_VIS/BlocksSimulator/BlocksSimulation.py)**: Manages the Blocks Simulation visualization.
+  - **Simulator class**: Manages the simulation visualization.
 
 ## 🧩 Adding Visualization for a New Domain
 
-You can simulate and visualize any custom domain by following the steps below. The existing **Blocks** domain is just an example — feel free to create your own domain with different objects, agents, actions, and logic.
+You can simulate and visualize any custom domain by following the steps below. The **existing domains** are just an example — feel free to create your own domain with different objects, agents, actions, and logic.
 
 ---
 
@@ -104,60 +105,37 @@ examples/YourDomain/
 
 ---
 
-### 2. Create a Custom Init Parser
-
-Duplicate and adapt the example parser (`BlocksInitParser.py`) to extract initial state data relevant to your domain:
-
-Update the `parse_pddl_init()` function to:
-
-- Parse your domain-specific predicates from `:init`.
-- Return a dictionary mapping objects (e.g., agents, tools, locations, etc.) to their properties.
-
- Example output structure:
-```python
-{
-  'a1': {'holding': None, 'is_empty': True},
-  'c':  {'clear': True,  'in_hand': False, 'on': None, 'on_table': True},
-  ...
-}
-```
-
----
-
-### 3. Implement Visualization & Simulation Classes
+### 2. Implement Visualization & Simulation Classes
 
 Duplicate the example simulation file (`BlocksSimulation.py`) and modify it:
 
 Update the following:
 
-- Visualization logic: rename and adapt classes like `Block`, `BlockAgent`, `BlocksWindow` to suit your objects and agents.
+- Visualization logic: rename and adapt classes in simulator example files to suit your objects and agents.
 - Action logic: in the agent's `execute()` method, implement how each action affects object state and visualization.
 - Drawing logic: render your objects with custom images, shapes, or positions.
 
 ---
 
-### 4. Run Your Domain
+### 3. Run Your Domain
 
 To integrate and run your custom domain using the simulator and GUI, follow these steps:
 
----
 Update `VisController.py`:
-- Add a new function (similar to `process_blocks_domain()` or `process_car_domain()`) that:
-- Converts MA → SA using `MAtoSA`.
-- Uses your new parser to get the initial state.
-- Parses the plan file (using `Parser`).
-- Calls `main(...)` to run your simulator.
+- Import your simulator file.
+- Update `main(...)` to include running option for your simulator.
 
-    Example:
-    ```python
-    def process_your_domain(...):
-        ...
-        from YourDomainInitParser import InitStateYourDomain
-        ...
-        object
-- Add calling to the created function in the `run` method of `VisController`.
+  Example:
+  ```python
+  from PathToYourDomainSimulator import YourDomainSimulator
+  ...
+  def main(...):
+      ...
+      ...
+      elif selected_domain == "YourDomain":
+        simulator = YourDomainSimulator(...)
 
-Updates Required in `gui.py`:
+Update `gui.py`:
 
 Add your domain to the supported list  
 At the top of `gui.py`, update the `SUPPORTED_DOMAINS` list to include your domain:

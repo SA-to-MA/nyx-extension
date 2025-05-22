@@ -1,8 +1,5 @@
 from VIS.SA_VIS.ActionsParser import ActionsParser
 import pygame
-from VIS.SA_VIS.CarSimulator.Car import Car
-from VIS.SA_VIS.CarSimulator.CarSimulator import CarSimulator
-from VIS.SA_VIS.CarSimulator.CarWindow import CarWindow
 from VIS.SA_VIS.SleepingBeautySimulator.SleepingBeauty import SleepingBeauty
 from VIS.SA_VIS.SleepingBeautySimulator.SleepingBeautySimulator import SleepingBeautySimulator
 from VIS.SA_VIS.SleepingBeautySimulator.SleepingBeautyWindow import SleepingBeautyWindow
@@ -31,27 +28,7 @@ class GenericSimulator:
         screen = pygame.display.set_mode((window_width, window_height))
         # Load actions of solution from a file
         actions = parser.read_solution_from_file()
-        if self.domain == "Car":
-            # set initial state of car problem
-            mapped_initial_state = {
-                "running": initial_state.get("running", True),
-                "engine": initial_state.get("engineBlown", False),
-                "trans": initial_state.get("transmission_fine", True),
-                "d": initial_state.get("d", 0.0),
-                "v": initial_state.get("v", 0.0),
-                "a": initial_state.get("a", 0.0),
-                "up": initial_state.get("up_limit", 1.0),
-                "down": initial_state.get("down_limit", -1.0),
-            }
-            # Create an instance of the Car class
-            car = Car(**mapped_initial_state)
-            # set title of simulator
-            pygame.display.set_caption("Car Simulator")
-            # Pass the Pygame window and Car object to the CarWindow
-            car_window = CarWindow(screen, car)
-            # Create a CarSimulator instance
-            simulator = CarSimulator(car, car_window, actions)
-        elif self.domain == "Sleeping Beauty":
+        if self.domain == "Sleeping Beauty":
             # set initial state of sleeping beauty problem
             mapped_initial_state = {
                 "window_closed": initial_state.get("windowclosed", True),

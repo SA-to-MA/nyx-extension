@@ -7,11 +7,11 @@ class InitParser:
         Takes in path to domain file and problem file,
         '''
         self.problem = problem
-        self.init_state = {}
-        self.objects = {}
-        self.agents = {}
-        self.functions = {}
-        self.goals = {}
+        self.init_state = {} # { agent/object : [list of predicates] }
+        self.objects = {} # { object_type : [list of objects] }
+        self.agents = {} # { agent_type : [list of agents] }
+        self.functions = {} # { function : value }
+        self.goals = {} # { list of goals (functions/predicates and values) }
 
     ### PROBLEM FILE PARSER
     def parse_problem(self):
