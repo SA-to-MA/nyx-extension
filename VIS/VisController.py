@@ -128,12 +128,12 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
     time.sleep(5)
     pygame.quit()
 
-if __name__ == "__main__":
-    domain = r"../MA_PDDL/examples/Sailing/original_domain.pddl"
-    problem = r"../MA_PDDL/examples/Sailing/problem_2.pddl"
-    plan_file = r'../MA_PDDL/outputs/Sailing/plans/plan1_problem.pddl'
-    flags = r"../MA_PDDL/outputs/Sailing/config.txt"
-    run("Sailing", domain, problem, False, plan_file, flags)
+# if __name__ == "__main__":
+#     domain = r"../MA_PDDL/examples/Sailing/original_domain.pddl"
+#     problem = r"../MA_PDDL/examples/Sailing/problem_2.pddl"
+#     plan_file = r'../MA_PDDL/outputs/Sailing/plans/plan1_problem.pddl'
+#     flags = r"../MA_PDDL/outputs/Sailing/config.txt"
+#     run("Sailing", domain, problem, False, plan_file, flags)
 
     # domain = r"../MA_PDDL/examples/Minecraft/minecraft_domain.pddl"
     # problem = r"../MA_PDDL/examples/Minecraft/1 agent/problem_1.pddl"
