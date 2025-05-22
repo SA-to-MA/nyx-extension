@@ -1,4 +1,4 @@
-(define (domain sailing)
+(define (domain Sailing)
   (:requirements :typing)
 
   (:types

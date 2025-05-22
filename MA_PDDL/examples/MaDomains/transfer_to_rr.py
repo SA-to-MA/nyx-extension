@@ -144,7 +144,7 @@ def transform_pddl(domain: str, problem: str, agent_types: list) -> str:
 
 if __name__ == "__main__":
 
-    domain_dir_list = ["minecraft", "sailing"]
+    domain_dir_list = ["minecraft", "Sailing"]
     problem_id_list = list(range(1, 11))
     agent_types = ["agent", "boat"]
 

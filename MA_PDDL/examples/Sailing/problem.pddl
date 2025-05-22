@@ -1,6 +1,6 @@
 (define (problem instance_2_1_1229)
 
-	(:domain sailing)
+	(:domain Sailing)
 
 	(:objects
 	    (:private

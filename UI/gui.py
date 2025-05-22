@@ -10,7 +10,7 @@ from VIS.Search_VIS import ChunkedTreeViewer
 from stats.StatsViewer import run_stats
 
 
-SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft","blocks", "car", "sleeping beauty", "polyCraft", "Other"]
+SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Sailing", "Other"]
 
 
 def is_valid_pddl_file(filepath, file_type):

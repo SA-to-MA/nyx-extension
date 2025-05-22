@@ -122,7 +122,7 @@ class SailingSimulator:
         self.t = t_value
 
     def run(self):
-        print("Starting sailing simulation...")
+        print("Starting Sailing simulation...")
         self.window.draw()
         running = True
         time.sleep(1)

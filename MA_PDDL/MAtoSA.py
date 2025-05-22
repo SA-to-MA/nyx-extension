@@ -514,5 +514,5 @@ def run_nyx(domain, problem, flags):
 
 # EXAMPLE OF USAGE
 if __name__ == "__main__":
-    solve = SolveController("examples/sailing/original_domain.pddl", "examples/sailing/problem_2.pddl", "Sailing", flags="")
+    solve = SolveController("examples/Sailing/original_domain.pddl", "examples/Sailing/problem_2.pddl", "Sailing", flags="")
     solve.solve()
