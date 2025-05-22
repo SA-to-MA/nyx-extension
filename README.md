@@ -48,13 +48,18 @@ python3 -m UI.gui
 
 ---
 
-## **2. [UI](UI) - Graphical User Interface**
+## **2. [heuristic_functions.py](heuristic_functions.py) - Heuristics**
+This file contains heuristics from [ActionBasedNovelty](https://github.com/SPL-BGU/ActionBasedNovelty). You can see instructions from their readme file and add the necessary flags to your **config** file when running the solver.
+
+---
+
+## **3. [UI](UI) - Graphical User Interface**
 - **[img](UI/img/)**: Stores images used in the GUI (e.g., icons, backgrounds).
 - **[gui.py](UI/gui.py)**: Main GUI runner.
 
 ---
 
-## **3. [VIS](VIS) - Visualization Components**
+## **4. [VIS](VIS) - Visualization Components**
 - **[Agent.py](VIS/Agent.py)**  
   - Class of Agent object.
 - **[InitParser.py](VIS/SA_VIS/InitParser.py)**  
