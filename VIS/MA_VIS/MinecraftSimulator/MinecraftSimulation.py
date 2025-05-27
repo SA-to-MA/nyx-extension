@@ -30,7 +30,7 @@ class MinecraftWindow:
             self.background = pygame.transform.scale(bg_img, self.screen.get_size())
 
         # add items images
-        for item in ["log", "plank", "stick", "sack", "tree_tap", "pogo_stick"]:
+        for item in ["log", "planks", "stick", "sack_polyisoprene_pellets", "tree_tap", "pogo_stick"]:
             image_path = os.path.join(resources_dir, f"{item}.png")
             if os.path.exists(image_path):
                 img = pygame.image.load(image_path)
@@ -39,7 +39,7 @@ class MinecraftWindow:
         # add trees image
         image_path = os.path.join(resources_dir, f"tree.png")
         img = pygame.image.load(image_path)
-        self.item_icons['tree'] = pygame.transform.scale(img, (80, 80))
+        self.item_icons['tree'] = pygame.transform.scale(img, (70, 70))
 
         # load random agents images
         agent_images_dir = os.path.join(resources_dir, "skins")
@@ -117,11 +117,11 @@ class MinecraftWindow:
         # Draw trees
         tree_icon = self.item_icons.get("tree", None)
         if tree_icon:
-            tree_size = 80
-            tree_spacing = 15
-            start_x = self.margin * 3
-            max_x = self.screen.get_width() - (self.margin*3)
-            tree_y_start = self.screen.get_height() - ground_height - tree_size - 30  # Start right above grass
+            tree_size = 70
+            tree_spacing = 10
+            start_x = self.margin * 5
+            max_x = self.screen.get_width() - start_x
+            tree_y_start = self.screen.get_height() - ground_height - tree_size - 50  # Start right above grass
 
             tree_x = start_x
             tree_y = tree_y_start

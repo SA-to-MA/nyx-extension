@@ -1,1 +1,1 @@
--search:gbfs -pt -custom_h:1 -dblh
+-search:gbfs -custom_h:2

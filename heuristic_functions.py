@@ -115,6 +115,43 @@ def heuristic_function(state):
         return max(distances)  # pessimistic: furthest agent from goal
         # return sum(distances)    # total remaining distance
         # return min(distances)    # optimistic: nearest agent to goal
+    elif constants.CUSTOM_HEURISTIC_ID == 8:
+        """
+        Heuristic 8:
+        Count the number of correct "on" and "ontable" facts missing from the current state
+        by inferring goal structure based on known keys.
+        """
+
+        current = state.state_vars
+        misplaced = 0
+
+        # Heuristic assumption: only one 'on' and one 'ontable' per block matters in goal
+        block_set = set()
+
+        # Find all blocks used in 'on' keys
+        for key in current:
+            if key.startswith("['on'") and current[key] == True:
+                parts = eval(key)  # safely convert string back to list
+                if len(parts) == 3:
+                    block_set.add(parts[0])  # block on something
+
+        for block in block_set:
+            # Try to find a correct "on" relation
+            found = False
+            for other in block_set:
+                key = f"['on', '{block}', '{other}']"
+                if current.get(key, False):
+                    found = True
+                    break
+            if not found:
+                misplaced += 1
+
+            # Check ontable condition too
+            key = f"['ontable', '{block}']"
+            if not current.get(key, False):
+                misplaced += 1
+
+        return misplaced
 
     return 0
 
