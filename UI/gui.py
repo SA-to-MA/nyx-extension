@@ -106,68 +106,6 @@ class ModernApp(TkinterDnD.Tk):
 
         self.destroy()
 
-    '''
-    def create_drag_file_input(self, label_text, y_position, variable):
-        """
-        Create a single smart input field that supports both click and drag-and-drop to select files.
-        """
-        print("Creating drag file input for:", label_text)
-
-        file_type = label_text.split()[0].lower()  # domain / problem / configuration / plan
-
-        # Label on the left (e.g. "Domain Input")
-        title = ttk.Label(self.current_frame, text=label_text, style="Custom.TLabel")
-        title.place(relx=0.15, rely=y_position, anchor="center")
-
-        # One unified label that is clickable and droppable
-        drop_click_label = tk.Label(self.current_frame,
-                                    text=f"Click or drag {file_type} file here",
-                                    fg="white", bg="#2E2E2E", font=("Roboto", 11),
-                                    relief="ridge", bd=4, width=30, height=3, cursor="hand2")
-        drop_click_label.place(relx=0.5, rely=y_position, anchor="center")
-        success = drop_click_label.drop_target_register(DND_FILES)
-        print("Drop target registered:", success)
-
-        # Handler for file click
-        def on_click(event):
-            filetypes = {
-                "domain": [("PDDL Files", "*.pddl"), ("All Files", "*.*")],
-                "problem": [("PDDL Files", "*.pddl"), ("All Files", "*.*")],
-                "plan": [("PDDL Files", "*.pddl"), ("All Files", "*.*")],
-                "configuration": [("TXT Files", "*.txt"), ("All Files", "*.*")]
-            }
-            selected = filedialog.askopenfilename(title=f"Select {file_type} file",
-                                                  filetypes=filetypes.get(file_type, [("All Files", "*.*")]))
-            if selected:
-                update_file(selected)
-
-        # Handler for file drag
-        def on_drop(event):
-            print("DROP EVENT:", event.data)
-
-            file_path = event.data.strip("{}")
-            update_file(file_path)
-
-        # Set file and update display
-        def update_file(file_path):
-            if file_type == "domain":
-                self.domain_file = file_path
-            elif file_type == "problem":
-                self.problem_file = file_path
-            elif file_type == "plan":
-                self.plan_file = file_path
-            elif file_type == "configuration":
-                self.config_file = file_path
-
-            variable.set(f"Selected: {os.path.basename(file_path)}")
-            drop_click_label.config(text=variable.get())  # update text
-
-        # Bind both click and drag events
-        drop_click_label.bind("<Button-1>", on_click)
-        drop_click_label.drop_target_register(DND_FILES)
-        drop_click_label.dnd_bind("<<Drop>>", on_drop)
-'''
-
     def create_file_input(self, label_text, y_position, button_command, variable):
         """Create a labeled file input field with a selection button and a file name preview."""
 
@@ -191,8 +129,8 @@ class ModernApp(TkinterDnD.Tk):
 
         # Internal handler for dropped files
         def on_drop(event):
-            file_path = event.data.strip("{}")  # Remove braces that Windows adds to file paths with spaces
-            file_type = label_text.split()[0]
+            file_path = event.data.strip().strip("{}").strip('"') # Remove any surrounding braces or quotes
+            file_type = label_text.split()[0].lower()  # Extract type from label text (domain/problem/configuration/plan)
 
             # Update the correct internal variable and file label
             if file_type == "domain":
@@ -457,11 +395,6 @@ class ModernApp(TkinterDnD.Tk):
 
         # Create domain selection dropdown
         self.create_dropdown_input("Select Domain:", 0.25, SUPPORTED_DOMAINS, self.selected_domain)
-
-        # Create input fields
-        #self.create_drag_file_input("Domain Input:", 0.37, self.domain_label_var)
-        #self.create_drag_file_input("Problem Input:", 0.49, self.problem_label_var)
-        #self.create_drag_file_input("Configuration (optional):", 0.61, self.config_label_var)
 
         self.create_file_input("Domain Input:", 0.37, self.select_domain_file, self.domain_label_var)
         self.create_file_input("Problem Input:", 0.49, self.select_problem_file, self.problem_label_var)
