@@ -10,7 +10,7 @@ from VIS.Search_VIS import ChunkedTreeViewer
 from stats.StatsViewer import run_stats
 
 # When adding new domain, update the following list only
-SUPPORTED_DOMAINS = ["Blocks", "Car", "Sleeping Beauty", "PolyCraft", "Sailing", "Other"]
+SUPPORTED_DOMAINS = ["Blocks", "Car", "PolyCraft", "Sailing", "Other"]
 SUPPORTED_DOMAINS_low = [domain.lower() for domain in SUPPORTED_DOMAINS]
 
 
