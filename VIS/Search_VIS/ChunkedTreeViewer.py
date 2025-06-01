@@ -1,7 +1,7 @@
 import pickle
 import os
 import pygame
-from VIS.Search_VIS import BlocksTree, CarTree, MinecraftTree
+from VIS.Search_VIS import BlocksTree, CarTree, MinecraftTree, SailingTree
 from pathlib import Path
 import subprocess
 
@@ -134,6 +134,8 @@ def show_node_info(node):
         CarTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
     elif DOMAIN == "polycraft":
         MinecraftTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
+    elif DOMAIN == "sailing":
+        SailingTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
     return info_surface
 
 def get_visible_nodes(root_node, expanded_nodes):
