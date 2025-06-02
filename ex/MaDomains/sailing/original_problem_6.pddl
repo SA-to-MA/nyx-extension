@@ -5,7 +5,9 @@
 	(:domain sailing)
 
 	(:objects
-		b0 b1 b2 b3  - boat
+		(:private
+		    b0 b1 b2 b3  - boat
+		)
 		p0 p1  - person
 	)
 

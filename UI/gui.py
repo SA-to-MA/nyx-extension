@@ -339,8 +339,8 @@ class ModernApp(TkinterDnD.Tk):
 
 
         try:
-            #TODO: add a button to check if using round-robin. If yes, instead of /
-            # use the MAtoSA module, use MA_PDDL/RR/transfer_to_rr.py in the transform_pddl func. /
+            #TODO: add a button to check if using round-robin. If yes, before using /
+            # MAtoSA module, use MA_PDDL/RR/transfer_to_rr.py in the transform_pddl func. /
             # you need to include agent types as a list, I keep there default for now.
             self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(),
                                                      self.config_file)
