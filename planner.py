@@ -43,14 +43,29 @@ class Planner:
         self.min_metric = float('inf')
         self.max_metric = float('-inf')
 
+    # def save_tree(self, root):
+    #     """Save a large tree into pickle file"""
+    #     repo_root = get_repo_root()
+    #     folder = repo_root / "VIS/Search_VIS/search_tree"
+    #     timestamp = str(time.time())
+    #
+    #     with open(f"{folder}/search_tree_{timestamp}.pkl", "wb") as file:
+    #         pickle.dump(root, file)  # Use dill for serialization
+
     def save_tree(self, root):
-        """Save a large tree into pickle file"""
+        """Save a large tree and state_constants into a pickle file"""
         repo_root = get_repo_root()
         folder = repo_root / "VIS/Search_VIS/search_tree"
+        folder.mkdir(parents=True, exist_ok=True)
         timestamp = str(time.time())
 
+        data = {
+            "tree_root": root,
+            "state_constants": constants.state_constants
+        }
+
         with open(f"{folder}/search_tree_{timestamp}.pkl", "wb") as file:
-            pickle.dump(root, file)  # Use dill for serialization
+            pickle.dump(data, file)
 
     def write_stats(self, logger, state, start_solve_time, last_stats_print_time):
         # get metrics for logging

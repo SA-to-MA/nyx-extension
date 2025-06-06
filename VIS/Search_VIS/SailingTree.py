@@ -1,6 +1,7 @@
 import pygame
 import os
 import ast
+import syntax.constants as constants
 
 GRID_SCALE = 30
 OFFSET_X = 100
@@ -20,7 +21,6 @@ def parse_state(state_vars):
             elif fact[0] == "y" and len(fact) == 2:
                 parsed["boats"].setdefault(fact[1], {})["y"] = int(val)
             elif fact[0] == "saved" and len(fact) == 2:
-                # Any 'saved' key means the person exists; ignore value
                 parsed["people"].setdefault(fact[1], {})
         except:
             continue
@@ -61,13 +61,20 @@ def render_domain(node, surface, font, res_dir, width, height):
         label = font.render(name, True, (255, 255, 255))
         surface.blit(label, (x + 5, y + 60))
 
-    # Draw people even if they don't have x/y — just place them on left
-    for i, (name, pos) in enumerate(parsed_state["people"].items()):
-        # Synthesize positions for people on the left shore
-        person_x = -5  # far left (negative logical coord)
-        person_y = i * 3  # vertical spacing
+    # Draw people based on d constant (relative distance)
+    for i, key in enumerate(sorted(constants.state_constants)):
+        if key.startswith("['d', '"):
+            person = key.split(",")[1].strip().strip("']").strip("'")
+            d = constants.state_constants[key]
 
-        x, y = safe_coords(person_x, person_y, width, height)
-        surface.blit(person_img, (x, y))
-        label = font.render(name, True, (0, 0, 0))
-        surface.blit(label, (x, y - 15))
+            # Display person horizontally from the left, and vertically based on d
+            # This is for clear illustration only
+            person_x = GRID_SCALE + OFFSET_X * (i+1)  # space them horizontally
+            person_y = height // 2 + int(d * 0.2)  # vertical placement from center
+            # Ensure they're within screen bounds
+            person_x = max(10, min(person_x, width - 70))
+            person_y = max(10, min(person_y, height - 70))
+
+            surface.blit(person_img, (person_x, person_y))
+            label = font.render(person, True, (255, 255, 255))
+            surface.blit(label, (person_x + 5, person_y + 40))

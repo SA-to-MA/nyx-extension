@@ -4,7 +4,7 @@ import pygame
 from VIS.Search_VIS import BlocksTree, CarTree, MinecraftTree, SailingTree
 from pathlib import Path
 import subprocess
-
+from syntax import constants
 # --- Constants and Setup ---
 pygame.init()
 info = pygame.display.Info()
@@ -36,7 +36,9 @@ def get_latest_tree_file():
 def load_full_tree():
     file_path = get_latest_tree_file()
     with open(file_path, "rb") as file:
-        root = pickle.load(file)
+        data = pickle.load(file)
+        root = data["tree_root"]
+        constants.state_constants = data["state_constants"]  # restore global constant state
     return root
 
 def delete_all_chunks():
@@ -213,4 +215,4 @@ def main(domain_name):
     pygame.quit()
 
 if __name__ == "__main__":
-    main("polycraft")
+    main("sailing")
