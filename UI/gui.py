@@ -41,6 +41,8 @@ class ModernApp(TkinterDnD.Tk):
         self.go_icon = self.load_image("go-icon.png", (30, 30))  # Size 30x30
         self.home_icon = self.load_image("home-icon.png", (30, 30))  # Size 30x30
 
+        self.execution_mode = tk.StringVar(value="parallel")  # default is parallel
+
         self.title("SAtoMA Nyx and Visualization")  # Set window title
         self.geometry("800x600")  # Set window size
 
@@ -337,15 +339,26 @@ class ModernApp(TkinterDnD.Tk):
         print("CONFIG FILE:", self.config_file)
         print("SELECTED DOMAIN:", self.selected_domain.get())
 
-
         try:
-            #TODO: add a button to check if using round-robin. If yes, before using /
+            # TODO: add a button to check if using round-robin. If yes, before using /
             # MAtoSA module, use MA_PDDL/RR/transfer_to_rr.py in the transform_pddl func. /
             # you need to include agent types as a list, I keep there default for now.
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file, self.selected_domain.get(),
-                                                     self.config_file)
+
+            if self.execution_mode.get() == "sequential":
+                # Run NYX directly (sequential mode)
+                print("Running NYX directly (sequential mode)")
+                #self.plan_file =
+                #add the code to run NYX here
+                self.switch_page(next_page)
+                return
+
+            # Otherwise, run the default flow (parallel mode)
+            print("Running MAtoSA pipeline (parallel mode)")
+            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file,
+                                                     self.selected_domain.get(), self.config_file)
             self.plan_file = self.controller.getPlanFile()
             self.switch_page(next_page)
+
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -404,6 +417,18 @@ class ModernApp(TkinterDnD.Tk):
         self.create_file_input("Configuration (optional):", 0.61, self.select_config_file, self.config_label_var)
         self.create_button_with_icon(text="Plan", y_position=0.85, command=lambda: self.validate_input_files("PlanResults"),
                                      icon=self.plan_icon, relx=0.50)
+
+        # Execution Mode (Radio Buttons)
+        mode_label = ttk.Label(self.current_frame, text="Execution Mode:", style="Custom.TLabel")
+        mode_label.place(relx=0.15, rely=0.73, anchor="center")
+
+        parallel_rb = ttk.Radiobutton(self.current_frame, text="Parallel ",
+            variable=self.execution_mode, value="parallel")
+        parallel_rb.place(relx=0.40, rely=0.73, anchor="w")
+
+        sequential_rb = ttk.Radiobutton(self.current_frame, text="Sequential ",
+            variable=self.execution_mode, value="sequential")
+        sequential_rb.place(relx=0.50, rely=0.73, anchor="w")
 
         # Add a back button to return to the Home page
         self.add_back_button("Home")
