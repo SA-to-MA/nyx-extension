@@ -102,6 +102,7 @@ class ModernApp(TkinterDnD.Tk):
     def on_closing(self):
         """Handle the window close event."""
         try:
+            # delete search tree chunk
             ChunkedTreeViewer.delete_all_chunks()
         except Exception as e:
             print("Failed to delete chunks:", e)
@@ -340,29 +341,27 @@ class ModernApp(TkinterDnD.Tk):
         print("SELECTED DOMAIN:", self.selected_domain.get())
 
         try:
-            # TODO: add a button to check if using round-robin. If yes, before using /
-            # MAtoSA module, use MA_PDDL/RR/transfer_to_rr.py in the transform_pddl func. /
-            # you need to include agent types as a list, I keep there default for now.
-
+            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file,
+                                                     self.selected_domain.get(), self.config_file)
             if self.execution_mode.get() == "sequential":
                 # Run NYX directly (sequential mode)
                 print("Running NYX directly (sequential mode)")
-                #self.plan_file =
-                #add the code to run NYX here
-                self.switch_page(next_page)
-                return
-
-            # Otherwise, run the default flow (parallel mode)
-            print("Running MAtoSA pipeline (parallel mode)")
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file,
-                                                     self.selected_domain.get(), self.config_file)
-            self.plan_file = self.controller.getPlanFile()
+                flags = MAtoSA.SolveController.process_flags(self.config_file)
+                # run nyx
+                old_plan_path =  MAtoSA.run_nyx(self.domain_file, self.problem_file, flags)
+                self.controller.plan = self.plan_file = MAtoSA.move_plan_to_dest(self.selected_domain.get(), old_plan_path)
+            else:
+                # Otherwise, run the default flow (parallel mode)
+                print("Running MAtoSA pipeline (parallel mode)")
+                self.plan_file = self.controller.getPlanFile()
+            # move to next page
             self.switch_page(next_page)
 
         except Exception as e:
             import traceback
             traceback.print_exc()
             messagebox.showerror("Invalid Input", f"Error:\n{e}")
+            self.switch_page("Home")
 
     def create_frame(self, y_position, height=40, width=0.97, bg="#1E1E1E"):
         """Create a reusable frame at a specific vertical position for layout alignment."""
@@ -483,7 +482,7 @@ class ModernApp(TkinterDnD.Tk):
             self.add_back_button("PlanResults")
             self.create_button_with_icon(text="Visualize", y_position=0.61,
                                          command=lambda: run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
-                              self.config_file), icon=self.visualize_icon)
+                              self.config_file, self.execution_mode.get()), icon=self.visualize_icon)
             self.create_button_with_icon(text="Show search tree", y_position=0.73,
                                          command=lambda: ChunkedTreeViewer.main(self.selected_domain.get().lower())
                                             , icon=self.solve_icon)
@@ -525,7 +524,7 @@ class ModernApp(TkinterDnD.Tk):
 
         try:
             run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
-                              self.config_file)  # Run the visualization with the selected inputs
+                              self.config_file, self.execution_mode.get())  # Run the visualization with the selected inputs
             self.create_page_title_and_background("Visualization completed successfully!")
             #self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
             #                             command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)

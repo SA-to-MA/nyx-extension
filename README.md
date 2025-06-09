@@ -31,14 +31,14 @@ python3 -m UI.gui
 
 ## **PDDL+ files structure:**
   * Supports all the functionality NYX is supporting.
-  * Agents should be defined under private section of objects.
+  * The way agents are defined varies between sequential and parallel execution modes.
   * You can look for examples [here](MA_PDDL/examples/).
 
 
 # **Project Structure**
 
 ## **1. [MA_PDDL](MA_PDDL) - Multi-Agent PDDL Components**
-- **[examples](MA_PDDL/examples/)**: Contains examples of multiple domain, problem and config files.
+- **[examples](MA_PDDL/examples/)**: Contains examples of multiple domain, problem and config files. Each domain includes both MA examples of parallel run and sequential run (under 'seq' directory of each domain).
   - **[Blocks](MA_PDDL/examples/Blocks/)**
   - **[Car](MA_PDDL/examples/Car/)**
   - **[Minecraft](MA_PDDL/examples/Minecraft/)**
@@ -99,7 +99,9 @@ You can simulate and visualize any custom domain by following the steps below. T
 Prepare the following:
 
 - `domain.pddl`: defines predicates and actions for your custom domain.
-- `problem.pddl`: defines `:objects` for items and `:private` section for agents, the `:init` state, and a `:goal`.
+- `problem.pddl`: defines `:objects` for items, the `:init` state, and a `:goal`.
+If you run in parallel mode, you need to put agents under `:private` section. If you run in sequential mode, you need to define your agents as objects of type `agent`.
+
 
 📁 Recommended file structure:
 ```

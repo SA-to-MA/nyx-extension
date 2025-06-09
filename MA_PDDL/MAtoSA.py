@@ -6,6 +6,7 @@ import os
 import glob
 import shlex
 from MA_PDDL.Deduplicate import transform_pddl
+import shutil
 
 
 class MAtoSA:
@@ -379,7 +380,8 @@ class SolveController:
         self.flags = self.process_flags(flags)
         self.plan = self.solve()
 
-    def process_flags(self, flags):
+    @staticmethod
+    def process_flags(flags):
         """Checks if flags is a file, reads its content if so, otherwise returns the default flags."""
         # if no flags, return default
         if len(flags) == 0:
@@ -510,6 +512,22 @@ def run_nyx(domain, problem, flags):
     # Get the latest plan file based on modification time
     latest_plan = max(plan_files, key=os.path.getmtime)
     return latest_plan  # Return the correct dynamically found plan file
+
+def move_plan_to_dest(domain_name, old_plan_path):
+    # Get absolute path for outputs directory
+    output_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "MA_PDDL", f"outputs/{domain_name}/plans"))
+    os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
+    # Get filename from path
+    plan_filename = os.path.basename(old_plan_path)
+    # Define destination path
+    dest_path = os.path.join(output_dir, plan_filename)
+    # Move the file
+    shutil.move(old_plan_path, dest_path)
+    # delete old files
+    plan_dir = os.path.dirname(old_plan_path)
+    shutil.rmtree(plan_dir)
+    return dest_path
 
 
 # EXAMPLE OF USAGE

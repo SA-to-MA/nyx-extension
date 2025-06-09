@@ -11,7 +11,6 @@ from VIS.MA_VIS.SailingSimulator.SailingSimulator import SailingSimulator
 import os
 from VIS.SolutionParser import SolutionParser
 
-
 def simulate_agents(parser):
     """Simulates the agents' actions step by step."""
     max_steps = max(len(agent.actions) for agent in parser.agents.values())
@@ -66,7 +65,7 @@ def extract_t_value(flags_path, default_t=1.0):
     return default_t  # Return default if not found
 
 
-def run(selected_domain, domain_path, problem_path, solve=False, plan_file="", flags_path=""):
+def run(selected_domain, domain_path, problem_path, solve=False, plan_file="", flags_path="", exc="parallel"):
     """Run the selected domain simulation."""
     # if no flags, set default flags
     if len(flags_path) == 0:
@@ -79,6 +78,9 @@ def run(selected_domain, domain_path, problem_path, solve=False, plan_file="", f
     # parse init of problem
     init_parser = InitParser(problem_path)
     init_parser.parse_problem()
+    # if sequential, take agents
+    if exc == "sequential":
+        init_parser.agents['agent'] = init_parser.objects.pop('agent')
     # parse solution
     sol_parser = SolutionParser(init_parser.agents, domain_path, plan_file)
     sol_parser.parse()
