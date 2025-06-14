@@ -181,12 +181,3 @@ class InitParser:
                         self.goals[obj_name][pred_name] = tuple(args[1:])
             else:
                 print(f"Warning: Skipped unexpected goals entry: {entry}")
-
-
-# if __name__ == "__main__":
-#     parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Blocks\problem-a1.pddl")
-#     #parser = InitParser("C:\\Users\\v-laftabi\Desktop\\Nyx\\nyx-extension\MA_PDDL\examples\Car\problem.pddl")
-#     parser.parse_problem()
-#     print(parser.init_state)
-#     print(parser.objects)
-#     print(parser.agents)

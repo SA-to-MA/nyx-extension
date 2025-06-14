@@ -77,27 +77,3 @@ def transform_pddl(
 
     with open(output_domain_filename, "w") as outfile:
         outfile.write(new_str)
-
-
-# if __name__ == "__main__":
-#
-#     domain_dir_list = ["minecraft_linear"]
-#     problem_id_list = list(range(1, 8))
-#     agent_types = ["agent"]
-#
-#     for domain_dir in domain_dir_list:
-#         for problem_id in problem_id_list:
-#             domain = f"{domain_dir}/minecraft_domain.pddl"
-#             problem = f"{domain_dir}/original_problem_{problem_id}.pddl"
-#             output_domain_filename = f"{domain_dir}/combined_domain_{problem_id}.pddl"
-#             output_problem_filename = f"{domain_dir}/combined_problem_{problem_id}.pddl"
-#
-#             transform_pddl(
-#                 domain,
-#                 problem,
-#                 agent_types=agent_types,
-#                 output_domain_filename=output_domain_filename,
-#                 output_problem_filename=output_problem_filename,
-#             )
-#
-#             print("Transformation complete.")

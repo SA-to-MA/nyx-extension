@@ -5,6 +5,7 @@
 	b - block
 	d - block
 	e - block
+	f - block
 
 	(:private
         a1 - agent
@@ -20,12 +21,13 @@
 	(handempty a4)
 	(clear c)
 	(clear d)
-	(clear e)
+	(clear f)
 	(ontable b)
 	(ontable c)
 	(ontable d)
 	(on a b)
 	(on e a)
+	(on f e)
 )
 (:goal
 	(and
@@ -33,6 +35,7 @@
 		(on c b)
 		(on d c)
         (on e d)
+        (on f e)
 	)
 )
 )

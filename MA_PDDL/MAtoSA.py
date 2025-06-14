@@ -528,9 +528,3 @@ def move_plan_to_dest(domain_name, old_plan_path):
     plan_dir = os.path.dirname(old_plan_path)
     shutil.rmtree(plan_dir)
     return dest_path
-
-
-# EXAMPLE OF USAGE
-if __name__ == "__main__":
-    solve = SolveController("examples/Sailing/original_domain.pddl", "examples/Sailing/problem_2.pddl", "Sailing", flags="")
-    solve.solve()
