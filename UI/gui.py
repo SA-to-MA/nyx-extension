@@ -109,6 +109,26 @@ class ModernApp(TkinterDnD.Tk):
 
         self.destroy()
 
+    def safe_run_visualize(self, parse, plan_file):
+        try:
+            run(
+                self.selected_domain.get(),
+                self.domain_file,
+                self.problem_file,
+                parse,
+                plan_file,
+                self.config_file,
+                self.execution_mode.get()
+            )
+        except Exception as e:
+            messagebox.showerror("Error", f"Visualization failed:\n{str(e)}")
+
+    def safe_run_tree_viewer(self):
+        try:
+            ChunkedTreeViewer.main(self.selected_domain.get().lower())
+        except Exception as e:
+            messagebox.showerror("Error", f"Search tree visualization failed:\n{str(e)}")
+
     def create_file_input(self, label_text, y_position, button_command, variable):
         """Create a labeled file input field with a selection button and a file name preview."""
 
@@ -319,18 +339,20 @@ class ModernApp(TkinterDnD.Tk):
             self.switch_page(next_page)
             return
 
-        # check if the domain name is a known domain
-        elif domain_name.lower() not in SUPPORTED_DOMAINS_low :
-            messagebox.showerror("Unknown Domain",
-                                 f"The selected domain '{domain_name}' is not supported. Please select a known domain.")
-            return
+        # if domain is supposed to be a familiar domain
+        if self.selected_domain.get() != 'Other':
+            # check if the domain name is a known domain
+            if domain_name.lower() not in SUPPORTED_DOMAINS_low:
+                messagebox.showerror("Unknown Domain",
+                                     f"The system is not familiar with the selected domain '{domain_name}'. Please select 'Other'.")
+                return
+            # check domain name in selection matches the domain name in domain file
+            elif domain_name.lower() != self.selected_domain.get().lower():
+                messagebox.showerror("Domain Mismatch",
+                                     f"The selected domain '{self.selected_domain.get()}' does not match the domain file '{domain_name}'. Please select matching files.")
+                return
 
-        elif domain_name.lower() != self.selected_domain.get().lower():
-            messagebox.showerror("Domain Mismatch",
-                                 f"The selected domain '{self.selected_domain.get()}' does not match the domain file '{domain_name}'. Please select matching files.")
-            return
-
-        elif domain_name.lower() != problem_domain.lower():
+        if domain_name.lower() != problem_domain.lower():
             messagebox.showerror("Domain Mismatch",
                                  f"The problem file is for domain '{problem_domain}', but the domain file is '{domain_name}'. Please select matching files.")
             return
@@ -360,7 +382,7 @@ class ModernApp(TkinterDnD.Tk):
         except Exception as e:
             import traceback
             traceback.print_exc()
-            messagebox.showerror("Invalid Input", f"Error:\n{e}")
+            messagebox.showerror("Running Error", f"{e}")
             self.switch_page("Home")
 
     def create_frame(self, y_position, height=40, width=0.97, bg="#1E1E1E"):
@@ -481,11 +503,9 @@ class ModernApp(TkinterDnD.Tk):
             # Navigation buttons
             self.add_back_button("PlanResults")
             self.create_button_with_icon(text="Visualize", y_position=0.61,
-                                         command=lambda: run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
-                              self.config_file, self.execution_mode.get()), icon=self.visualize_icon)
+                                         command=lambda: self.safe_run_visualize(parse, plan_file), icon=self.visualize_icon)
             self.create_button_with_icon(text="Show search tree", y_position=0.73,
-                                         command=lambda: ChunkedTreeViewer.main(self.selected_domain.get().lower())
-                                            , icon=self.solve_icon)
+                                         command=lambda: self.safe_run_tree_viewer(), icon=self.solve_icon)
             self.create_button_with_icon(text="Home", y_position=0.85, command=lambda: self.switch_page("Home"),
                                          icon=self.home_icon)
 
@@ -522,14 +542,8 @@ class ModernApp(TkinterDnD.Tk):
         plan_file = self.plan_file if self.plan_file else ""
         parse = not bool(self.plan_file)
 
-        try:
-            run(self.selected_domain.get(), self.domain_file, self.problem_file, parse, plan_file,
-                              self.config_file, self.execution_mode.get())  # Run the visualization with the selected inputs
-            self.create_page_title_and_background("Visualization completed successfully!")
-            #self.create_button_with_icon(text="Visualize search tree", y_position=0.68,
-            #                             command=lambda: self.switch_page("STVisualize"), icon=self.go_icon, relx=0.50)
-        except Exception as e:
-            messagebox.showerror("Visualization Error", f"An error occurred while visualizing:\n{e}")
+        self.safe_run_visualize(parse, plan_file)
+        self.create_page_title_and_background("Visualization completed successfully!")
 
         self.add_back_button("Visualize")
         self.create_button_with_icon(text="Home", y_position=0.85, command=lambda: self.switch_page("Home"),

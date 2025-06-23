@@ -145,7 +145,7 @@ class InitParser:
             if isinstance(entry, list):
                 if entry[0] == "and":
                     entry = entry[1]
-                if len(entry) == 3 and entry[0] == '=' and isinstance(entry[1], list):
+                if len(entry) == 3 and entry[0] in ['=', "<", ">", "<=", ">="] and isinstance(entry[1], list):
                     # Example: (= (charge robot1) 80)
                     func_expr = entry[1]  # ['charge', 'robot1']
                     value = entry[2]

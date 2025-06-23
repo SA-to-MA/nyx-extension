@@ -26,28 +26,28 @@
     )
 )
 
-(:process windResistance
-    :parameters (?a - agent)
-    :precondition (and (running ?a) (>= (v ?a) 50))
-    :effect (decrease (v ?a) (* #t (* 0.1 (* (- (v ?a) 50) (- (v ?a) 50)))))
-)
-
 (:action accelerate
     :parameters (?a - agent)
     :precondition (and (running ?a) (< (a ?a) (up_limit ?a)))
     :effect (and (increase (a ?a) 1))
 )
 
-(:action decelerate
-    :parameters (?a - agent)
-    :precondition (and (running ?a) (> (a ?a) (down_limit ?a)))
-    :effect (and (decrease (a ?a) 1))
-)
-
 (:event engineExplode
     :parameters (?a - agent)
     :precondition (and (running ?a) (>= (a ?a) 1) (>= (v ?a) 100))
     :effect (and (not (running ?a)) (engineBlown ?a) (assign (a ?a) 0))
+)
+
+(:process windResistance
+    :parameters (?a - agent)
+    :precondition (and (running ?a) (>= (v ?a) 50))
+    :effect (decrease (v ?a) (* #t (* 0.1 (* (- (v ?a) 50) (- (v ?a) 50)))))
+)
+
+(:action decelerate
+    :parameters (?a - agent)
+    :precondition (and (running ?a) (> (a ?a) (down_limit ?a)))
+    :effect (and (decrease (a ?a) 1))
 )
 
 (:action stop

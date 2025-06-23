@@ -117,9 +117,8 @@ def main(selected_domain, agents_by_type, objects_by_type, functions, init_state
     elif domain == "sailing":
         simulator = SailingSimulator(screen, agents_by_type, init_state, solution, t_value)
     else:
-        print("Unsupported domain. Exiting...")
         pygame.quit()
-        return
+        raise Exception("Unsupported domain")
 
     # Run simulation
     simulator.run()

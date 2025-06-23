@@ -1,9 +1,10 @@
-(define (problem instance_3 )
-(:domain polycraft )
+(define (problem blocks-4-0 )
+(:domain blocks )
 (:objects a1 - agent
-a2 - agent
-a3 - agent
+a - block
+c - block
+b - block
 )
-(:init (agent_free a1 )(agent_free a2 )(agent_free a3 )(= (trees_in_map )15 )(= (count_log_in_inventory )0 )(= (count_planks_in_inventory )0 )(= (count_stick_in_inventory )0 )(= (count_sack_polyisoprene_pellets_in_inventory )0 )(= (count_tree_tap_in_inventory )0 )(= (count_pogo_stick )0 )(dif_agent a1 a2 )(dif_agent a1 a3 )(dif_agent a2 a1 )(dif_agent a2 a3 )(dif_agent a3 a1 )(dif_agent a3 a2 ))
-(:goal (and (= (count_pogo_stick )3 )))
+(:init (handempty a1 )(clear c )(clear a )(ontable a )(ontable b )(on c b )(dif_block a c )(dif_block a b )(dif_block c a )(dif_block c b )(dif_block b a )(dif_block b c ))
+(:goal (and (on c b )(on b a )))
 )
