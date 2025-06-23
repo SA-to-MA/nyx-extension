@@ -138,7 +138,66 @@ def show_node_info(node):
         MinecraftTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
     elif DOMAIN == "sailing":
         SailingTree.render_domain(node, info_surface, font, RESOURCES_DIR, info_width, info_height)
+    else:
+        lines = get_node_info(node)
+        for i, line in enumerate(lines):
+            text = font.render(line.strip(), True, (0, 0, 0))
+            info_surface.blit(text, (10, 10 + i * 20))
     return info_surface
+
+def get_node_info(node):
+    lines = []
+    # Action
+    if node.action:
+        lines.extend(format_action_info(node.action))
+
+    # Important state info
+    lines.append("State Variables:")
+    for key, value in node.state.state_vars.items():
+        if value not in [False, 0, 0.0, None]:  # Filter out unimportant/default values
+            lines.append(f"  {key} = {value}")
+
+    # Time of action
+    lines.append(f"Time: {node.state.time}")
+    return lines
+
+def format_action_info(action):
+    def format_sexp(expr):
+        if isinstance(expr, (list, tuple)):
+            return f"({' '.join(format_sexp(e) for e in expr)})"
+        return str(expr)
+
+    lines = []
+
+    # Action name + parameters
+    lines.append(f"Action: {action.name}")
+    if action.parameters:
+        lines.append(f"Parameters: {', '.join(map(str, action.parameters))}")
+    else:
+        lines.append("Parameters: None")
+
+    # Happening type
+    if action.happening_type != "default":
+        lines.append(f"Type: {action.happening_type}")
+
+    # Preconditions
+    lines.append("Preconditions:")
+    if not action.preconditions:
+        lines.append("  - None")
+    else:
+        for p in action.preconditions:
+            lines.append("  - " + format_sexp(p))
+
+    # Effects
+    lines.append("Effects:")
+    if not action.effects:
+        lines.append("  - None")
+    else:
+        for e in action.effects:
+            lines.append("  - " + format_sexp(e))
+
+    return lines
+
 
 def get_visible_nodes(root_node, expanded_nodes):
     visible = set()
@@ -213,6 +272,3 @@ def main(domain_name):
 
         clock.tick(30)
     pygame.quit()
-
-if __name__ == "__main__":
-    main("sailing")

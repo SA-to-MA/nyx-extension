@@ -1,10 +1,10 @@
-(define (problem blocks-4-0 )
-(:domain blocks )
-(:objects a1 - agent
-a - block
-c - block
-b - block
+(define (problem pb-collab )
+(:domain push-box )
+(:objects agent1 - agent
+agent2 - agent
+agent3 - agent
+box1 - box
 )
-(:init (handempty a1 )(clear c )(clear a )(ontable a )(ontable b )(on c b )(dif_block a c )(dif_block a b )(dif_block c a )(dif_block c b )(dif_block b a )(dif_block b c ))
-(:goal (and (on c b )(on b a )))
+(:init (= (box-pos box1 )0 )(= (push-power agent1 )0.3 )(= (push-power agent2 )0.4 )(= (push-power agent3 )0.8 )(dif_agent agent1 agent2 )(dif_agent agent1 agent3 )(dif_agent agent2 agent1 )(dif_agent agent2 agent3 )(dif_agent agent3 agent1 )(dif_agent agent3 agent2 ))
+(:goal (>= (box-pos box1 )10 ))
 )
