@@ -412,13 +412,35 @@ class SolveController:
             new_domain = os.path.join(output_dir, "domain.pddl")
             new_problem = os.path.join(output_dir, "problem.pddl")
 
-            # generate the combined pddl files
-            satoma.generate(new_domain, new_problem)
-            # remove duplicates of functions
+            try:
+                try:
+                    satoma.write_problem(new_problem)
+
+                except FileNotFoundError as e:
+                    raise e  # let it propagate naturally
+                except Exception as e:
+                    raise Exception(f"Invalid problem file: {e}")
+
+
+                try:
+                    domain_tokens = satoma.scan_tokens(self.domain)
+                except FileNotFoundError as e:
+                    raise e  # let it propagate naturally
+                except Exception as e:
+                    raise Exception(f"Invalid domain file: {e}")
+
+                satoma.generate_actions(domain_tokens)
+                satoma.write_domain(new_domain, domain_tokens)
+            except FileNotFoundError as e:
+                raise e
+            except Exception as e:
+                raise Exception(f"PDDL file processing failed: {e}")
+
             transform_pddl(new_domain, new_domain)
-            # solve
             self.plan = run_nyx(new_domain, new_problem, self.flags)
+
         return self.plan
+
 
     def getPlanFile(self):
         """

@@ -1,10 +1,13 @@
-(define (problem pb-collab )
-(:domain push-box )
-(:objects agent1 - agent
-agent2 - agent
-agent3 - agent
-box1 - box
+(define (problem other-4-0 )
+(:domain other )
+(:objects a1 - agent
+a2 - agent
+a - block
+c - block
+b - block
+d - block
+e - block
 )
-(:init (= (box-pos box1 )0 )(= (push-power agent1 )0.3 )(= (push-power agent2 )0.4 )(= (push-power agent3 )0.8 )(dif_agent agent1 agent2 )(dif_agent agent1 agent3 )(dif_agent agent2 agent1 )(dif_agent agent2 agent3 )(dif_agent agent3 agent1 )(dif_agent agent3 agent2 ))
-(:goal (>= (box-pos box1 )10 ))
+(:init (handempty a2 )(handempty a1 )(clear c )(clear d )(clear e )(ontable b )(ontable c )(ontable d )(on a b )(on e a )(dif_agent a1 a2 )(dif_agent a2 a1 )(dif_block a c )(dif_block a b )(dif_block a d )(dif_block a e )(dif_block c a )(dif_block c b )(dif_block c d )(dif_block c e )(dif_block b a )(dif_block b c )(dif_block b d )(dif_block b e )(dif_block d a )(dif_block d c )(dif_block d b )(dif_block d e )(dif_block e a )(dif_block e c )(dif_block e b )(dif_block e d )(dif_agent a1 a2 )(dif_agent a2 a1 )(dif_block a c )(dif_block a b )(dif_block a d )(dif_block a e )(dif_block c a )(dif_block c b )(dif_block c d )(dif_block c e )(dif_block b a )(dif_block b c )(dif_block b d )(dif_block b e )(dif_block d a )(dif_block d c )(dif_block d b )(dif_block d e )(dif_block e a )(dif_block e c )(dif_block e b )(dif_block e d ))
+(:goal (and (on b a )(on c b )(on d c )(on e d )))
 )
