@@ -282,10 +282,16 @@ class MAtoSA:
         """
         # get agents from problem file (should be defined under :private in objects)
         # and write new problem
-        self.write_problem(output_problem)
-        domain_tokens = self.scan_tokens(self.ma_domain_file) # get tokens of domain
+        try:
+            self.write_problem(output_problem)
+        except FileNotFoundError as e:
+            raise Exception(f"Invalid problem file: {e}")
+        try:
+            domain_tokens = self.scan_tokens(self.ma_domain_file) # get tokens of domain
+        except FileNotFoundError as e:
+            raise Exception(f"Invalid domain file: {e}")
         self.generate_actions(domain_tokens) # replace token with real names
-        self.write_domain(output_domain, domain_tokens)
+        self.write_domain(output_domain, domain_tokens) # write new domain file
 
     def write_domain(self, output, domain_tokens):
         '''
@@ -413,7 +419,10 @@ class SolveController:
             new_problem = os.path.join(output_dir, "problem.pddl")
 
             # generate the combined pddl files
-            satoma.generate(new_domain, new_problem)
+            try:
+                satoma.generate(new_domain, new_problem)
+            except Exception as e:
+                raise Exception(f"PDDL file processing failed: {e}")
             # remove duplicates of functions
             transform_pddl(new_domain, new_domain)
             # solve

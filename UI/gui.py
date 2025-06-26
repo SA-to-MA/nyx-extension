@@ -315,75 +315,85 @@ class ModernApp(TkinterDnD.Tk):
         return None
 
     def validate_input_files(self, next_page):
-        domain_name = self.extract_domain_name(self.domain_file)
-        problem_domain = self.extract_problem_domain(self.problem_file)
+        """Validate domain and problem files and run planner"""
 
-        """Validate input files"""
+        # 1. Ensure both domain and problem files are selected
         if not self.domain_file or not self.problem_file:
             messagebox.showerror("Missing Input", "Please select both domain and problem files before continuing.")
             return
 
-        # Validate domain file content
-        elif not is_valid_pddl_file(self.domain_file, "domain"):
-            messagebox.showerror("Invalid Domain File",
-                                 "The selected domain file is not valid or missing definition.")
+        # 2. Initial basic check using is_valid_pddl_file
+        if not is_valid_pddl_file(self.domain_file, "domain"):
+            messagebox.showerror("Invalid Domain File", "The selected domain file is not valid or missing definition.")
             return
-
-        elif not is_valid_pddl_file(self.problem_file, "problem"):
+        if not is_valid_pddl_file(self.problem_file, "problem"):
             messagebox.showerror("Invalid Problem File",
                                  "The selected problem file is not valid or missing definition.")
             return
 
-        elif self.plan_file:  # If a plan file is already selected, skip planning
-            print("Using existing plan file:", self.plan_file)
-            self.switch_page(next_page)
-            return
+        # 3. Check domain name against known supported domains
+        domain_name = self.extract_domain_name(self.domain_file)
+        problem_domain = self.extract_problem_domain(self.problem_file)
 
-        # if domain is supposed to be a familiar domain
         if self.selected_domain.get() != 'Other':
-            # check if the domain name is a known domain
             if domain_name.lower() not in SUPPORTED_DOMAINS_low:
                 messagebox.showerror("Unknown Domain",
                                      f"The system is not familiar with the selected domain '{domain_name}'. Please select 'Other'.")
                 return
-            # check domain name in selection matches the domain name in domain file
             elif domain_name.lower() != self.selected_domain.get().lower():
                 messagebox.showerror("Domain Mismatch",
                                      f"The selected domain '{self.selected_domain.get()}' does not match the domain file '{domain_name}'. Please select matching files.")
                 return
 
+        # 4. Ensure the domain name in the problem file matches the domain file
         if domain_name.lower() != problem_domain.lower():
             messagebox.showerror("Domain Mismatch",
                                  f"The problem file is for domain '{problem_domain}', but the domain file is '{domain_name}'. Please select matching files.")
             return
 
-        print("DOMAIN FILE:", self.domain_file)
-        print("PROBLEM FILE:", self.problem_file)
-        print("CONFIG FILE:", self.config_file)
-        print("SELECTED DOMAIN:", self.selected_domain.get())
+        # 5. If plan already exists, skip solving
+        if self.plan_file:
+            print("Using existing plan file:", self.plan_file)
+            self.switch_page(next_page)
+            return
 
+        # 6. Try solving and handle errors
         try:
-            self.controller = MAtoSA.SolveController(self.domain_file, self.problem_file,
-                                                     self.selected_domain.get(), self.config_file)
+            self.controller = MAtoSA.SolveController(
+                self.domain_file,
+                self.problem_file,
+                self.selected_domain.get(),
+                self.config_file
+            )
+
             if self.execution_mode.get() == "sequential":
-                # Run NYX directly (sequential mode)
                 print("Running NYX directly (sequential mode)")
                 flags = MAtoSA.SolveController.process_flags(self.config_file)
-                # run nyx
-                old_plan_path =  MAtoSA.run_nyx(self.domain_file, self.problem_file, flags)
-                self.controller.plan = self.plan_file = MAtoSA.move_plan_to_dest(self.selected_domain.get(), old_plan_path)
+                old_plan_path = MAtoSA.run_nyx(self.domain_file, self.problem_file, flags)
+                self.controller.plan = self.plan_file = MAtoSA.move_plan_to_dest(self.selected_domain.get(),
+                                                                                 old_plan_path)
             else:
-                # Otherwise, run the default flow (parallel mode)
                 print("Running MAtoSA pipeline (parallel mode)")
                 self.plan_file = self.controller.getPlanFile()
-            # move to next page
+
+            # 7. Go to next page if everything went well
             self.switch_page(next_page)
 
         except Exception as e:
             import traceback
             traceback.print_exc()
-            messagebox.showerror("Running Error", f"{e}")
-            self.switch_page("Home")
+            error_message = str(e)
+
+            if "Invalid domain file" in error_message:
+                messagebox.showerror("Invalid Domain File", f"Domain file error:\n{error_message}")
+            elif "Invalid problem file" in error_message:
+                messagebox.showerror("Invalid Problem File", f"Problem file error:\n{error_message}")
+            elif "Missing open parentheses" in error_message or "Missing close parentheses" in error_message or "Malformed expression" in error_message:
+                messagebox.showerror("Syntax Error", f"PDDL syntax error:\n{error_message}")
+            else:
+                messagebox.showerror("Running Error", f"{error_message}")
+
+            #self.switch_page("Home")
 
     def create_frame(self, y_position, height=40, width=0.97, bg="#1E1E1E"):
         """Create a reusable frame at a specific vertical position for layout alignment."""
@@ -553,4 +563,3 @@ class ModernApp(TkinterDnD.Tk):
 if __name__ == "__main__":
     app = ModernApp()
     app.mainloop()
-
